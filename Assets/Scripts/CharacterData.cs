@@ -12,5 +12,7 @@ public class CharacterData
     public float StaminaUseRate;
     public float CurrentSpeed;
     public float BaseMovementSpeed;
+    public float Reach;
+    public float TargetRange;
 
 }
