@@ -1,0 +1,8 @@
+{
+    "JumpHeight": 9.0,
+    "MaxStamina": 1000,
+    "StaminaBonusSpeed": 4,
+    "StaminaRechargeRate": 0.001,
+    "StaminaUseRate": 6,
+    "BaseMovementSpeed": 2.5
+}
