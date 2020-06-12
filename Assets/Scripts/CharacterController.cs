@@ -9,10 +9,9 @@ public class CharacterController : MonoBehaviour {
     public bool isPlayer = false;
 
     //Objects and vars not loaded from save file
-    private Transform player;
+    private Transform CharacterTransform;
     private Camera cam;
     private Rigidbody rb;
-
     private Physics physics;
 
     //Character save manager
@@ -22,18 +21,29 @@ public class CharacterController : MonoBehaviour {
 
     private CharacterData Character = new CharacterData ();
 
+
+    // variables that are used for interacting with world but dont matter for save
+    private bool IsDroppingItem = false;
+
     //When character comes online, set vars needed for init
     private void Awake () {
-        cam = Camera.main;
+
         rb = gameObject.GetComponent<Rigidbody> ();
-        player = gameObject.GetComponent<Transform> ();
+        CharacterTransform = gameObject.GetComponent<Transform> ();
 
-        Debug.Log ("Starting");
-        CDM.Init (CharacterSaveFileFolder, CharacterSaveFile);
-        Character = CDM.Load ();
-        this.tag = "player";
-        //TODO load on init
+        if (isPlayer) {
+            cam = Camera.main;
+            Debug.Log ("Starting");
+            CDM.Init (CharacterSaveFileFolder, CharacterSaveFile);
+            Character = CDM.Load ();
+            this.tag = "player";
+            //TODO load on init
 
+            // MOUSE SETTINGS
+            Cursor.lockState = CursorLockMode.Confined; // keep confined in the game window
+            //todo IF KEY = ESC OR in a menu, set to true
+            Cursor.visible = false;
+        }
     }
 
     private void FixedUpdate () {
@@ -52,16 +62,30 @@ public class CharacterController : MonoBehaviour {
                 Interact ();
             }
             if (Input.GetKey ("tab")) {
-                Target();
+                Target ();
 
             }
 
+            if (Input.GetKey ("q")) {
+                IsDroppingItem = true;
+            }else{
+                IsDroppingItem = false;
+            }
+
+
+
         } else {
-            //NPCMove();
+            NPCMove ();
         }
     }
 
     private void NPCMove () {
+        //TODO if follower
+        // todo if enemy
+
+    }
+
+    private void RandomMove () {
         float maxForce = 50f;
         Vector3 position = new Vector3 (Random.Range (-1f * maxForce, maxForce), Random.Range (-1f * maxForce, maxForce), Random.Range (-1f * maxForce, maxForce));
         //Debug.Log(position);
@@ -140,13 +164,13 @@ public class CharacterController : MonoBehaviour {
         float X = Input.GetAxis ("Mouse X") * mouseSpeed;
         float Y = Input.GetAxis ("Mouse Y") * mouseSpeed;
 
-        player.Rotate (0, X, 0); // Player rotates on Y axis, your Cam is child, then rotates too
+        CharacterTransform.Rotate (0, X, 0); // Player rotates on Y axis, your Cam is child, then rotates too
 
         // To scurity check to not rotate 360º 
         if (cam.transform.eulerAngles.x + (-Y) > 80 && cam.transform.eulerAngles.x + (-Y) < 280) {
 
         } else {
-            cam.transform.RotateAround (player.position, cam.transform.right, -Y);
+            cam.transform.RotateAround (CharacterTransform.position, cam.transform.right, -Y);
         }
 
     }
@@ -154,9 +178,11 @@ public class CharacterController : MonoBehaviour {
     private void Interact () {
 
         RaycastHit hit;
-        if (Physics.Raycast (transform.position, transform.forward, out hit, Character.Reach)) {
-            Debug.Log (hit);
-            Debug.Log (hit.collider);
+        if (Physics.Raycast (CharacterTransform.position, CharacterTransform.forward, out hit, Character.Reach)) {
+            //Debug.Log (hit);
+            Debug.Log ("Interacted with" + hit.collider.gameObject);
+            hit.collider.gameObject.GetComponent<CharacterController> ().DoInteractAction ();
+            //hit.collider.gameObject.target = this;
 
             //IInteractable interactable = hit.collider.GetComponent<IInteractable> ();
 
@@ -169,22 +195,39 @@ public class CharacterController : MonoBehaviour {
 
     private void Target () {
 
-        float radius = 1f;
-        float depth = 0.1f;
-        float angle = 100f;
+        RaycastHit hit;
+        if (Physics.Raycast (CharacterTransform.position, CharacterTransform.forward, out hit, Character.TargetRange)) {
+            Debug.Log (hit);
+            Debug.Log (hit.collider.gameObject);
+            hit.collider.gameObject.GetComponent<CharacterController> ().DoTargetedAction ();
 
-        RaycastHit[] coneHits = physics.ConeCastAll (player.position, radius, player.forward, depth, angle);
-
-        //TODO dedup this
-        //var coneHits = new HashSet<RaycastHit>(allConeHits);
-        Debug.Log("Targeting");
-
-        if (coneHits.Length > 0) {
-            for (int i = 0; i < coneHits.Length; i++) {
-                //do something with collider information
-                Debug.Log (coneHits[i].collider.gameObject);
-                coneHits[i].collider.gameObject.GetComponent<Renderer> ().material.color = new Color (0, 0, 1f);
-            }
         }
+
     }
+
+    private void DoInteractAction () {
+        Debug.Log ("I was interacted with");
+    }
+
+    private void DoTargetedAction () {
+        Debug.Log ("I was targetd");
+    }
+
+    public CharacterData GetCharacter () {
+        return this.Character;
+    }
+
+    public bool GetIsPlayer () {
+        return this.isPlayer;
+    }
+
+    public Transform GetCharacterTransform(){
+        return this.CharacterTransform;
+    }
+
+    public bool GetIsDroppingItem () {
+        return this.IsDroppingItem;
+    }
+
+
 }
