@@ -5,7 +5,6 @@ using UnityEngine;
 public class CharacterController : MonoBehaviour {
 
     //Control settings
-    public float mouseSpeed = 3;
     public bool isPlayer = false;
 
     //Objects and vars not loaded from save file
@@ -21,6 +20,9 @@ public class CharacterController : MonoBehaviour {
 
     private CharacterData Character = new CharacterData ();
 
+
+    //TEMP / todo rm this
+    private SummonTest Summoner = new SummonTest();
 
     // variables that are used for interacting with world but dont matter for save
     private bool IsDroppingItem = false;
@@ -70,6 +72,11 @@ public class CharacterController : MonoBehaviour {
                 IsDroppingItem = true;
             }else{
                 IsDroppingItem = false;
+            }
+
+            if (Input.GetKey("g")){
+                Summoner.SummonBunchOfCubes();
+                
             }
 
 
@@ -158,20 +165,6 @@ public class CharacterController : MonoBehaviour {
             rb.AddForce (up * Character.JumpHeight);
         }
 
-        //Camera focus
-
-        //mouse look rotation
-        float X = Input.GetAxis ("Mouse X") * mouseSpeed;
-        float Y = Input.GetAxis ("Mouse Y") * mouseSpeed;
-
-        CharacterTransform.Rotate (0, X, 0); // Player rotates on Y axis, your Cam is child, then rotates too
-
-        // To scurity check to not rotate 360º 
-        if (cam.transform.eulerAngles.x + (-Y) > 80 && cam.transform.eulerAngles.x + (-Y) < 280) {
-
-        } else {
-            cam.transform.RotateAround (CharacterTransform.position, cam.transform.right, -Y);
-        }
 
     }
 
