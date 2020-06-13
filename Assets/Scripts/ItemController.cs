@@ -12,8 +12,7 @@ public class ItemController : MonoBehaviour {
     //private Transform player;
     //private Camera cam;
     private Rigidbody rb;
-     private Transform ItemTransform;
-
+    private Transform ItemTransform;
 
     //Character save manager
     //public string CharacterSaveFileFolder = "Assets/CharacterJson";
@@ -32,12 +31,11 @@ public class ItemController : MonoBehaviour {
     private void Awake () {
         //cam = Camera.main;
         rb = gameObject.GetComponent<Rigidbody> ();
-                ItemTransform = gameObject.GetComponent<Transform> ();
-
+        ItemTransform = gameObject.GetComponent<Transform> ();
 
         Debug.Log ("Starting an item");
         IDM.Init (ItemSaveFileFolder, ItemSaveFile);
-        Item = IDM.Load();
+        Item = IDM.Load ();
         //Character = CDM.Load();
         //TODO load on init
 
@@ -49,15 +47,29 @@ public class ItemController : MonoBehaviour {
     //TODO make update on frameupdate
     private void Update () {
         // ask parent if dropped
-        if (ItemTransform.parent != null){
-        if (ItemTransform.parent.gameObject.GetComponent<CharacterController>().GetIsDroppingItem()){
-            Debug.Log("parent id dropping me");
-            ItemTransform.parent = null;
-            isPickedUp = false;
-        }
+        if (ItemTransform.parent != null) {
+            if (ItemTransform.parent.gameObject.GetComponent<CharacterController> ().GetIsDroppingItem ()) {
+                Debug.Log ("parent id dropping me");
+                Physics.IgnoreCollision (ItemTransform.parent.gameObject.GetComponent<Collider> (), GetComponent<Collider> (), false);
+
+                ItemTransform.parent = null;
+                isPickedUp = false;
+                rb.useGravity = true;
+                Toss();// toss the item
+            } else {
+                ItemTransform.localPosition = new Vector3 (0, 1, 0);
+
+            }
         }
 
         //TODO check if parent is asking for use function
+
+    }
+
+    private void Toss () {
+        float maxForce = 5f;
+        Vector3 position = new Vector3 (Random.Range (-2f, maxForce), Random.Range(2f, maxForce), Random.Range(-2f, maxForce));
+        rb.AddForce (position);
 
     }
 
@@ -69,7 +81,13 @@ public class ItemController : MonoBehaviour {
 
                     Debug.Log ("I was hit by " + collision.gameObject.GetComponent<CharacterController> ().GetCharacter ().Name);
                     isPickedUp = true;
-                    ItemTransform.parent = collision.gameObject.GetComponent<CharacterController>().GetCharacterTransform();
+                    rb.useGravity = false;
+                    //TODO move relivant to character
+                    Physics.IgnoreCollision (collision.gameObject.GetComponent<Collider> (), GetComponent<Collider> ());
+
+                    ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
+
+                    ItemTransform.localPosition = new Vector3 (0, 1, 0);
                     //holder = collision.gameObject;
                     //collision.gameObject.GetComponent<CharacterController> ().Character.name;
                     //if (collision.gameObject.GetComponent<CharacterController> ().GetIsInteracting ()){
@@ -77,6 +95,8 @@ public class ItemController : MonoBehaviour {
                     //}
                 }
             }
+        } else if (isPickedUp) {
+            Debug.Log ("Collision after picked up");
         }
     }
 
