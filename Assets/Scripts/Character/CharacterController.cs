@@ -24,11 +24,12 @@ public class CharacterController : MonoBehaviour {
 
     private CharacterData Character = new CharacterData ();
 
-    //TEMP / todo rm this
-    private SummonTest Summoner = new SummonTest ();
-
     // variables that are used for interacting with world but dont matter for save
     private bool IsDroppingItem = false;
+
+    // Targeting and interacting
+    private GameObject FollowTarget;
+    private GameObject CombatTarget;
 
     //When character comes online, set vars needed for init
     private void Awake () {
@@ -36,40 +37,34 @@ public class CharacterController : MonoBehaviour {
         rb = gameObject.GetComponent<Rigidbody> ();
         CharacterTransform = gameObject.GetComponent<Transform> ();
 
+        CDM.Init (CharacterSaveFileFolder, CharacterSaveFile);
+        Character = CDM.Load ();
+
         if (isPlayer) {
             cam = Camera.main;
             Debug.Log ("Starting");
-            CDM.Init (CharacterSaveFileFolder, CharacterSaveFile);
-            Character = CDM.Load ();
             this.tag = "player";
-            //TODO load on init
 
-            /*
-            // MOUSE SETTINGS
-            Cursor.lockState = CursorLockMode.Confined; // keep confined in the game window
-            //todo IF KEY = ESC OR in a menu, set to true
-            Cursor.visible = false;
-            */
         }
     }
 
     private void FixedUpdate () {
         if (isPlayer) {
             PlayerMove ();
-            DoUI();
+            DoUI ();
 
             //Debug save and load functions
-            if (Input.GetKey ("i")) {
+            if (Input.GetKeyDown ("i")) {
                 Character = CDM.Load ();
             }
 
-            if (Input.GetKey ("o")) {
+            if (Input.GetKeyDown ("o")) {
                 CDM.Save (Character);
             }
-            if (Input.GetKey ("e")) {
+            if (Input.GetKeyDown ("e")) {
                 Interact ();
             }
-            if (Input.GetKey ("tab")) {
+            if (Input.GetKeyDown ("tab")) {
                 Target ();
 
             }
@@ -80,28 +75,32 @@ public class CharacterController : MonoBehaviour {
                 IsDroppingItem = false;
             }
 
-            if (Input.GetKey ("g")) {
-                Summoner.SummonBunchOfCubes ();
+            /*
+            if (Input.GetKeyDown("g")) {
 
-            }
+            }*/
 
         } else {
             NPCMove ();
         }
     }
 
+    // things do to at frame time
+    private void Update () {
+
+    }
+
     private void DoUI () {
         DoHealthUI ();
         DoStaminaUI ();
         DoManaUI ();
-
     }
 
     private void DoHealthUI () {
         //TODO
     }
     private void DoStaminaUI () {
-        StaminaUI.GetComponent<FillUI>().SetTo(Character.CurrentStamina/Character.MaxStamina);
+        StaminaUI.GetComponent<FillUI> ().SetTo (Character.CurrentStamina / Character.MaxStamina);
         //TODO
     }
 
@@ -109,9 +108,41 @@ public class CharacterController : MonoBehaviour {
         //TODO
     }
 
+    // Movement and npc
+
     private void NPCMove () {
         //TODO if follower
         // todo if enemy
+        // TODO if enemy follower sees, target instead
+        if (Character.IsFollowing) {
+            FollowPlayer ();
+        }
+
+    }
+
+    private void FollowPlayer () {
+
+        float rotationSpeed = 6f; //speed of turning
+        float range = 10f;
+        float range2 = 10f;
+        float stop = 1f; // this is range to player
+
+        Transform TargetTransform = FollowTarget.GetComponent<Transform> ();
+        //rotate to look at the player
+        var distance = Vector3.Distance (CharacterTransform.position, TargetTransform.position);
+        if (distance <= range2 && distance >= range) {
+            CharacterTransform.rotation = Quaternion.Slerp (CharacterTransform.rotation,
+                Quaternion.LookRotation (TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+        } else if (distance <= range && distance > stop) {
+
+            //move towards the player
+            CharacterTransform.rotation = Quaternion.Slerp (CharacterTransform.rotation,
+                Quaternion.LookRotation (TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+            CharacterTransform.position += CharacterTransform.forward * Character.CurrentSpeed * Time.deltaTime;
+        } else if (distance <= stop) {
+            CharacterTransform.rotation = Quaternion.Slerp (CharacterTransform.rotation,
+                Quaternion.LookRotation (TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+        }
 
     }
 
@@ -122,6 +153,8 @@ public class CharacterController : MonoBehaviour {
         rb.AddForce (position);
 
     }
+
+    // Player movement
 
     private void PlayerMove () {
 
@@ -150,7 +183,7 @@ public class CharacterController : MonoBehaviour {
         }
 
         //Actual movemment
-        
+
         // Get directions relative to camera
         Vector3 forward = cam.transform.forward;
         Vector3 right = cam.transform.right;
@@ -175,7 +208,7 @@ public class CharacterController : MonoBehaviour {
         if (dir != Vector3.zero) {
             transform.rotation = Quaternion.Slerp (transform.rotation, Quaternion.LookRotation (forward), 0.2f);
         }
-        
+
         //Jumping
         float DisstanceToTheGround = GetComponent<Collider> ().bounds.extents.y;
 
@@ -190,13 +223,15 @@ public class CharacterController : MonoBehaviour {
 
     }
 
+    // Targeting and interacting
+
     private void Interact () {
 
         RaycastHit hit;
         if (Physics.Raycast (CharacterTransform.position, CharacterTransform.forward, out hit, Character.Reach)) {
             //Debug.Log (hit);
             Debug.Log ("Interacted with" + hit.collider.gameObject);
-            hit.collider.gameObject.GetComponent<CharacterController> ().DoInteractAction ();
+            hit.collider.gameObject.GetComponent<CharacterController> ().DoInteractAction (this.gameObject);
             //hit.collider.gameObject.target = this;
 
             //IInteractable interactable = hit.collider.GetComponent<IInteractable> ();
@@ -220,13 +255,28 @@ public class CharacterController : MonoBehaviour {
 
     }
 
-    private void DoInteractAction () {
-        Debug.Log ("I was interacted with");
+    private void DoInteractAction (GameObject WhoInteracted) {
+        Debug.Log ("I was interacted with by " + WhoInteracted);
+        Debug.Log (Character.IsFollower);
+
+        // If a follower, then make then interact toggles follow
+        if (Character.IsFollower) {
+            Debug.Log ("im a follwer who was interacted with");
+            Character.IsFollowing = !Character.IsFollowing;
+            FollowTarget = WhoInteracted;
+        }
     }
 
     private void DoTargetedAction () {
         Debug.Log ("I was targetd");
     }
+
+    // moves the charactesr pointer to their target to above the target
+    private void MoveTargetPointer () {
+
+    }
+
+    // Getters and setters for interactions
 
     public CharacterData GetCharacter () {
         return this.Character;
@@ -243,5 +293,12 @@ public class CharacterController : MonoBehaviour {
     public bool GetIsDroppingItem () {
         return this.IsDroppingItem;
     }
+
+    // TODO add value to health etc
+    // add negative value to reduce
+    public void AddValueToStamina(float value){
+        Character.CurrentStamina+=value;
+    }
+
 
 }

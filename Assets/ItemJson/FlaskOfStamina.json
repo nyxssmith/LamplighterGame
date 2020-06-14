@@ -1,8 +1,8 @@
 {
     "Name":"Torch",
-    "Damage":0,
+    "Damage":500,
     "IsPickup":true,
-    "PrimaryActionClass":"BASIC",
+    "PrimaryActionClass":"POTION",
     "SecondartActionClass":"NONE",
-    "Cooldown":0
+    "Cooldown":5
 }

@@ -2,7 +2,7 @@
     "Name":"Torch",
     "Damage":0,
     "IsPickup":true,
-    "PrimaryActionClass":"BASIC",
-    "SecondartActionClass":"NONE",
+    "PrimaryActionClass":"SUMMON",
+    "SecondartActionClass":"BASIC",
     "Cooldown":0
 }

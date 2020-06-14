@@ -26,6 +26,7 @@ public class ItemController : MonoBehaviour {
     public string ItemSaveFile = "Torch.json";
 
     private bool isPickedUp = false;
+    private float CooldownTimer = 0f;
 
     //When character comes online, set vars needed for init
     private void Awake () {
@@ -55,20 +56,65 @@ public class ItemController : MonoBehaviour {
                 ItemTransform.parent = null;
                 isPickedUp = false;
                 rb.useGravity = true;
-                Toss();// toss the item
+                Toss (); // toss the item
             } else {
+                //Keey the item above the player / at location
+                // TODO have it check which slot its held in
                 ItemTransform.localPosition = new Vector3 (0, 1, 0);
+
+                //cooldown timer if needed
+                if (CooldownTimer > 0){
+                    CooldownTimer -=Time.deltaTime;
+                }
+
+
+                if (Input.GetMouseButtonDown (0)) { 
+                    DoPrimaryAction();
+                }
+                if (Input.GetMouseButtonDown (1)) { 
+                    DoSecondaryAction();
+                }
 
             }
         }
+    }
 
-        //TODO check if parent is asking for use function
+    private void DoPrimaryAction () {
+        Debug.Log ("Pressed primary button.");
+
+        string ItemClass = Item.PrimaryActionClass;
+        if (ItemClass == "SUMMON"){
+            Debug.Log("SUMMONIGNGGG");
+            SummonPrefab Summoner = this.gameObject.GetComponent<SummonPrefab>();
+            Debug.Log(Summoner);
+            Summoner.Summon();
+        }//TODO else if basic etc
+        else if (ItemClass == "POTION"){
+            if (CooldownTimer <= 0){
+                Potion DrinkPotion = this.gameObject.GetComponent<Potion>();
+                DrinkPotion.SetCharacter(ItemTransform.parent.gameObject.GetComponent<CharacterController> ());
+                DrinkPotion.Drink(Item.Damage);
+                CooldownTimer+=Item.Cooldown;
+            }
+        }
 
     }
 
+    private void DoSecondaryAction () {
+        Debug.Log ("Pressed Seconary button. TODO THIS");
+
+    }
+
+    //TODO check if parent is asking for use function
+
+    // ITEM CLASS
+    //Basic (act like sword and do attack)
+
+    //Summon (look for summonprefab and set allow to true once)
+
     private void Toss () {
         float maxForce = 5f;
-        Vector3 position = new Vector3 (Random.Range (-2f, maxForce), Random.Range(2f, maxForce), Random.Range(-2f, maxForce));
+        Vector3 position = new Vector3 (Random.Range (-2f, maxForce), Random.Range (2f, maxForce), Random.Range (-2f, maxForce));
         rb.AddForce (position);
 
     }
@@ -76,23 +122,26 @@ public class ItemController : MonoBehaviour {
     void OnCollisionEnter (Collision collision) {
         if (Item.IsPickup && !isPickedUp) {
             foreach (ContactPoint contact in collision.contacts) {
-                if (collision.gameObject.GetComponent<CharacterController> ().GetIsPlayer ()) {
-                    Debug.DrawRay (contact.point, contact.normal, Color.white);
+                CharacterController CollidingCharacter = collision.gameObject.GetComponent<CharacterController> ();
+                if (CollidingCharacter != null) {
+                    if (CollidingCharacter.GetIsPlayer ()) {
+                        Debug.DrawRay (contact.point, contact.normal, Color.white);
 
-                    Debug.Log ("I was hit by " + collision.gameObject.GetComponent<CharacterController> ().GetCharacter ().Name);
-                    isPickedUp = true;
-                    rb.useGravity = false;
-                    //TODO move relivant to character
-                    Physics.IgnoreCollision (collision.gameObject.GetComponent<Collider> (), GetComponent<Collider> ());
+                        Debug.Log ("I was hit by " + collision.gameObject.GetComponent<CharacterController> ().GetCharacter ().Name);
+                        isPickedUp = true;
+                        rb.useGravity = false;
+                        //TODO move relivant to character
+                        Physics.IgnoreCollision (collision.gameObject.GetComponent<Collider> (), GetComponent<Collider> ());
 
-                    ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
+                        ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
 
-                    ItemTransform.localPosition = new Vector3 (0, 1, 0);
-                    //holder = collision.gameObject;
-                    //collision.gameObject.GetComponent<CharacterController> ().Character.name;
-                    //if (collision.gameObject.GetComponent<CharacterController> ().GetIsInteracting ()){
-                    //    Debug.Log("I was picked up by player");
-                    //}
+                        ItemTransform.localPosition = new Vector3 (0, 1, 0);
+                        //holder = collision.gameObject;
+                        //collision.gameObject.GetComponent<CharacterController> ().Character.name;
+                        //if (collision.gameObject.GetComponent<CharacterController> ().GetIsInteracting ()){
+                        //    Debug.Log("I was picked up by player");
+                        //}
+                    }
                 }
             }
         } else if (isPickedUp) {
