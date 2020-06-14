@@ -23,8 +23,6 @@ public class CameraFollow : MonoBehaviour {
 	private float rotY = 0.0f;
 	private float rotX = 0.0f;
 
-
-
 	// Use this for initialization
 	void Start () {
 		Vector3 rot = transform.localRotation.eulerAngles;
@@ -33,7 +31,7 @@ public class CameraFollow : MonoBehaviour {
 		Cursor.lockState = CursorLockMode.Locked;
 		Cursor.visible = false;
 	}
-	
+
 	// Update is called once per frame
 	void Update () {
 
@@ -60,7 +58,7 @@ public class CameraFollow : MonoBehaviour {
 		CameraUpdater ();
 	}
 
-	void CameraUpdater() {
+	void CameraUpdater () {
 		// set the target object to follow
 		Transform target = CameraFollowObj.transform;
 
