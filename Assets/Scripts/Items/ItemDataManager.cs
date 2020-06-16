@@ -4,6 +4,7 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Text;
+using System.Collections;
 
 public class ItemDataManager
 {
@@ -32,8 +33,7 @@ public class ItemDataManager
         this.ItemSaveFile = ItemSaveFile;
         this.ItemSaveFileFolder = ItemSaveFileFolder;
         //Debug.Log(this.ItemSaveFile);
-        FullSavePath = this.ItemSaveFileFolder + "\\" + this.ItemSaveFile;
-
+        FullSavePath = Path.Combine(this.ItemSaveFileFolder, this.ItemSaveFile);
 
     }
 

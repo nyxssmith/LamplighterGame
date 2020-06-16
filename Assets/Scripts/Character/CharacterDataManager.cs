@@ -4,6 +4,8 @@ using UnityEngine;
 using System;
 using System.IO;
 using System.Text;
+using System.Collections;
+
 
 public class CharacterDataManager
 {
@@ -32,8 +34,8 @@ public class CharacterDataManager
         this.CharacterSaveFile = CharacterSaveFile;
         this.CharacterSaveFileFolder = CharacterSaveFileFolder;
         //Debug.Log(this.CharacterSaveFile);
-        FullSavePath = this.CharacterSaveFileFolder + "\\" + this.CharacterSaveFile;
 
+	FullSavePath = Path.Combine(this.CharacterSaveFileFolder,this.CharacterSaveFile);
 
     }
 
