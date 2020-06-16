@@ -11,7 +11,7 @@ i load current player save file
 o save current player to save
 f to use use item (TODO)
 [,] to rewind/forard the daylight cycle
-scroll wheel to zoom in/out the camera
+scroll wheel  or , . to zoom in/out the camera
 
 walk into items to pick up / hold
 

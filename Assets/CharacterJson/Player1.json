@@ -2,7 +2,7 @@
     "Name": "Player1",
     "CurrentHealth": 10.0,
     "MaxHealth": 10.0,
-    "JumpHeight": 9.0,
+    "JumpHeight": 15.0,
     "CurrentStamina": 1000.0,
     "MaxStamina": 1000.0,
     "StaminaBonusSpeed": 4.0,
