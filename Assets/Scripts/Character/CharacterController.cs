@@ -9,9 +9,9 @@ public class CharacterController : MonoBehaviour
     public bool isPlayer = false;
 
     //Objects and vars not loaded from save file
-    public Transform CharacterTransform;
+    private Transform CharacterTransform;
     private Camera cam;
-    public Rigidbody rb;
+    private Rigidbody rb;
     private Physics physics;
 
     [SerializeField] GameObject ManaUI;
@@ -28,17 +28,23 @@ public class CharacterController : MonoBehaviour
     // variables that are used for interacting with world but dont matter for save
     private bool IsDroppingItem = false;
     private bool IsMoving = false;
-    public bool IsGrounded = true;
+    private bool IsGrounded = true;
 
     // Targeting and interacting
     private GameObject FollowTarget;
     private GameObject CombatTarget;
 
 
+    // animation parts and locations
     public GameObject AnimationTarget;// TODO point this at self / this.
     private Animator CharacterAnimator;
 
     public GameObject Hand;
+
+    //TODO implement this with items
+    public GameObject Back;
+    public GameObject Belt;
+
 
 
     private string CurrentAnimationState = "Idle01";
@@ -49,7 +55,7 @@ public class CharacterController : MonoBehaviour
     private void Awake()
     {
 
-        //rb = gameObject.GetComponent<Rigidbody>();
+        rb = gameObject.GetComponent<Rigidbody>();
         CharacterTransform = gameObject.GetComponent<Transform>();
 
 
@@ -146,13 +152,18 @@ public class CharacterController : MonoBehaviour
         if ((IsGrounded == true) && (Input.GetButton("Jump")))
         {
             CurrentAnimationState = "Jump";
-
+            Debug.Log("Juumping");
         }
         else if (!IsGrounded && LastAnimationState == "MidAir")
         {
             CurrentAnimationState = "MidAir";
+            Debug.Log("airing");
         }
-        else */if (Input.GetKey(KeyCode.LeftShift) && Character.CurrentStamina > 10)
+        else */
+        if (!IsGrounded){
+            CurrentAnimationState = "MidAir";
+        }
+        else if (Input.GetKey(KeyCode.LeftShift) && Character.CurrentStamina > 10)
         {
             if (Input.GetKey("w"))
             {
@@ -329,21 +340,35 @@ public class CharacterController : MonoBehaviour
         //Jumping
         float DisstanceToTheGround = GetComponent<Collider>().bounds.extents.y;
 
-        IsGrounded = Physics.Raycast(transform.position, Vector3.up, DisstanceToTheGround + 0.1f);
+        //IsGrounded = Physics.Raycast(CharacterTransform.position, Vector3.up, DisstanceToTheGround + 0.1f);
 
         if ((IsGrounded == true) && (Input.GetButton("Jump"))) //if canjump boolean is true and if the player press the button jump , the player can jump.
         {
-            Debug.Log("Jumping!");
-            
-            //CharacterTransform.Translate(Vector3.up * 260 * Time.deltaTime, Space.World);
-            
+            CurrentAnimationState = "Jump";
 
             Vector3 up = new Vector3(0f, Character.JumpHeight, 0.0f); // script for jumping
-                                                                        //rb.AddForce (up * upper);
+                                                                      //rb.AddForce (up * upper);
             rb.AddForce(up * Character.JumpHeight);
-            
+
         }
 
+    }
+
+
+    void OnCollisionExit(Collision hit)
+    {
+        if (hit.gameObject.tag == "Ground")
+        {
+            IsGrounded = false;
+        }
+    }
+
+    void OnCollisionEnter(Collision hit)
+    {
+        if (hit.gameObject.tag == "Ground")
+        {
+            IsGrounded = true;
+        }
     }
 
     // Targeting and interacting
