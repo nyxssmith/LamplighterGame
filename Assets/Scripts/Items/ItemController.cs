@@ -28,6 +28,8 @@ public class ItemController : MonoBehaviour {
     private bool isPickedUp = false;
     private float CooldownTimer = 0f;
 
+    private GameObject HoldingCharacter;
+
     //When character comes online, set vars needed for init
     private void Awake () {
         //cam = Camera.main;
@@ -48,19 +50,22 @@ public class ItemController : MonoBehaviour {
     //TODO make update on frameupdate
     private void Update () {
         // ask parent if dropped
-        if (ItemTransform.parent != null) {
-            if (ItemTransform.parent.gameObject.GetComponent<CharacterController> ().GetIsDroppingItem ()) {
+        if (HoldingCharacter != null) {
+            if (HoldingCharacter.GetComponent<CharacterController> ().GetIsDroppingItem ()) {
                 Debug.Log ("parent id dropping me");
-                Physics.IgnoreCollision (ItemTransform.parent.gameObject.GetComponent<Collider> (), GetComponent<Collider> (), false);
+                
+                ItemTransform.localPosition = new Vector3 (Random.Range (-0.25f, 0.25f), Random.Range (0f, 0.5f), Random.Range (-0.25f, 0.25f));
 
-                ItemTransform.parent = null;
+                Physics.IgnoreCollision (HoldingCharacter.GetComponent<Collider> (), GetComponent<Collider> (), false);
+
+                HoldingCharacter = null;
                 isPickedUp = false;
                 rb.useGravity = true;
                 Toss (); // toss the item
             } else {
                 //Keey the item above the player / at location
                 // TODO have it check which slot its held in
-                ItemTransform.localPosition = new Vector3 (0, 1, 0);
+                ItemTransform.localPosition = new Vector3 (0, 0, 0);
 
                 //cooldown timer if needed
                 if (CooldownTimer > 0){
@@ -92,7 +97,7 @@ public class ItemController : MonoBehaviour {
         else if (ItemClass == "POTION"){
             if (CooldownTimer <= 0){
                 Potion DrinkPotion = this.gameObject.GetComponent<Potion>();
-                DrinkPotion.SetCharacter(ItemTransform.parent.gameObject.GetComponent<CharacterController> ());
+                DrinkPotion.SetCharacter(HoldingCharacter.GetComponent<CharacterController> ());
                 DrinkPotion.Drink(Item.Damage);
                 CooldownTimer+=Item.Cooldown;
             }
@@ -133,9 +138,11 @@ public class ItemController : MonoBehaviour {
                         //TODO move relivant to character
                         Physics.IgnoreCollision (collision.gameObject.GetComponent<Collider> (), GetComponent<Collider> ());
 
-                        ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
+                        //ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
+                        HoldingCharacter = collision.gameObject;
+                        ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController> ().GetHandTransform ();
 
-                        ItemTransform.localPosition = new Vector3 (0, 1, 0);
+                        ItemTransform.localPosition = new Vector3 (0, 0, 0);
                         //holder = collision.gameObject;
                         //collision.gameObject.GetComponent<CharacterController> ().Character.name;
                         //if (collision.gameObject.GetComponent<CharacterController> ().GetIsInteracting ()){

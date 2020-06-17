@@ -21,10 +21,10 @@ public class CameraCollision : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
 
-		if (Input.GetAxis ("Mouse ScrollWheel") > 0f) // forward
+		if (Input.GetAxis ("Mouse ScrollWheel") > 0f || Input.GetKey(",")) // forward
 		{
 			maxDistance -= 0.1f;
-		} else if (Input.GetAxis ("Mouse ScrollWheel") < 0f) // backwards
+		} else if (Input.GetAxis ("Mouse ScrollWheel") < 0f  || Input.GetKey(".")) // backwards
 		{
 			if (maxDistance < maxDistanceLimit) {
 				maxDistance += 0.1f;
