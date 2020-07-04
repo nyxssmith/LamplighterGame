@@ -70,8 +70,7 @@ public class CharacterController : MonoBehaviour
         Character = CDM.Load();
         Debug.Log("Loaded data for " + Character.Name + " from " + CharacterSaveFile);
 
-
-            CharacterAnimator = AnimationTarget.GetComponent<Animator>();
+        CharacterAnimator = AnimationTarget.GetComponent<Animator>();
 
 
         if (isPlayer)
@@ -82,7 +81,6 @@ public class CharacterController : MonoBehaviour
             //TODO make it so all character can be animated later
             //TODO replace target with this
             CharacterAnimator = AnimationTarget.GetComponent<Animator>();
-
 
         }
     }
@@ -99,7 +97,6 @@ public class CharacterController : MonoBehaviour
             {
                 Character = CDM.Load();
             }
-
             if (Input.GetKeyDown("o"))
             {
                 CDM.Save(Character);
@@ -111,9 +108,7 @@ public class CharacterController : MonoBehaviour
             if (Input.GetKeyDown("tab"))
             {
                 Target();
-
             }
-
             if (Input.GetKey("q"))
             {
                 IsDroppingItem = true;
@@ -142,16 +137,16 @@ public class CharacterController : MonoBehaviour
         //if (isPlayer)
         //{
 
-            DoAnimationState();
-            if (LastAnimationState != CurrentAnimationState)
+        DoAnimationState();
+        if (LastAnimationState != CurrentAnimationState)
+        {
+            if (LastAnimationState == "MidAir" && IsGrounded)
             {
-                if (LastAnimationState == "MidAir" && IsGrounded)
-                {
-                    CurrentAnimationState = "Landing";
-                }
-                CharacterAnimator.Play(CurrentAnimationState, 0, 0);
-                LastAnimationState = CurrentAnimationState;
+                CurrentAnimationState = "Landing";
             }
+            CharacterAnimator.Play(CurrentAnimationState, 0, 0);
+            LastAnimationState = CurrentAnimationState;
+        }
         //}
     }
 
@@ -176,20 +171,22 @@ public class CharacterController : MonoBehaviour
         }
         else if (Input.GetKey(KeyCode.LeftShift) && Character.CurrentStamina > 10)
         {
-            if(isPlayer){
-            //TODO check state of character
-            if (Input.GetKey("w"))
+            if (isPlayer)
             {
-                CurrentAnimationState = "Running";
+                //TODO check state of character
+                if (Input.GetKey("w"))
+                {
+                    CurrentAnimationState = "Running";
 
+                }
+                else if (Input.GetKey("s"))
+                {
+                    CurrentAnimationState = "RunningBackwards";
+
+                }
             }
-            else if (Input.GetKey("s"))
+            else
             {
-                CurrentAnimationState = "RunningBackwards";
-
-            }
-            }
-            else{
                 //TODO
             }
 
@@ -219,6 +216,8 @@ public class CharacterController : MonoBehaviour
     private void DoHealthUI()
     {
         //TODO
+        //HealthUI.GetComponent<FillUI>().SetTo(Character.CurrentStamina / Character.MaxStamina);
+
     }
     private void DoStaminaUI()
     {
@@ -229,6 +228,8 @@ public class CharacterController : MonoBehaviour
     private void DoManaUI()
     {
         //TODO
+        //ManaUI.GetComponent<FillUI>().SetTo(Character.CurrentStamina / Character.MaxStamina);
+
     }
 
     // Movement and npc
@@ -237,11 +238,15 @@ public class CharacterController : MonoBehaviour
     {
         //TODO if follower
         // todo if enemy
-            // make sure if figting, also take control of is moving
+        // make sure if figting, also take control of is moving
         // TODO if enemy follower sees, target instead
         if (Character.IsFollowing)
         {
             FollowPlayer();
+        }
+        else
+        {
+            IsMoving = false;
         }
 
     }
@@ -259,12 +264,12 @@ public class CharacterController : MonoBehaviour
         var distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
         if (distance <= range2 && distance >= range)
         {
+            IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
                 Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
         }
         else if (distance <= range && distance > stop)
         {
-
             //move towards the player
             IsMoving = true;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
@@ -276,6 +281,10 @@ public class CharacterController : MonoBehaviour
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
                 Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+        }
+        else
+        {
+            IsMoving = false;
         }
 
     }
@@ -475,8 +484,10 @@ public class CharacterController : MonoBehaviour
             FollowTarget = WhoInteracted;
 
             //if was told to stop following, then also stop moving
-            if(Character.IsFollowing){
+            if (Character.IsFollowing)
+            {
                 IsMoving = false;
+                CurrentAnimationState = "Idle01";
             }
         }
     }
