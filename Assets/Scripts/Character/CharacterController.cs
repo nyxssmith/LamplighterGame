@@ -32,7 +32,13 @@ public class CharacterController : MonoBehaviour
 
     // Targeting and interacting
     private GameObject FollowTarget;
-    private GameObject CombatTarget;
+    private GameObject CombatTarget = null;
+
+    public GameObject TargetBeacon; // prefab of the target beacon
+
+    private bool hasTarget = false; //toggle if a target exists
+    private int rand; //random number used to isolate targets
+    private GameObject TargetBeaconObject = null; // the actual instance of the target beacon
 
 
     // animation parts and locations
@@ -63,6 +69,10 @@ public class CharacterController : MonoBehaviour
         CDM.Init(CharacterSaveFileFolder, CharacterSaveFile);
         Character = CDM.Load();
         Debug.Log("Loaded data for " + Character.Name + " from " + CharacterSaveFile);
+
+
+            CharacterAnimator = AnimationTarget.GetComponent<Animator>();
+
 
         if (isPlayer)
         {
@@ -129,8 +139,8 @@ public class CharacterController : MonoBehaviour
     private void Update()
     {
         //TODO rm this check so all charactes are animated
-        if (isPlayer)
-        {
+        //if (isPlayer)
+        //{
 
             DoAnimationState();
             if (LastAnimationState != CurrentAnimationState)
@@ -142,7 +152,7 @@ public class CharacterController : MonoBehaviour
                 CharacterAnimator.Play(CurrentAnimationState, 0, 0);
                 LastAnimationState = CurrentAnimationState;
             }
-        }
+        //}
     }
 
 
@@ -160,11 +170,14 @@ public class CharacterController : MonoBehaviour
             Debug.Log("airing");
         }
         else */
-        if (!IsGrounded){
+        if (!IsGrounded)
+        {
             CurrentAnimationState = "MidAir";
         }
         else if (Input.GetKey(KeyCode.LeftShift) && Character.CurrentStamina > 10)
         {
+            if(isPlayer){
+            //TODO check state of character
             if (Input.GetKey("w"))
             {
                 CurrentAnimationState = "Running";
@@ -174,6 +187,10 @@ public class CharacterController : MonoBehaviour
             {
                 CurrentAnimationState = "RunningBackwards";
 
+            }
+            }
+            else{
+                //TODO
             }
 
         }
@@ -220,6 +237,7 @@ public class CharacterController : MonoBehaviour
     {
         //TODO if follower
         // todo if enemy
+            // make sure if figting, also take control of is moving
         // TODO if enemy follower sees, target instead
         if (Character.IsFollowing)
         {
@@ -248,12 +266,14 @@ public class CharacterController : MonoBehaviour
         {
 
             //move towards the player
+            IsMoving = true;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
-                Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+            Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
             CharacterTransform.position += CharacterTransform.forward * Character.CurrentSpeed * Time.deltaTime;
         }
         else if (distance <= stop)
         {
+            IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
                 Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
         }
@@ -391,18 +411,53 @@ public class CharacterController : MonoBehaviour
             //    interactable.Interact ();
             //}
         }
+        else
+        {
+            if (CombatTarget != null)
+            {
+                CombatTarget.GetComponent<CharacterController>().DoInteractAction(this.gameObject);
+            }
+        }
     }
 
     private void Target()
     {
 
-        RaycastHit hit;
-        if (Physics.Raycast(CharacterTransform.position, CharacterTransform.forward, out hit, Character.TargetRange))
+        if (!hasTarget)// if doesnt have a target, find one
         {
-            Debug.Log(hit);
-            Debug.Log(hit.collider.gameObject);
-            hit.collider.gameObject.GetComponent<CharacterController>().DoTargetedAction();
+            rand = Random.Range(1, 254);
 
+            float radius = Character.TargetRange / 2.0f;
+            Vector3 center = CharacterTransform.position + (CharacterTransform.forward * Character.TargetRange / 2.0f);
+            Collider[] hitColliders = Physics.OverlapSphere(center, radius);
+            int i = 0;
+            Vector3 SummonPositon = center;
+
+            while (i < hitColliders.Length)
+            {
+                if (hitColliders[i].gameObject.GetComponent<CharacterController>() != null)
+                {
+                    Transform TargetTransform = hitColliders[i].gameObject.GetComponent<Transform>();
+                    int TargetRand = hitColliders[i].gameObject.GetComponent<CharacterController>().GetRand();
+                    if (TargetRand != rand)
+                    {
+                        SummonPositon = TargetTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
+                        TargetBeaconObject = Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
+                        hasTarget = true;
+                        CombatTarget = hitColliders[i].gameObject;
+                        //make the target beacon a child of its taret
+                        TargetBeaconObject.gameObject.GetComponent<Transform>().parent = CombatTarget.GetComponent<Transform>();
+                        break;
+                    }
+                }
+                i++;
+            }
+        }
+        else// if does have target, de-target
+        {
+            Destroy(TargetBeaconObject);
+            CombatTarget = null;
+            hasTarget = false;
         }
 
     }
@@ -418,17 +473,20 @@ public class CharacterController : MonoBehaviour
             Debug.Log("im a follwer who was interacted with");
             Character.IsFollowing = !Character.IsFollowing;
             FollowTarget = WhoInteracted;
+
+            //if was told to stop following, then also stop moving
+            if(Character.IsFollowing){
+                IsMoving = false;
+            }
         }
     }
 
-    private void DoTargetedAction()
+    private void DoTargetedAction()// character will make a beacon above their head
     {
-        Debug.Log("I was targetd");
-    }
 
-    // moves the charactesr pointer to their target to above the target
-    private void MoveTargetPointer()
-    {
+        Debug.Log("I was targetd");
+
+        //TODO reacte to being targeted etc
 
     }
 
@@ -452,6 +510,12 @@ public class CharacterController : MonoBehaviour
     public Transform GetHandTransform()
     {
         return Hand.transform;
+    }
+
+
+    public int GetRand()
+    {
+        return rand;
     }
 
     public bool GetIsDroppingItem()

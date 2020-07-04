@@ -61,6 +61,8 @@ public class ItemController : MonoBehaviour {
                 HoldingCharacter = null;
                 isPickedUp = false;
                 rb.useGravity = true;
+                rb.isKinematic = false;
+
                 Toss (); // toss the item
             } else {
                 //Keey the item above the player / at location
@@ -135,6 +137,7 @@ public class ItemController : MonoBehaviour {
                         Debug.Log ("I was hit by " + collision.gameObject.GetComponent<CharacterController> ().GetCharacter ().Name);
                         isPickedUp = true;
                         rb.useGravity = false;
+                        rb.isKinematic = true;
                         //TODO move relivant to character
                         Physics.IgnoreCollision (collision.gameObject.GetComponent<Collider> (), GetComponent<Collider> ());
 

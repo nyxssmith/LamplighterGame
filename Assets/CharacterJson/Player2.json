@@ -1,5 +1,5 @@
 {
-    "Name": "Player1",
+    "Name": "Player2",
     "CurrentHealth": 10.0,
     "MaxHealth": 10.0,
     "JumpHeight": 13.0,
@@ -11,7 +11,7 @@
     "CurrentSpeed": 2.5,
     "BaseMovementSpeed": 2.5,
     "Reach": 2,
-    "TargetRange": 5.0,
+    "TargetRange": 15.0,
     "IsFollower": true,
     "IsFollowing": false
 }
