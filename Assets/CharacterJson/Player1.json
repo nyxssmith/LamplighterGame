@@ -1,7 +1,7 @@
 {
     "Name": "Player1",
-    "CurrentHealth": 10.0,
-    "MaxHealth": 10.0,
+    "CurrentHealth": 100.0,
+    "MaxHealth": 100.0,
     "CurrentMana": 100.0,
     "MaxMana": 100.0,
     "JumpHeight": 13.0,

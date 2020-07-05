@@ -254,7 +254,9 @@ public class CharacterController : MonoBehaviour
             TargetName.GetComponent<Text>().text = TargetCharacter.Name;
             if (!TargetCharacter.IsFollower)
             {
-                TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth);
+                //TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth);
+                //float targetsHealth = CombatTarget.GetComponent<CharacterController>().GetCurrentHealth();
+                TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth/ TargetCharacter.MaxHealth);
             }
 
         }
@@ -610,5 +612,14 @@ public class CharacterController : MonoBehaviour
         Character.CurrentStamina += value;
     }
 
+    public void AddValueToHealth(float value)
+    {
+        Debug.Log(Character.Name + "    "+Character.CurrentHealth+"    "+ (Character.CurrentHealth + value) );
+        Character.CurrentHealth += value;
+    }
+
+    public float GetCurrentHealth(){
+        return this.Character.CurrentHealth;
+    }
 
 }

@@ -1,6 +1,6 @@
 {
-    "Name":"Torch",
-    "Damage":0,
+    "Name":"Staff of Summon Torch",
+    "Damage":10,
     "IsPickup":true,
     "PrimaryActionClass":"SUMMON",
     "SecondartActionClass":"BASIC",

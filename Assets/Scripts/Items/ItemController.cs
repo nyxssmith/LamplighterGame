@@ -142,6 +142,9 @@ public class ItemController : MonoBehaviour
         }
     }
 
+
+    //have these do the item efect and trigger the holders animation 
+
     private void DoPrimaryAction()
     {
         Debug.Log("Pressed primary button.");
@@ -210,7 +213,7 @@ public class ItemController : MonoBehaviour
                             ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
 
                             ItemTransform.localPosition = new Vector3(0, 0, 0);
-                            
+
                             heldLocation = "Hand";
                             //holder = collision.gameObject;
                             //collision.gameObject.GetComponent<CharacterController> ().Character.name;
@@ -224,7 +227,16 @@ public class ItemController : MonoBehaviour
         }
         else if (isPickedUp)
         {
-            Debug.Log("Collision after picked up");
+            if (heldLocation == "Hand")// if item in hand, do dmg on impact
+            {
+                Debug.Log("Collision after picked up");
+                CharacterController CollidingCharacter = collision.gameObject.GetComponent<CharacterController>();
+                if (CollidingCharacter != null)
+                {
+                    //TODO remove this add set this to action part
+                    CollidingCharacter.AddValueToHealth(-1 * Item.Damage);
+                }
+            }
         }
     }
 
