@@ -24,8 +24,7 @@ public class DaylightCycle : MonoBehaviour {
         }
         if (Input.GetKey ("]")) {
             Debug.Log ("more time");
-                        CenterOfRotation.Rotate (TargetDegreeNext, 0.0f, 0.0f, Space.World);
-
+            CenterOfRotation.Rotate (TargetDegreeNext, 0.0f, 0.0f, Space.World);
             TargetDegreeNext += 0.001f;
 
         }

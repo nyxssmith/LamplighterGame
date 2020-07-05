@@ -2,6 +2,8 @@
     "Name": "Player1",
     "CurrentHealth": 10.0,
     "MaxHealth": 10.0,
+    "CurrentMana": 100.0,
+    "MaxMana": 100.0,
     "JumpHeight": 13.0,
     "CurrentStamina": 1000.0,
     "MaxStamina": 1000.0,

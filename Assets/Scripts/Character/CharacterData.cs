@@ -4,6 +4,9 @@ public class CharacterData
     public string Name;
     public float CurrentHealth;
     public float MaxHealth;
+
+    public float CurrentMana;
+    public float MaxMana;
     public float JumpHeight;
     public float CurrentStamina;
     public float MaxStamina;

@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class CharacterController : MonoBehaviour
 {
@@ -17,6 +18,9 @@ public class CharacterController : MonoBehaviour
     [SerializeField] GameObject ManaUI;
     [SerializeField] GameObject HealthUI;
     [SerializeField] GameObject StaminaUI;
+    [SerializeField] GameObject TargetUI;//healthbar for target
+    [SerializeField] GameObject TargetName;//name of target
+
 
     //Character save manager
     public string CharacterSaveFileFolder = "Assets/CharacterJson";
@@ -26,13 +30,15 @@ public class CharacterController : MonoBehaviour
     private CharacterData Character = new CharacterData();
 
     // variables that are used for interacting with world but dont matter for save
-    private bool IsDroppingItem = false;
+    private string ItemStatus = "";//action items status, for swapping and dropping
+    private bool HasItemInHand = false;
     private bool IsMoving = false;
     private bool IsGrounded = true;
 
     // Targeting and interacting
     private GameObject FollowTarget;
     private GameObject CombatTarget = null;
+    private CharacterData TargetCharacter = null;//save info on target character
 
     public GameObject TargetBeacon; // prefab of the target beacon
 
@@ -111,12 +117,22 @@ public class CharacterController : MonoBehaviour
             }
             if (Input.GetKey("q"))
             {
-                IsDroppingItem = true;
+                ItemStatus = "Dropping";//applies to habd item
+            }
+            else if (Input.GetKeyDown("f"))
+            {
+                ItemStatus = "SwapHandBack";
+            }
+            else if (Input.GetKeyDown("g"))
+            {
+                ItemStatus = "SwapHandBelt";
             }
             else
             {
-                IsDroppingItem = false;
+                ItemStatus = "";
             }
+            CheckIfItemInHand();
+
 
             /*
             if (Input.GetKeyDown("g")) {
@@ -211,25 +227,42 @@ public class CharacterController : MonoBehaviour
         DoHealthUI();
         DoStaminaUI();
         DoManaUI();
+        DoTargetHealtBarUI();
     }
 
     private void DoHealthUI()
     {
-        //TODO
-        //HealthUI.GetComponent<FillUI>().SetTo(Character.CurrentStamina / Character.MaxStamina);
+        HealthUI.GetComponent<FillUI>().SetTo(Character.CurrentHealth / Character.MaxHealth);
 
     }
     private void DoStaminaUI()
     {
         StaminaUI.GetComponent<FillUI>().SetTo(Character.CurrentStamina / Character.MaxStamina);
-        //TODO
     }
 
     private void DoManaUI()
     {
-        //TODO
-        //ManaUI.GetComponent<FillUI>().SetTo(Character.CurrentStamina / Character.MaxStamina);
+        ManaUI.GetComponent<FillUI>().SetTo(Character.CurrentMana / Character.MaxMana);
 
+    }
+
+    private void DoTargetHealtBarUI()
+    {
+        if (hasTarget)
+        //check if freindly, if so show only name, else show health bar
+        {
+            TargetName.GetComponent<Text>().text = TargetCharacter.Name;
+            if (!TargetCharacter.IsFollower)
+            {
+                TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth);
+            }
+
+        }
+        else// if no target, hide UI
+        {
+            TargetUI.GetComponent<FillUI>().SetTo(0.0f);
+            TargetName.GetComponent<Text>().text = "";
+        }
     }
 
     // Movement and npc
@@ -454,6 +487,7 @@ public class CharacterController : MonoBehaviour
                         TargetBeaconObject = Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
                         hasTarget = true;
                         CombatTarget = hitColliders[i].gameObject;
+                        TargetCharacter = hitColliders[i].gameObject.GetComponent<CharacterController>().GetCharacter();
                         //make the target beacon a child of its taret
                         TargetBeaconObject.gameObject.GetComponent<Transform>().parent = CombatTarget.GetComponent<Transform>();
                         break;
@@ -466,6 +500,7 @@ public class CharacterController : MonoBehaviour
         {
             Destroy(TargetBeaconObject);
             CombatTarget = null;
+            TargetCharacter = null;
             hasTarget = false;
         }
 
@@ -501,6 +536,24 @@ public class CharacterController : MonoBehaviour
 
     }
 
+
+    private void CheckIfItemInHand()//updates the hand var
+    {
+        Transform handTransform = Hand.GetComponent<Transform>();
+        int i = 0;
+        foreach (Transform child in handTransform)
+        {
+            //Debug.Log("is child of hand" + child);
+            i+=1;
+        }
+        if(i>=1){
+            HasItemInHand = true;
+        }
+        else{
+            HasItemInHand = false;
+        }
+    }
+
     // Getters and setters for interactions
 
     public CharacterData GetCharacter()
@@ -523,16 +576,32 @@ public class CharacterController : MonoBehaviour
         return Hand.transform;
     }
 
+    public Transform GetBackTransform()
+    {
+        return Back.transform;
+    }
+
+    public Transform GetBeltTransform()
+    {
+        return Belt.transform;
+    }
 
     public int GetRand()
     {
         return rand;
     }
 
-    public bool GetIsDroppingItem()
+    public string GetItemStatus()
     {
-        return this.IsDroppingItem;
+        return this.ItemStatus;
     }
+
+
+    public bool GetHasItemInHand()
+    {
+        return this.HasItemInHand;
+    }
+
 
     // TODO add value to health etc
     // add negative value to reduce

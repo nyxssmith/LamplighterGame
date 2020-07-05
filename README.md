@@ -14,5 +14,7 @@ f to use use item (TODO)
 scroll wheel  or , . to zoom in/out the camera
 
 walk into items to pick up / hold
+f to swap hand and back
+g to swap hand and belt
 
 left and right click to use items primary and secondary functions

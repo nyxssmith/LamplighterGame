@@ -12,6 +12,6 @@
     "BaseMovementSpeed": 2.5,
     "Reach": 2,
     "TargetRange": 15.0,
-    "IsFollower": true,
+    "IsFollower": false,
     "IsFollowing": false
 }
