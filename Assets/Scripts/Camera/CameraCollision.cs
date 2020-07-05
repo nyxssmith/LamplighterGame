@@ -7,6 +7,8 @@ public class CameraCollision : MonoBehaviour {
 	public float minDistance = 1.0f;
 	public float maxDistance = 4.0f;
 	public float maxDistanceLimit = 10.0f;
+
+	public float minDistanceLimit = 1.0f;
 	public float smooth = 10.0f;
 	Vector3 dollyDir;
 	public Vector3 dollyDirAdjusted;
@@ -23,7 +25,10 @@ public class CameraCollision : MonoBehaviour {
 
 		if (Input.GetAxis ("Mouse ScrollWheel") > 0f || Input.GetKey(",")) // forward
 		{
+			if(maxDistance >= minDistanceLimit){
 			maxDistance -= 0.1f;
+
+			}
 		} else if (Input.GetAxis ("Mouse ScrollWheel") < 0f  || Input.GetKey(".")) // backwards
 		{
 			if (maxDistance < maxDistanceLimit) {

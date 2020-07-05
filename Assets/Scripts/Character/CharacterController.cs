@@ -44,6 +44,8 @@ public class CharacterController : MonoBehaviour
 
     private bool hasTarget = false; //toggle if a target exists
     private int rand; //random number used to isolate targets
+
+    public float HealthDamageCoolDown = 0.0f;
     private GameObject TargetBeaconObject = null; // the actual instance of the target beacon
 
 
@@ -163,6 +165,12 @@ public class CharacterController : MonoBehaviour
             CharacterAnimator.Play(CurrentAnimationState, 0, 0);
             LastAnimationState = CurrentAnimationState;
         }
+
+        // if the health cooldown was up, lower it
+        if (HealthDamageCoolDown >= 0.0f)
+        {
+            HealthDamageCoolDown -= Time.deltaTime;
+        }
         //}
     }
 
@@ -256,7 +264,7 @@ public class CharacterController : MonoBehaviour
             {
                 //TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth);
                 //float targetsHealth = CombatTarget.GetComponent<CharacterController>().GetCurrentHealth();
-                TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth/ TargetCharacter.MaxHealth);
+                TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth / TargetCharacter.MaxHealth);
             }
 
         }
@@ -546,12 +554,14 @@ public class CharacterController : MonoBehaviour
         foreach (Transform child in handTransform)
         {
             //Debug.Log("is child of hand" + child);
-            i+=1;
+            i += 1;
         }
-        if(i>=1){
+        if (i >= 1)
+        {
             HasItemInHand = true;
         }
-        else{
+        else
+        {
             HasItemInHand = false;
         }
     }
@@ -614,11 +624,21 @@ public class CharacterController : MonoBehaviour
 
     public void AddValueToHealth(float value)
     {
-        Debug.Log(Character.Name + "    "+Character.CurrentHealth+"    "+ (Character.CurrentHealth + value) );
-        Character.CurrentHealth += value;
+        if (!(HealthDamageCoolDown >= 0.0f) && (value < 0))
+        {
+            Character.CurrentHealth += value;
+            HealthDamageCoolDown = 1.0f;
+        }
+        else
+        {
+            Character.CurrentHealth += value;
+        }
+
+
     }
 
-    public float GetCurrentHealth(){
+    public float GetCurrentHealth()
+    {
         return this.Character.CurrentHealth;
     }
 
