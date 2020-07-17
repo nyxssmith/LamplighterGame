@@ -64,6 +64,8 @@ public class CharacterController : MonoBehaviour
     private string CurrentAnimationState = "Idle01";
     private string LastAnimationState = "Idle01";
 
+    private float AnimationOverrideTimer = 0.0f;
+
 
     //When character comes online, set vars needed for init
     private void Awake()
@@ -177,19 +179,13 @@ public class CharacterController : MonoBehaviour
 
     private void DoAnimationState()
     {
-        /*
-        if ((IsGrounded == true) && (Input.GetButton("Jump")))
-        {
-            CurrentAnimationState = "Jump";
-            Debug.Log("Juumping");
+        //TODO redo this all to be based on current status / moving not keys
+        
+        if (AnimationOverrideTimer > 0.0f){
+            Debug.Log("should be getting state from item");
+            AnimationOverrideTimer -= Time.deltaTime;
         }
-        else if (!IsGrounded && LastAnimationState == "MidAir")
-        {
-            CurrentAnimationState = "MidAir";
-            Debug.Log("airing");
-        }
-        else */
-        if (!IsGrounded)
+        else if (!IsGrounded)
         {
             CurrentAnimationState = "MidAir";
         }
@@ -640,6 +636,13 @@ public class CharacterController : MonoBehaviour
     public float GetCurrentHealth()
     {
         return this.Character.CurrentHealth;
+    }
+
+
+    public void SetAnimation(string animation,float overrideDuration)
+    {
+        this.CurrentAnimationState = animation;
+        this.AnimationOverrideTimer = overrideDuration;
     }
 
 }

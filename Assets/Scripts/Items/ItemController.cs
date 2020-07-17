@@ -167,13 +167,29 @@ public class ItemController : MonoBehaviour
                 CooldownTimer += Item.Cooldown;
             }
         }
+        else
+        {
+            Debug.Log("doing basic attack 01");
+            float animationDuration = 2.0f;
+
+            AnimateHoldingCharacter("BasicAttack01", animationDuration);
+        }
 
     }
 
     private void DoSecondaryAction()
     {
         Debug.Log("Pressed Seconary button. TODO THIS");
+        Debug.Log("doing basic attack 02");
+        float animationDuration = 2.0f;
 
+        AnimateHoldingCharacter("MidAir", animationDuration);
+    }
+
+    private void AnimateHoldingCharacter(string animation, float overrideDuration)
+    {
+        CharacterController controller = HoldingCharacter.GetComponent<CharacterController>();
+        controller.SetAnimation(animation, overrideDuration);
     }
 
     //TODO check if parent is asking for use function
