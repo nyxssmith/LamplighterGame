@@ -43,9 +43,12 @@ public class CharacterController : MonoBehaviour
     public GameObject TargetBeacon; // prefab of the target beacon
 
     private bool hasTarget = false; //toggle if a target exists
+    public float TargetCoolDown = 0.0f; //cooldown on targeting
+
     private int rand; //random number used to isolate targets
 
     public float HealthDamageCoolDown = 0.0f;
+
     private GameObject TargetBeaconObject = null; // the actual instance of the target beacon
 
 
@@ -61,8 +64,8 @@ public class CharacterController : MonoBehaviour
 
 
 
-    private string CurrentAnimationState = "Idle01";
-    private string LastAnimationState = "Idle01";
+    private string CurrentAnimationState = "";
+    private string LastAnimationState = "";
 
     private float AnimationOverrideTimer = 0.0f;
 
@@ -88,10 +91,6 @@ public class CharacterController : MonoBehaviour
             cam = Camera.main;
             this.tag = "player";
 
-            //TODO make it so all character can be animated later
-            //TODO replace target with this
-            CharacterAnimator = AnimationTarget.GetComponent<Animator>();
-
         }
     }
 
@@ -101,6 +100,7 @@ public class CharacterController : MonoBehaviour
         {
             PlayerMove();
             DoUI();
+            //controls
 
             //Debug save and load functions
             if (Input.GetKeyDown("i"))
@@ -160,9 +160,9 @@ public class CharacterController : MonoBehaviour
         DoAnimationState();
         if (LastAnimationState != CurrentAnimationState)
         {
-            if (LastAnimationState == "MidAir" && IsGrounded)
+            if (LastAnimationState == Character.midair_animation && IsGrounded)
             {
-                CurrentAnimationState = "Landing";
+                CurrentAnimationState = Character.landing_animation;
             }
             CharacterAnimator.Play(CurrentAnimationState, 0, 0);
             LastAnimationState = CurrentAnimationState;
@@ -180,14 +180,15 @@ public class CharacterController : MonoBehaviour
     private void DoAnimationState()
     {
         //TODO redo this all to be based on current status / moving not keys
-        
-        if (AnimationOverrideTimer > 0.0f){
+
+        if (AnimationOverrideTimer > 0.0f)
+        {
             Debug.Log("should be getting state from item");
             AnimationOverrideTimer -= Time.deltaTime;
         }
         else if (!IsGrounded)
         {
-            CurrentAnimationState = "MidAir";
+            CurrentAnimationState = Character.midair_animation;
         }
         else if (Input.GetKey(KeyCode.LeftShift) && Character.CurrentStamina > 10)
         {
@@ -196,12 +197,12 @@ public class CharacterController : MonoBehaviour
                 //TODO check state of character
                 if (Input.GetKey("w"))
                 {
-                    CurrentAnimationState = "Running";
+                    CurrentAnimationState = Character.running_forward_animation;
 
                 }
                 else if (Input.GetKey("s"))
                 {
-                    CurrentAnimationState = "RunningBackwards";
+                    CurrentAnimationState = Character.running_backward_animation;
 
                 }
             }
@@ -215,11 +216,24 @@ public class CharacterController : MonoBehaviour
         {
             if (IsMoving)
             {
-                CurrentAnimationState = "Walking";
+                if (Input.GetKey("w"))
+                {
+                    CurrentAnimationState = Character.walking_forward_animation;
+                }
+                else if (Input.GetKey("s"))
+                {
+                    CurrentAnimationState = Character.walking_backward_animation;
+
+                }
+                else
+                {//TODO do a walking rightleft etc
+                    CurrentAnimationState = Character.walking_forward_animation;
+
+                }
             }
             else
             {
-                CurrentAnimationState = "Idle01";
+                CurrentAnimationState = Character.idle_animation;
             }
 
 
@@ -412,7 +426,7 @@ public class CharacterController : MonoBehaviour
 
         if ((IsGrounded == true) && (Input.GetButton("Jump"))) //if canjump boolean is true and if the player press the button jump , the player can jump.
         {
-            CurrentAnimationState = "Jump";
+            CurrentAnimationState = Character.jump_animation;
 
             Vector3 up = new Vector3(0f, Character.JumpHeight, 0.0f); // script for jumping
                                                                       //rb.AddForce (up * upper);
@@ -471,45 +485,52 @@ public class CharacterController : MonoBehaviour
     private void Target()
     {
 
-        if (!hasTarget)// if doesnt have a target, find one
+        if (TargetCoolDown >= 0.0f)
         {
-            rand = Random.Range(1, 254);
-
-            float radius = Character.TargetRange / 2.0f;
-            Vector3 center = CharacterTransform.position + (CharacterTransform.forward * Character.TargetRange / 2.0f);
-            Collider[] hitColliders = Physics.OverlapSphere(center, radius);
-            int i = 0;
-            Vector3 SummonPositon = center;
-
-            while (i < hitColliders.Length)
+            TargetCoolDown -= Time.deltaTime;
+        }
+        else
+        {
+            if (!hasTarget)// if doesnt have a target, find one
             {
-                if (hitColliders[i].gameObject.GetComponent<CharacterController>() != null)
-                {
-                    Transform TargetTransform = hitColliders[i].gameObject.GetComponent<Transform>();
-                    int TargetRand = hitColliders[i].gameObject.GetComponent<CharacterController>().GetRand();
-                    if (TargetRand != rand)
-                    {
-                        SummonPositon = TargetTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
-                        TargetBeaconObject = Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
-                        hasTarget = true;
-                        CombatTarget = hitColliders[i].gameObject;
-                        TargetCharacter = hitColliders[i].gameObject.GetComponent<CharacterController>().GetCharacter();
-                        //make the target beacon a child of its taret
-                        TargetBeaconObject.gameObject.GetComponent<Transform>().parent = CombatTarget.GetComponent<Transform>();
-                        break;
-                    }
-                }
-                i++;
-            }
-        }
-        else// if does have target, de-target
-        {
-            Destroy(TargetBeaconObject);
-            CombatTarget = null;
-            TargetCharacter = null;
-            hasTarget = false;
-        }
+                rand = Random.Range(1, 254);
 
+                float radius = Character.TargetRange / 2.0f;
+                Vector3 center = CharacterTransform.position + (CharacterTransform.forward * Character.TargetRange / 2.0f);
+                Collider[] hitColliders = Physics.OverlapSphere(center, radius);
+                int i = 0;
+                Vector3 SummonPositon = center;
+
+                while (i < hitColliders.Length)
+                {
+                    if (hitColliders[i].gameObject.GetComponent<CharacterController>() != null)
+                    {
+                        Transform TargetTransform = hitColliders[i].gameObject.GetComponent<Transform>();
+                        int TargetRand = hitColliders[i].gameObject.GetComponent<CharacterController>().GetRand();
+                        if (TargetRand != rand)
+                        {
+                            SummonPositon = TargetTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
+                            TargetBeaconObject = Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
+                            hasTarget = true;
+                            CombatTarget = hitColliders[i].gameObject;
+                            TargetCharacter = hitColliders[i].gameObject.GetComponent<CharacterController>().GetCharacter();
+                            //make the target beacon a child of its taret
+                            TargetBeaconObject.gameObject.GetComponent<Transform>().parent = CombatTarget.GetComponent<Transform>();
+                            break;
+                        }
+                    }
+                    i++;
+                }
+            }
+            else// if does have target, de-target
+            {
+                Destroy(TargetBeaconObject);
+                CombatTarget = null;
+                TargetCharacter = null;
+                hasTarget = false;
+            }
+            TargetCoolDown = 0.05f;
+        }
     }
 
     private void DoInteractAction(GameObject WhoInteracted)
@@ -528,7 +549,7 @@ public class CharacterController : MonoBehaviour
             if (Character.IsFollowing)
             {
                 IsMoving = false;
-                CurrentAnimationState = "Idle01";
+                CurrentAnimationState = Character.idle_animation;
             }
         }
     }
@@ -639,7 +660,7 @@ public class CharacterController : MonoBehaviour
     }
 
 
-    public void SetAnimation(string animation,float overrideDuration)
+    public void SetAnimation(string animation, float overrideDuration)
     {
         this.CurrentAnimationState = animation;
         this.AnimationOverrideTimer = overrideDuration;

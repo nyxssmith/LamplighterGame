@@ -4,5 +4,5 @@
     "IsPickup":true,
     "PrimaryActionClass":"BASIC",
     "SecondartActionClass":"NONE",
-    "Cooldown":0
+    "Cooldown":2
 }

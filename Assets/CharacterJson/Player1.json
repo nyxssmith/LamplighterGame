@@ -14,6 +14,14 @@
     "BaseMovementSpeed": 2.5,
     "Reach": 2,
     "TargetRange": 5.0,
-    "IsFollower": true,
-    "IsFollowing": false
+    "IsFollower": false,
+    "IsFollowing": false,
+    "idle_animation": "Idle01",
+    "walking_forward_animation": "Walking",
+    "running_forward_animation": "Running",
+    "walking_backward_animation": "m_walking_backwards",
+    "running_backward_animation": "m_running_backwards",
+    "landing_animation": "Landing",
+    "midair_animation": "MidAir",
+    "jump_animation": "Jump"
 }

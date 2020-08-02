@@ -170,9 +170,9 @@ public class ItemController : MonoBehaviour
         else
         {
             Debug.Log("doing basic attack 01");
-            float animationDuration = 2.0f;
+            float animationDuration = 1.0f;
 
-            AnimateHoldingCharacter("BasicAttack01", animationDuration);
+            AnimateHoldingCharacter("m_slash1", animationDuration);
         }
 
     }
@@ -181,9 +181,10 @@ public class ItemController : MonoBehaviour
     {
         Debug.Log("Pressed Seconary button. TODO THIS");
         Debug.Log("doing basic attack 02");
-        float animationDuration = 2.0f;
+        float animationDuration = 1.0f;
 
-        AnimateHoldingCharacter("MidAir", animationDuration);
+        AnimateHoldingCharacter("m_slash2", animationDuration);
+        
     }
 
     private void AnimateHoldingCharacter(string animation, float overrideDuration)

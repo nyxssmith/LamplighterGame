@@ -20,4 +20,15 @@ public class CharacterData
     public bool IsFollower;
     public bool IsFollowing;
 
+
+    public string idle_animation;
+    public string walking_forward_animation;
+    public string running_forward_animation;
+    public string walking_backward_animation;
+    public string running_backward_animation;
+    public string landing_animation;
+    public string midair_animation;
+    public string jump_animation;
+
+
 }
