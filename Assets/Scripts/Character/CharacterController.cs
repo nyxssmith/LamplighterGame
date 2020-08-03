@@ -173,6 +173,10 @@ public class CharacterController : MonoBehaviour
         {
             HealthDamageCoolDown -= Time.deltaTime;
         }
+
+        if(Character.CurrentHealth <= 0.0f){
+            Destroy(this.gameObject);
+        }
         //}
     }
 
