@@ -38,7 +38,7 @@ public class CharacterController : MonoBehaviour
     private bool IsGrounded = true;
 
     // Targeting and interacting
-    private GameObject FollowTarget;
+    private GameObject FollowTarget = null;
     private GameObject CombatTarget = null;
     private CharacterData TargetCharacter = null;//save info on target character
 
@@ -190,7 +190,7 @@ public class CharacterController : MonoBehaviour
 
         if (AnimationOverrideTimer > 0.0f)
         {
-            Debug.Log("should be getting state from item");
+            //Debug.Log("should be getting state from item");
             AnimationOverrideTimer -= Time.deltaTime;
         }
         else if (!IsGrounded && isPlayer)
@@ -325,8 +325,8 @@ public class CharacterController : MonoBehaviour
     {
 
         Transform TargetTransform = FollowTarget.GetComponent<Transform>();
-
-        float rotationSpeed = 6f; //speed of turning
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        float rotationSpeed = 30f; //speed of turning
         float range = 10f;
         float range2 = 10f;
         float stop = 3f; // this is range to player
@@ -335,6 +335,7 @@ public class CharacterController : MonoBehaviour
         var distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
         if (distance <= range2 && distance >= range)
         {
+            agent.destination = CharacterTransform.position;
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
             Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
@@ -342,10 +343,10 @@ public class CharacterController : MonoBehaviour
         else if (distance <= range && distance > stop)
         {
 
-            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
-                        Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+            //CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
+            //            Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
 
-            NavMeshAgent agent = GetComponent<NavMeshAgent>();
+
             agent.destination = TargetTransform.position;
             IsMoving = true;
             /*
@@ -358,12 +359,14 @@ public class CharacterController : MonoBehaviour
         }
         else if (distance <= stop)
         {
+            agent.destination = CharacterTransform.position;
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
                 Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
         }
         else
         {
+            agent.destination = CharacterTransform.position;
             IsMoving = false;
         }
 
@@ -509,7 +512,7 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    private void Target()
+    public void Target()
     {
 
         if (TargetCoolDown >= 0.0f)
@@ -520,6 +523,7 @@ public class CharacterController : MonoBehaviour
         {
             if (!hasTarget)// if doesnt have a target, find one
             {
+                Debug.Log("fiding targt");
                 rand = Random.Range(1, 254);
 
                 float radius = Character.TargetRange / 2.0f;
@@ -583,7 +587,6 @@ public class CharacterController : MonoBehaviour
 
     private void DoTargetedAction()// character will make a beacon above their head
     {
-
         Debug.Log("I was targetd");
 
         //TODO reacte to being targeted etc
@@ -693,4 +696,31 @@ public class CharacterController : MonoBehaviour
         this.AnimationOverrideTimer = overrideDuration;
     }
 
+    // clear the target for when attacking to override target
+    public void SetTarget(GameObject TargetToSet)
+    {
+
+        Destroy(TargetBeaconObject);
+        CombatTarget = null;
+        TargetCharacter = null;
+        hasTarget = false;
+
+        this.TargetCoolDown = 0.0f;
+
+
+
+        Transform TargetTransform = TargetToSet.GetComponent<Transform>();
+        Vector3 SummonPositon = TargetTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
+        TargetBeaconObject = Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
+        hasTarget = true;
+        CombatTarget = TargetToSet;
+        TargetCharacter = TargetToSet.gameObject.GetComponent<CharacterController>().GetCharacter();
+        //make the target beacon a child of its taret
+        TargetBeaconObject.gameObject.GetComponent<Transform>().parent = CombatTarget.GetComponent<Transform>();
+
+    }
+
+
+
 }
+

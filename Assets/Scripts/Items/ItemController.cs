@@ -110,7 +110,9 @@ public class ItemController : MonoBehaviour
             {
                 //Keep the item above the player / at location
                 // TODO have it check which slot its held in
-                ItemTransform.localPosition = new Vector3(0, 0, 0);
+
+                ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
+                //ItemTransform.localPosition = new Vector3(0, 1, 0);
                 ItemTransform.localRotation = Quaternion.identity;
 
                 //cooldown timer if needed
@@ -169,9 +171,9 @@ public class ItemController : MonoBehaviour
         }
         else
         {
+            // TODO move to attac secion maybe?
             Debug.Log("doing basic attack 01");
             float animationDuration = 1.0f;
-
             AnimateHoldingCharacter("m_slash1", animationDuration);
         }
 
@@ -179,18 +181,25 @@ public class ItemController : MonoBehaviour
 
     private void DoSecondaryAction()
     {
+        // TODO base this on item json
         Debug.Log("Pressed Seconary button. TODO THIS");
         Debug.Log("doing basic attack 02");
         float animationDuration = 1.0f;
-
         AnimateHoldingCharacter("m_slash2", animationDuration);
-        
+
     }
 
     private void AnimateHoldingCharacter(string animation, float overrideDuration)
     {
         CharacterController controller = HoldingCharacter.GetComponent<CharacterController>();
         controller.SetAnimation(animation, overrideDuration);
+    }
+
+    private void SetTargetOnImpact(GameObject TargetToSet)
+    {
+        Debug.Log("Setting the holders target");
+        CharacterController controller = HoldingCharacter.GetComponent<CharacterController>();
+        controller.SetTarget(TargetToSet);
     }
 
     //TODO check if parent is asking for use function
@@ -252,6 +261,7 @@ public class ItemController : MonoBehaviour
                 {
                     //TODO remove this add set this to action part
                     CollidingCharacter.AddValueToHealth(-1 * Item.Damage);
+                    SetTargetOnImpact(collision.gameObject);
                 }
             }
         }

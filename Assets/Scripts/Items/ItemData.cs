@@ -7,4 +7,7 @@ public class ItemData
     public string PrimaryActionClass;
     public string SecondartActionClass;
     public float Cooldown;
+    public float HoldingOffsetX;
+    public float HoldingOffsetY;
+    public float HoldingOffsetZ;
 }
