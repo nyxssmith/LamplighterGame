@@ -2,6 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.AI;
+
 
 public class CharacterController : MonoBehaviour
 {
@@ -174,7 +176,8 @@ public class CharacterController : MonoBehaviour
             HealthDamageCoolDown -= Time.deltaTime;
         }
 
-        if(Character.CurrentHealth <= 0.0f){
+        if (Character.CurrentHealth <= 0.0f)
+        {
             Destroy(this.gameObject);
         }
         //}
@@ -190,10 +193,11 @@ public class CharacterController : MonoBehaviour
             Debug.Log("should be getting state from item");
             AnimationOverrideTimer -= Time.deltaTime;
         }
-        else if (!IsGrounded)
+        else if (!IsGrounded && isPlayer)
         {
             CurrentAnimationState = Character.midair_animation;
         }
+        // sprinting for player
         else if (Input.GetKey(KeyCode.LeftShift) && Character.CurrentStamina > 10)
         {
             if (isPlayer)
@@ -216,21 +220,30 @@ public class CharacterController : MonoBehaviour
             }
 
         }
-        else
+        else// not sprinting
         {
             if (IsMoving)
             {
-                if (Input.GetKey("w"))
+                // player movment by key
+                if (isPlayer)
                 {
-                    CurrentAnimationState = Character.walking_forward_animation;
-                }
-                else if (Input.GetKey("s"))
-                {
-                    CurrentAnimationState = Character.walking_backward_animation;
+                    if (Input.GetKey("w"))
+                    {
+                        CurrentAnimationState = Character.walking_forward_animation;
+                    }
+                    else if (Input.GetKey("s"))
+                    {
+                        CurrentAnimationState = Character.walking_backward_animation;
 
+                    }
+                    else
+                    {//TODO do a walking rightleft etc
+                        CurrentAnimationState = Character.walking_forward_animation;
+
+                    }
                 }
-                else
-                {//TODO do a walking rightleft etc
+                else// npc based on state
+                {
                     CurrentAnimationState = Character.walking_forward_animation;
 
                 }
@@ -311,27 +324,37 @@ public class CharacterController : MonoBehaviour
     private void FollowPlayer()
     {
 
+        Transform TargetTransform = FollowTarget.GetComponent<Transform>();
+
         float rotationSpeed = 6f; //speed of turning
         float range = 10f;
         float range2 = 10f;
-        float stop = 1f; // this is range to player
+        float stop = 3f; // this is range to player
 
-        Transform TargetTransform = FollowTarget.GetComponent<Transform>();
         //rotate to look at the player
         var distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
         if (distance <= range2 && distance >= range)
         {
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
-                Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+            Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
         }
         else if (distance <= range && distance > stop)
         {
+
+            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
+                        Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+
+            NavMeshAgent agent = GetComponent<NavMeshAgent>();
+            agent.destination = TargetTransform.position;
+            IsMoving = true;
+            /*
             //move towards the player
             IsMoving = true;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
             Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
             CharacterTransform.position += CharacterTransform.forward * Character.CurrentSpeed * Time.deltaTime;
+            */
         }
         else if (distance <= stop)
         {

@@ -14,7 +14,7 @@
     "BaseMovementSpeed": 2.5,
     "Reach": 2,
     "TargetRange": 5.0,
-    "IsFollower": false,
+    "IsFollower": true,
     "IsFollowing": false,
     "idle_animation": "m_idle",
     "walking_forward_animation": "m_walking",
