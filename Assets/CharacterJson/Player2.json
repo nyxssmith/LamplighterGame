@@ -14,6 +14,8 @@
     "TargetRange": 15.0,
     "IsFollower": false,
     "IsFollowing": false,
+    "CanFight": true,
+
     "idle_animation": "m_idle",
     "walking_forward_animation": "m_walking",
     "running_forward_animation": "m_running",

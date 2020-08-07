@@ -4,5 +4,6 @@
     "IsPickup":true,
     "PrimaryActionClass":"SUMMON",
     "SecondartActionClass":"BASIC",
-    "Cooldown":0
+    "Cooldown":0,
+    "CanBeUsedFromBelt":false
 }

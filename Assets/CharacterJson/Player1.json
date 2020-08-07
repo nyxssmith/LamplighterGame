@@ -15,6 +15,7 @@
     "Reach": 2,
     "TargetRange": 5.0,
     "IsFollower": true,
+    "CanFight": true,
     "IsFollowing": false,
     "idle_animation": "Idle01",
     "walking_forward_animation": "Walking",

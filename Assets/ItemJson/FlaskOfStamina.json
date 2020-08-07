@@ -1,8 +1,9 @@
 {
-    "Name":"Torch",
+    "Name":"Potion of Stamina",
     "Damage":500,
     "IsPickup":true,
     "PrimaryActionClass":"POTION",
     "SecondartActionClass":"NONE",
-    "Cooldown":5
+    "Cooldown":5,
+    "CanBeUsedFromBelt":true
 }

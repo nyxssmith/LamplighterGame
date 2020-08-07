@@ -40,6 +40,9 @@ public class CharacterController : MonoBehaviour
     // Targeting and interacting
     private GameObject FollowTarget = null;
     private GameObject CombatTarget = null;
+    private bool IsFighting = false;
+    private float Action = 0.0f;// actions, 0 is none, 1 is left click, 2 is right click, 3 is belt action
+    private float ActionCooldown = 0.0f;// Attack cooldown for npcs = item cooldown*n
     private CharacterData TargetCharacter = null;//save info on target character
 
     public GameObject TargetBeacon; // prefab of the target beacon
@@ -103,8 +106,24 @@ public class CharacterController : MonoBehaviour
             PlayerMove();
             DoUI();
             //controls
+            // actions for attach and use "r"
+            if (Input.GetMouseButtonDown(0))
+            {
+                Action = 1.0f;
+            }
+            if (Input.GetMouseButtonDown(1))
+            {
+                Action = 2.0f;
+            }
+            if (Input.GetKeyDown("r"))
+            {
+                Action = 3.0f;
+            }
+
 
             //Debug save and load functions
+
+
             if (Input.GetKeyDown("i"))
             {
                 Character = CDM.Load();
@@ -133,11 +152,15 @@ public class CharacterController : MonoBehaviour
             {
                 ItemStatus = "SwapHandBelt";
             }
+            //TODO use item from belt
             else
             {
                 ItemStatus = "";
             }
             CheckIfItemInHand();
+
+
+
 
 
             /*
@@ -310,7 +333,13 @@ public class CharacterController : MonoBehaviour
         // todo if enemy
         // make sure if figting, also take control of is moving
         // TODO if enemy follower sees, target instead
-        if (Character.IsFollowing)
+
+        // fight takes priority
+        if (IsFighting)
+        {
+            AttackTarget();
+        }
+        else if (Character.IsFollowing)
         {
             FollowPlayer();
         }
@@ -318,6 +347,66 @@ public class CharacterController : MonoBehaviour
         {
             IsMoving = false;
         }
+
+    }
+
+    private void AttackTarget()
+    {
+
+        Debug.Log("Attacking",CombatTarget);
+
+        Transform TargetTransform = CombatTarget.GetComponent<Transform>();
+        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        float rotationSpeed = 30f; //speed of turning
+
+        float range = 10f;
+        float range2 = 10f;
+        float stop = Character.Reach; // this is range to player
+
+
+        //rotate to look at the player
+        var distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
+        if (distance <= range2 && distance >= range)
+        {
+            agent.destination = CharacterTransform.position;
+            IsMoving = false;
+            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
+            Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+        }
+        else if (distance <= range && distance > stop)
+        {
+            agent.destination = TargetTransform.position;
+            IsMoving = true;
+
+        }
+        else if (distance <= stop)
+        {
+
+            agent.destination = CharacterTransform.position;
+            IsMoving = false;
+            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
+                Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+            
+            if (ActionCooldown > 0.0f){
+                ActionCooldown -= Time.deltaTime;
+            }else{
+                Attack();
+            }
+
+        }
+        else
+        {
+            agent.destination = CharacterTransform.position;
+            IsMoving = false;
+        }
+    }
+
+    // pick and do an attack option
+    private void Attack()
+    {
+        Action = 1.0f;
+        // set attack cooldown
+        //ActionCooldown = 2.5f;
 
     }
 
@@ -343,19 +432,9 @@ public class CharacterController : MonoBehaviour
         else if (distance <= range && distance > stop)
         {
 
-            //CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
-            //            Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
-
-
             agent.destination = TargetTransform.position;
             IsMoving = true;
-            /*
-            //move towards the player
-            IsMoving = true;
-            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
-            Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
-            CharacterTransform.position += CharacterTransform.forward * Character.CurrentSpeed * Time.deltaTime;
-            */
+
         }
         else if (distance <= stop)
         {
@@ -645,6 +724,7 @@ public class CharacterController : MonoBehaviour
         return Belt.transform;
     }
 
+
     public int GetRand()
     {
         return rand;
@@ -653,6 +733,14 @@ public class CharacterController : MonoBehaviour
     public string GetItemStatus()
     {
         return this.ItemStatus;
+    }
+
+    public float GetItemActionFloat(){
+        return this.Action;
+    }
+
+    public void ResetItemActionFloat(){
+        Action = 0.0f;
     }
 
 
@@ -668,6 +756,7 @@ public class CharacterController : MonoBehaviour
     {
         Character.CurrentStamina += value;
     }
+
 
     public void AddValueToHealth(float value)
     {
@@ -689,6 +778,14 @@ public class CharacterController : MonoBehaviour
         return this.Character.CurrentHealth;
     }
 
+    public bool GetCanFight()
+    {
+        return this.Character.CanFight;
+    }
+
+    public void SetFighting(bool state){
+        IsFighting = state;
+    }
 
     public void SetAnimation(string animation, float overrideDuration)
     {
@@ -706,7 +803,6 @@ public class CharacterController : MonoBehaviour
         hasTarget = false;
 
         this.TargetCoolDown = 0.0f;
-
 
 
         Transform TargetTransform = TargetToSet.GetComponent<Transform>();

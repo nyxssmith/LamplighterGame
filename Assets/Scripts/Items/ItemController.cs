@@ -92,6 +92,7 @@ public class ItemController : MonoBehaviour
             }
             else if (Status == "SwapHandBelt")
             {
+
                 if (heldLocation == "Hand")
                 {
                     ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBeltTransform();
@@ -111,7 +112,15 @@ public class ItemController : MonoBehaviour
                 //Keep the item above the player / at location
                 // TODO have it check which slot its held in
 
-                ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
+                if (heldLocation == "Hand")
+                {
+                    ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
+                }
+                else
+                {
+                    ItemTransform.localPosition = new Vector3(0, 0, 0);
+                }
+
                 //ItemTransform.localPosition = new Vector3(0, 1, 0);
                 ItemTransform.localRotation = Quaternion.identity;
 
@@ -124,15 +133,30 @@ public class ItemController : MonoBehaviour
                 if (heldLocation == "Hand")
                 {
 
+
+                    float action = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
+
                     //mouse click inputs
-                    if (Input.GetMouseButtonDown(0))
+                    if (action == 1.0f)
                     {
                         DoPrimaryAction();
+                        HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
+
                     }
-                    if (Input.GetMouseButtonDown(1))
+                    if (action == 2.0f)
                     {
                         DoSecondaryAction();
+                        HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
+
                     }
+                    if (action == 3.0f)
+                    {
+                        //TODO use action
+                        DoSecondaryAction();
+                        HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
+
+                    }
+
                 }
                 //TODO else if heldlocation is belt, then do primary action on keypress etc
 
@@ -195,11 +219,12 @@ public class ItemController : MonoBehaviour
         controller.SetAnimation(animation, overrideDuration);
     }
 
-    private void SetTargetOnImpact(GameObject TargetToSet)
+    private void SetTargetOnImpact(GameObject WhosTargetToSet, GameObject TargetToSet)
     {
-        Debug.Log("Setting the holders target");
-        CharacterController controller = HoldingCharacter.GetComponent<CharacterController>();
+        CharacterController controller = WhosTargetToSet.GetComponent<CharacterController>();
         controller.SetTarget(TargetToSet);
+        controller.SetFighting(true);
+
     }
 
     //TODO check if parent is asking for use function
@@ -220,34 +245,34 @@ public class ItemController : MonoBehaviour
                 if (CollidingCharacter != null)
                 {
                     //TODO remove this player only check
-                    if (CollidingCharacter.GetIsPlayer())
+                    //if (CollidingCharacter.GetIsPlayer())
+                    //{
+                    if (!CollidingCharacter.GetHasItemInHand())
                     {
-                        if (!CollidingCharacter.GetHasItemInHand())
-                        {
 
-                            Debug.DrawRay(contact.point, contact.normal, Color.white);
+                        Debug.DrawRay(contact.point, contact.normal, Color.white);
 
-                            Debug.Log("I was hit by " + collision.gameObject.GetComponent<CharacterController>().GetCharacter().Name);
-                            isPickedUp = true;
-                            rb.useGravity = false;
-                            rb.isKinematic = true;
-                            //TODO move relivant to character
-                            Physics.IgnoreCollision(collision.gameObject.GetComponent<Collider>(), GetComponent<Collider>());
+                        Debug.Log("I was hit by " + collision.gameObject.GetComponent<CharacterController>().GetCharacter().Name);
+                        isPickedUp = true;
+                        rb.useGravity = false;
+                        rb.isKinematic = true;
+                        //TODO move relivant to character
+                        Physics.IgnoreCollision(collision.gameObject.GetComponent<Collider>(), GetComponent<Collider>());
 
-                            //ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
-                            HoldingCharacter = collision.gameObject;
-                            ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
+                        //ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
+                        HoldingCharacter = collision.gameObject;
+                        ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
 
-                            ItemTransform.localPosition = new Vector3(0, 0, 0);
+                        ItemTransform.localPosition = new Vector3(0, 0, 0);
 
-                            heldLocation = "Hand";
-                            //holder = collision.gameObject;
-                            //collision.gameObject.GetComponent<CharacterController> ().Character.name;
-                            //if (collision.gameObject.GetComponent<CharacterController> ().GetIsInteracting ()){
-                            //    Debug.Log("I was picked up by player");
-                            //}
-                        }
+                        heldLocation = "Hand";
+                        //holder = collision.gameObject;
+                        //collision.gameObject.GetComponent<CharacterController> ().Character.name;
+                        //if (collision.gameObject.GetComponent<CharacterController> ().GetIsInteracting ()){
+                        //    Debug.Log("I was picked up by player");
+                        //}
                     }
+                    //}
                 }
             }
         }
@@ -255,13 +280,19 @@ public class ItemController : MonoBehaviour
         {
             if (heldLocation == "Hand")// if item in hand, do dmg on impact
             {
-                Debug.Log("Collision after picked up");
                 CharacterController CollidingCharacter = collision.gameObject.GetComponent<CharacterController>();
                 if (CollidingCharacter != null)
                 {
                     //TODO remove this add set this to action part
                     CollidingCharacter.AddValueToHealth(-1 * Item.Damage);
-                    SetTargetOnImpact(collision.gameObject);
+                    // Set to target eachother
+                    SetTargetOnImpact(HoldingCharacter, collision.gameObject);
+                    // if can fight
+                    if (CollidingCharacter.GetCanFight())
+                    {
+                        SetTargetOnImpact(collision.gameObject, HoldingCharacter);
+
+                    }
                 }
             }
         }
