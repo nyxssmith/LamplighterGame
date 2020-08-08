@@ -110,6 +110,32 @@ public class CharacterController : MonoBehaviour
             Save();
         }
 
+
+
+        // Item controls TODO this better with npcs
+        if (Input.GetKey("q"))
+        {
+            ItemStatus = "Dropping";//applies to habd item
+        }
+        else if (Input.GetKeyDown("f"))
+        {
+            ItemStatus = "SwapHandBack";
+        }
+        else if (Input.GetKeyDown("g"))
+        {
+            ItemStatus = "SwapHandBelt";
+        }
+        //TODO use item from belt
+        else
+        {
+            ItemStatus = "";
+        }
+
+        CheckIfItemInHand();
+
+
+
+
         if (isPlayer)
         {
             PlayerMove();
@@ -133,7 +159,6 @@ public class CharacterController : MonoBehaviour
             //Debug save and load functions
 
 
-
             if (Input.GetKeyDown("e"))
             {
                 Interact();
@@ -142,6 +167,11 @@ public class CharacterController : MonoBehaviour
             {
                 Target();
             }
+
+
+            // TODO coordinate this and the above drop system to work for npcs too
+            /*
+            // Item drop controll
             if (Input.GetKey("q"))
             {
                 ItemStatus = "Dropping";//applies to habd item
@@ -159,7 +189,9 @@ public class CharacterController : MonoBehaviour
             {
                 ItemStatus = "";
             }
+
             CheckIfItemInHand();
+            */
 
 
 
@@ -747,7 +779,7 @@ public class CharacterController : MonoBehaviour
 
     public string GetItemStatus()
     {
-        return this.ItemStatus;
+        return ItemStatus;
     }
 
     public float GetItemActionFloat()
@@ -835,7 +867,8 @@ public class CharacterController : MonoBehaviour
     }
 
 
-    public string GetUUID(){
+    public string GetUUID()
+    {
         return this.Character.id;
     }
 

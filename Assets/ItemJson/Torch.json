@@ -1,1 +1,17 @@
-{"Name":"Torch","Damage":1.0,"IsPickup":true,"PrimaryActionClass":"BASIC","SecondartActionClass":"NONE","Cooldown":2.0,"HoldingOffsetX":0.0,"HoldingOffsetY":4.0,"HoldingOffsetZ":0.0,"CanBeUsedFromBelt":false,"heldLocation":"Back","holderUUID":"c72ca895-d671-4c93-9c2f-c457e8f6ac19","x_pos":5.2576212882995609,"y_pos":0.6910681128501892,"z_pos":20.761838912963868}
+{
+    "Name": "Torch",
+    "Damage": 1.0,
+    "IsPickup": true,
+    "PrimaryActionClass": "BASIC",
+    "SecondartActionClass": "NONE",
+    "Cooldown": 2.0,
+    "HoldingOffsetX": 0.0,
+    "HoldingOffsetY": 4.0,
+    "HoldingOffsetZ": 0.0,
+    "CanBeUsedFromBelt": false,
+    "heldLocation": "Hand",
+    "holderUUID": "c72ca895-d671-4c93-9c2f-c457e8f6ac19",
+    "x_pos": 5.2576212882995609,
+    "y_pos": 0.6910681128501892,
+    "z_pos": 20.761838912963868
+}

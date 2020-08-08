@@ -22,6 +22,9 @@ public class ItemController : MonoBehaviour
     //When character comes online, set vars needed for init
     private void Awake()
     {
+
+        // TODO have this copy the configs per unqiue torch item etc
+
         //cam = Camera.main;
         rb = gameObject.GetComponent<Rigidbody>();
         ItemTransform = gameObject.GetComponent<Transform>();
@@ -55,6 +58,8 @@ public class ItemController : MonoBehaviour
     {
         Item = IDM.Load();
 
+        Debug.Log("loading item" + Item.Name);
+
         // if picked up, go to holder, if not, go to last postion
         if (Item.holderUUID != "")
         {
@@ -67,29 +72,30 @@ public class ItemController : MonoBehaviour
                 {
 
                     isPickedUp = true;
+                    rb.useGravity = false;
+                    rb.isKinematic = true;
 
                     rb.constraints = RigidbodyConstraints.None;
 
-                    rb.useGravity = false;
-                    rb.isKinematic = true;
                     //TODO move relivant to character
                     Physics.IgnoreCollision(controller.gameObject.GetComponent<Collider>(), GetComponent<Collider>());
 
                     //ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
                     HoldingCharacter = controller.gameObject;
 
-                    //based on held location, change this
+
+                    //based on held location, change location
                     if (Item.heldLocation == "Hand")
                     {
-                        ItemTransform.parent = controller.GetHandTransform();
+                        ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
                     }
                     else if (Item.heldLocation == "Back")
                     {
-                        ItemTransform.parent = controller.GetBackTransform();
+                        ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBackTransform();
                     }
                     else if (Item.heldLocation == "Belt")
                     {
-                        ItemTransform.parent = controller.GetBeltTransform();
+                        ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBeltTransform();
                     }
 
                     ItemTransform.localPosition = new Vector3(0, 0, 0);
@@ -123,7 +129,7 @@ public class ItemController : MonoBehaviour
         if (HoldingCharacter != null)
         {
             string Status = HoldingCharacter.GetComponent<CharacterController>().GetItemStatus();
-        
+
             if (Status == "Dropping" && Item.heldLocation == "Hand")
             {
                 Debug.Log("parent id dropping me");
@@ -355,16 +361,17 @@ public class ItemController : MonoBehaviour
                     //}
                 }
             }
-            if(!isPickedUp){
+            if (!isPickedUp)
+            {
                 Debug.Log("Collision without picked up");
 
-                ItemTransform.position += new Vector3(0.0f,0.2f,0.0f);
-                rb.constraints = RigidbodyConstraints.FreezePositionX|RigidbodyConstraints.FreezePositionY|RigidbodyConstraints.FreezePositionZ|RigidbodyConstraints.FreezeRotationX|RigidbodyConstraints.FreezeRotationZ;
-                rb.AddTorque(transform.up  * 0.2f);
+                ItemTransform.position += new Vector3(0.0f, 0.2f, 0.0f);
+                rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+                rb.AddTorque(transform.up * 0.2f);
 
             }
 
-            
+
         }
         else if (isPickedUp)
         {
