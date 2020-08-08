@@ -35,7 +35,7 @@ public class CharacterDataManager
         this.CharacterSaveFileFolder = CharacterSaveFileFolder;
         //Debug.Log(this.CharacterSaveFile);
 
-	FullSavePath = Path.Combine(this.CharacterSaveFileFolder,this.CharacterSaveFile);
+        FullSavePath = Path.Combine(this.CharacterSaveFileFolder, this.CharacterSaveFile);
 
     }
 
@@ -43,7 +43,7 @@ public class CharacterDataManager
     public void Save(CharacterData character)
     {
         //TODO based on OS for this part
-        string FullSavePath = this.CharacterSaveFileFolder + "\\" + this.CharacterSaveFile;
+        //string FullSavePath = this.CharacterSaveFileFolder + "\\" + this.CharacterSaveFile;
         Debug.Log("Saving to " + FullSavePath);
 
         string json = JsonUtility.ToJson(character);
@@ -58,11 +58,19 @@ public class CharacterDataManager
         Debug.Log("Loading save ");
 
         Debug.Log("loading character from " + FullSavePath);
-        StreamReader reader = new StreamReader(FullSavePath); 
+        StreamReader reader = new StreamReader(FullSavePath);
         string json = reader.ReadToEnd();
         reader.Close();
 
         CharacterData Character = JsonUtility.FromJson<CharacterData>(json);
+
+        // if character has "0" id, make a new one
+        if (Character.id == "0")
+        {
+            Character.id = Guid.NewGuid().ToString();
+            Save(Character);
+        }
+
         return Character;
 
 

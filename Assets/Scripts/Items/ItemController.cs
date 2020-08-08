@@ -16,7 +16,6 @@ public class ItemController : MonoBehaviour
     private bool isPickedUp = false;
     private float CooldownTimer = 0f;
 
-    private string heldLocation = "";
 
     private GameObject HoldingCharacter;
 
@@ -29,7 +28,7 @@ public class ItemController : MonoBehaviour
 
         Debug.Log("Starting an item");
         IDM.Init(ItemSaveFileFolder, ItemSaveFile);
-        Item = IDM.Load();
+        Load();
         //Character = CDM.Load();
         //TODO load on init
 
@@ -38,7 +37,85 @@ public class ItemController : MonoBehaviour
     private void FixedUpdate()
     {
         //happens on physics updates
+
+        //saving etc
+        if (Input.GetKeyDown("i"))
+        {
+            Load();
+        }
+        if (Input.GetKeyDown("o"))
+        {
+            Save();
+        }
+
+
     }
+
+    private void Load()
+    {
+        Item = IDM.Load();
+
+        // if picked up, go to holder, if not, go to last postion
+        if (Item.holderUUID != "")
+        {
+            var characterControllersList = FindObjectsOfType<CharacterController>();
+            string id;
+            foreach (CharacterController controller in characterControllersList)
+            {
+                id = controller.GetUUID();
+                if (id == Item.holderUUID)
+                {
+
+                    isPickedUp = true;
+
+                    rb.constraints = RigidbodyConstraints.None;
+
+                    rb.useGravity = false;
+                    rb.isKinematic = true;
+                    //TODO move relivant to character
+                    Physics.IgnoreCollision(controller.gameObject.GetComponent<Collider>(), GetComponent<Collider>());
+
+                    //ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
+                    HoldingCharacter = controller.gameObject;
+
+                    //based on held location, change this
+                    if (Item.heldLocation == "Hand")
+                    {
+                        ItemTransform.parent = controller.GetHandTransform();
+                    }
+                    else if (Item.heldLocation == "Back")
+                    {
+                        ItemTransform.parent = controller.GetBackTransform();
+                    }
+                    else if (Item.heldLocation == "Belt")
+                    {
+                        ItemTransform.parent = controller.GetBeltTransform();
+                    }
+
+                    ItemTransform.localPosition = new Vector3(0, 0, 0);
+
+                    break;
+                }
+            }
+        }
+        else
+        {
+            ItemTransform.position = new Vector3(Item.x_pos, Item.y_pos, Item.z_pos);
+        }
+
+    }
+    private void Save()
+    {
+        if (!isPickedUp)
+        {
+            Item.x_pos = ItemTransform.position.x;
+            Item.y_pos = ItemTransform.position.y;
+            Item.z_pos = ItemTransform.position.z;
+        }
+        IDM.Save(Item);
+    }
+
+
     //TODO make update on frameupdate
     private void Update()
     {
@@ -46,8 +123,8 @@ public class ItemController : MonoBehaviour
         if (HoldingCharacter != null)
         {
             string Status = HoldingCharacter.GetComponent<CharacterController>().GetItemStatus();
-
-            if (Status == "Dropping" && heldLocation == "Hand")
+        
+            if (Status == "Dropping" && Item.heldLocation == "Hand")
             {
                 Debug.Log("parent id dropping me");
 
@@ -68,6 +145,9 @@ public class ItemController : MonoBehaviour
 
                 Physics.IgnoreCollision(HoldingCharacter.GetComponent<Collider>(), GetComponent<Collider>(), false);
 
+                Item.heldLocation = null;
+                Item.holderUUID = null;
+
                 HoldingCharacter = null;
                 isPickedUp = false;
                 rb.useGravity = true;
@@ -76,15 +156,15 @@ public class ItemController : MonoBehaviour
             }
             else if (Status == "SwapHandBack")
             {
-                if (heldLocation == "Hand")
+                if (Item.heldLocation == "Hand")
                 {
                     ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBackTransform();
-                    heldLocation = "Back";
+                    Item.heldLocation = "Back";
                 }
-                else if (heldLocation == "Back")
+                else if (Item.heldLocation == "Back")
                 {
                     ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
-                    heldLocation = "Hand";
+                    Item.heldLocation = "Hand";
                 }
 
                 Status = "";
@@ -93,15 +173,15 @@ public class ItemController : MonoBehaviour
             else if (Status == "SwapHandBelt")
             {
 
-                if (heldLocation == "Hand")
+                if (Item.heldLocation == "Hand")
                 {
                     ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBeltTransform();
-                    heldLocation = "Belt";
+                    Item.heldLocation = "Belt";
                 }
-                else if (heldLocation == "Belt")
+                else if (Item.heldLocation == "Belt")
                 {
                     ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
-                    heldLocation = "Hand";
+                    Item.heldLocation = "Hand";
                 }
 
                 Status = "";
@@ -112,7 +192,7 @@ public class ItemController : MonoBehaviour
                 //Keep the item above the player / at location
                 // TODO have it check which slot its held in
 
-                if (heldLocation == "Hand")
+                if (Item.heldLocation == "Hand")
                 {
                     ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
                 }
@@ -130,7 +210,7 @@ public class ItemController : MonoBehaviour
                     CooldownTimer -= Time.deltaTime;
                 }
 
-                if (heldLocation == "Hand")
+                if (Item.heldLocation == "Hand")
                 {
 
 
@@ -256,6 +336,9 @@ public class ItemController : MonoBehaviour
                         isPickedUp = true;
                         rb.useGravity = false;
                         rb.isKinematic = true;
+
+                        rb.constraints = RigidbodyConstraints.None;
+
                         //TODO move relivant to character
                         Physics.IgnoreCollision(collision.gameObject.GetComponent<Collider>(), GetComponent<Collider>());
 
@@ -265,20 +348,27 @@ public class ItemController : MonoBehaviour
 
                         ItemTransform.localPosition = new Vector3(0, 0, 0);
 
-                        heldLocation = "Hand";
-                        //holder = collision.gameObject;
-                        //collision.gameObject.GetComponent<CharacterController> ().Character.name;
-                        //if (collision.gameObject.GetComponent<CharacterController> ().GetIsInteracting ()){
-                        //    Debug.Log("I was picked up by player");
-                        //}
+                        Item.heldLocation = "Hand";
+                        Item.holderUUID = HoldingCharacter.GetComponent<CharacterController>().GetUUID();
+                        break;
                     }
                     //}
                 }
             }
+            if(!isPickedUp){
+                Debug.Log("Collision without picked up");
+
+                ItemTransform.position += new Vector3(0.0f,0.2f,0.0f);
+                rb.constraints = RigidbodyConstraints.FreezePositionX|RigidbodyConstraints.FreezePositionY|RigidbodyConstraints.FreezePositionZ|RigidbodyConstraints.FreezeRotationX|RigidbodyConstraints.FreezeRotationZ;
+                rb.AddTorque(transform.up  * 0.2f);
+
+            }
+
+            
         }
         else if (isPickedUp)
         {
-            if (heldLocation == "Hand")// if item in hand, do dmg on impact
+            if (Item.heldLocation == "Hand")// if item in hand, do dmg on impact
             {
                 CharacterController CollidingCharacter = collision.gameObject.GetComponent<CharacterController>();
                 if (CollidingCharacter != null)

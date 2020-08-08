@@ -32,4 +32,11 @@ public class CharacterData
     public string jump_animation;
 
 
+    public float x_pos;
+    public float y_pos;
+    public float z_pos;
+
+    public string id;
+
+
 }

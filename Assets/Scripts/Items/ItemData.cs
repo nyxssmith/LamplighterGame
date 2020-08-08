@@ -13,4 +13,15 @@ public class ItemData
 
     public bool CanBeUsedFromBelt;
 
+    public string heldLocation;
+    public string holderUUID;
+
+
+    public float x_pos;
+    public float y_pos;
+    public float z_pos;
+
+
+
+
 }

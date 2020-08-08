@@ -82,12 +82,9 @@ public class CharacterController : MonoBehaviour
         rb = gameObject.GetComponent<Rigidbody>();
         CharacterTransform = gameObject.GetComponent<Transform>();
 
-
-
         CDM.Init(CharacterSaveFileFolder, CharacterSaveFile);
-        Character = CDM.Load();
-        Debug.Log("Loaded data for " + Character.Name + " from " + CharacterSaveFile);
 
+        Load();
         CharacterAnimator = AnimationTarget.GetComponent<Animator>();
 
 
@@ -101,6 +98,18 @@ public class CharacterController : MonoBehaviour
 
     private void FixedUpdate()
     {
+
+        // save and load for all chars
+        if (Input.GetKeyDown("i"))
+        {
+
+            Load();
+        }
+        if (Input.GetKeyDown("o"))
+        {
+            Save();
+        }
+
         if (isPlayer)
         {
             PlayerMove();
@@ -124,14 +133,7 @@ public class CharacterController : MonoBehaviour
             //Debug save and load functions
 
 
-            if (Input.GetKeyDown("i"))
-            {
-                Character = CDM.Load();
-            }
-            if (Input.GetKeyDown("o"))
-            {
-                CDM.Save(Character);
-            }
+
             if (Input.GetKeyDown("e"))
             {
                 Interact();
@@ -353,7 +355,7 @@ public class CharacterController : MonoBehaviour
     private void AttackTarget()
     {
 
-        Debug.Log("Attacking",CombatTarget);
+        Debug.Log("Attacking", CombatTarget);
 
         Transform TargetTransform = CombatTarget.GetComponent<Transform>();
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
@@ -386,10 +388,13 @@ public class CharacterController : MonoBehaviour
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
                 Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
-            
-            if (ActionCooldown > 0.0f){
+
+            if (ActionCooldown > 0.0f)
+            {
                 ActionCooldown -= Time.deltaTime;
-            }else{
+            }
+            else
+            {
                 Attack();
             }
 
@@ -404,7 +409,17 @@ public class CharacterController : MonoBehaviour
     // pick and do an attack option
     private void Attack()
     {
-        Action = 1.0f;
+
+        if (HasItemInHand)
+        {
+            Action = 1.0f;
+        }
+        else
+        {
+            //TODO if can, do unarmed spells etc
+            // else do punch
+            Debug.Log("unarmed attack");
+        }
         // set attack cooldown
         //ActionCooldown = 2.5f;
 
@@ -735,11 +750,13 @@ public class CharacterController : MonoBehaviour
         return this.ItemStatus;
     }
 
-    public float GetItemActionFloat(){
+    public float GetItemActionFloat()
+    {
         return this.Action;
     }
 
-    public void ResetItemActionFloat(){
+    public void ResetItemActionFloat()
+    {
         Action = 0.0f;
     }
 
@@ -783,7 +800,8 @@ public class CharacterController : MonoBehaviour
         return this.Character.CanFight;
     }
 
-    public void SetFighting(bool state){
+    public void SetFighting(bool state)
+    {
         IsFighting = state;
     }
 
@@ -817,6 +835,29 @@ public class CharacterController : MonoBehaviour
     }
 
 
+    public string GetUUID(){
+        return this.Character.id;
+    }
+
+    public void Save()
+    {
+        Debug.Log("Saving " + Character.Name);
+        Character.x_pos = CharacterTransform.position.x;
+        Character.y_pos = CharacterTransform.position.y;
+        Character.z_pos = CharacterTransform.position.z;
+        CDM.Save(Character);
+
+    }
+
+    public void Load()
+    {
+        Character = CDM.Load();
+        // set world postion
+        CharacterTransform.position = new Vector3(Character.x_pos, Character.y_pos, Character.z_pos);
+
+        Debug.Log("Loaded data for " + Character.Name + " from " + CharacterSaveFile);
+
+    }
 
 }
 

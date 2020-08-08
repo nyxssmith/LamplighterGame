@@ -41,7 +41,7 @@ public class ItemDataManager
     public void Save(ItemData Item)
     {
         //TODO based on OS for this part
-        string FullSavePath = this.ItemSaveFileFolder + "\\" + this.ItemSaveFile;
+        //string FullSavePath = this.ItemSaveFileFolder + "\\" + this.ItemSaveFile;
         Debug.Log("Saving to " + FullSavePath);
 
         string json = JsonUtility.ToJson(Item);
