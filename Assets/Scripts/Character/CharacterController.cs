@@ -886,7 +886,8 @@ public class CharacterController : MonoBehaviour
     {
         Character = CDM.Load();
         // set world postion
-        CharacterTransform.position = new Vector3(Character.x_pos, Character.y_pos, Character.z_pos);
+        // TODO move this to recall potion
+        //CharacterTransform.position = new Vector3(Character.x_pos, Character.y_pos, Character.z_pos);
 
         Debug.Log("Loaded data for " + Character.Name + " from " + CharacterSaveFile);
 

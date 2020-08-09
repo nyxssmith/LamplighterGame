@@ -59,7 +59,7 @@ public class ItemController : MonoBehaviour
         Item = IDM.Load();
 
         Debug.Log("loading item" + Item.Name);
-
+        /*
         // if picked up, go to holder, if not, go to last postion
         if (Item.holderUUID != "")
         {
@@ -108,6 +108,7 @@ public class ItemController : MonoBehaviour
         {
             ItemTransform.position = new Vector3(Item.x_pos, Item.y_pos, Item.z_pos);
         }
+        */
 
     }
     private void Save()

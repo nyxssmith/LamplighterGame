@@ -34,7 +34,6 @@ public class ItemDataManager
         this.ItemSaveFileFolder = ItemSaveFileFolder;
         //Debug.Log(this.ItemSaveFile);
         FullSavePath = Path.Combine(this.ItemSaveFileFolder, this.ItemSaveFile);
-
     }
 
     // Outputs a ItemStats object (input) to a json file
@@ -53,7 +52,6 @@ public class ItemDataManager
     // Takes a filepath and returns a ItemStats object
     public ItemData Load()//TODO make return a ItemStats object
     {
-        Debug.Log("Loading save ");
 
         Debug.Log("loading Item from " + FullSavePath);
         StreamReader reader = new StreamReader(FullSavePath); 

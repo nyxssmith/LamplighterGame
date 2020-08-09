@@ -55,7 +55,6 @@ public class CharacterDataManager
     // Takes a filepath and returns a CharacterStats object
     public CharacterData Load()//TODO make return a CharacterStats object
     {
-        Debug.Log("Loading save ");
 
         Debug.Log("loading character from " + FullSavePath);
         StreamReader reader = new StreamReader(FullSavePath);

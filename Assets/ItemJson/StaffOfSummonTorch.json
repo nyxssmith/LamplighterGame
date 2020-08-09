@@ -1,9 +1,1 @@
-{
-    "Name":"Staff of Summon Torch",
-    "Damage":10,
-    "IsPickup":true,
-    "PrimaryActionClass":"SUMMON",
-    "SecondartActionClass":"BASIC",
-    "Cooldown":0,
-    "CanBeUsedFromBelt":false
-}
+{"Name":"Staff of Summon Torch","Damage":10.0,"IsPickup":true,"PrimaryActionClass":"SUMMON","SecondartActionClass":"BASIC","Cooldown":0.0,"HoldingOffsetX":0.0,"HoldingOffsetY":0.0,"HoldingOffsetZ":0.0,"CanBeUsedFromBelt":false,"heldLocation":"","holderUUID":"","x_pos":0.0,"y_pos":0.0,"z_pos":0.0}
