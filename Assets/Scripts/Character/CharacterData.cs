@@ -18,6 +18,7 @@ public class CharacterData
     public float Reach;
     public float TargetRange;
     public bool CanFight;
+    public bool IsPlayer;
     public bool IsFollower;
     public bool IsFollowing;
 

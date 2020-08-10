@@ -9,10 +9,10 @@ public class CharacterController : MonoBehaviour
 {
 
     //Control settings
-    public bool isPlayer = false;
 
     //Objects and vars not loaded from save file
     private Transform CharacterTransform;
+    public GameObject CameraTarget;
     private Camera cam;
     private Rigidbody rb;
     private Physics physics;
@@ -29,7 +29,7 @@ public class CharacterController : MonoBehaviour
     public string CharacterSaveFile = "Player1.json";
     private CharacterDataManager CDM = new CharacterDataManager();
 
-    private CharacterData Character = new CharacterData();
+    public CharacterData Character = new CharacterData();
 
     // variables that are used for interacting with world but dont matter for save
     private string ItemStatus = "";//action items status, for swapping and dropping
@@ -44,6 +44,7 @@ public class CharacterController : MonoBehaviour
     private float Action = 0.0f;// actions, 0 is none, 1 is left click, 2 is right click, 3 is belt action
     private float ActionCooldown = 0.0f;// Attack cooldown for npcs = item cooldown*n
     private CharacterData TargetCharacter = null;//save info on target character
+    private CharacterController TargetCharacterController = null;//save info on target character
 
     public GameObject TargetBeacon; // prefab of the target beacon
 
@@ -88,11 +89,10 @@ public class CharacterController : MonoBehaviour
         CharacterAnimator = AnimationTarget.GetComponent<Animator>();
 
 
-        if (isPlayer)
+        if (Character.IsPlayer)
         {
             cam = Camera.main;
             this.tag = "player";
-
         }
     }
 
@@ -136,10 +136,13 @@ public class CharacterController : MonoBehaviour
 
 
 
-        if (isPlayer)
+        if (Character.IsPlayer)
         {
             PlayerMove();
-            DoUI();
+
+            // dont do ui on player, is now on camera
+            //DoUI();
+
             //controls
             // actions for attach and use "r"
             if (Input.GetMouseButtonDown(0))
@@ -154,6 +157,11 @@ public class CharacterController : MonoBehaviour
             {
                 Action = 3.0f;
             }
+
+
+
+
+
 
 
             //Debug save and load functions
@@ -213,7 +221,7 @@ public class CharacterController : MonoBehaviour
     private void Update()
     {
         //TODO rm this check so all charactes are animated
-        //if (isPlayer)
+        //if (Character.IsPlayer)
         //{
 
         DoAnimationState();
@@ -250,14 +258,14 @@ public class CharacterController : MonoBehaviour
             //Debug.Log("should be getting state from item");
             AnimationOverrideTimer -= Time.deltaTime;
         }
-        else if (!IsGrounded && isPlayer)
+        else if (!IsGrounded && Character.IsPlayer)
         {
             CurrentAnimationState = Character.midair_animation;
         }
         // sprinting for player
         else if (Input.GetKey(KeyCode.LeftShift) && Character.CurrentStamina > 10)
         {
-            if (isPlayer)
+            if (Character.IsPlayer)
             {
                 //TODO check state of character
                 if (Input.GetKey("w"))
@@ -282,7 +290,7 @@ public class CharacterController : MonoBehaviour
             if (IsMoving)
             {
                 // player movment by key
-                if (isPlayer)
+                if (Character.IsPlayer)
                 {
                     if (Input.GetKey("w"))
                     {
@@ -311,51 +319,6 @@ public class CharacterController : MonoBehaviour
             }
 
 
-        }
-    }
-
-    private void DoUI()
-    {
-        DoHealthUI();
-        DoStaminaUI();
-        DoManaUI();
-        DoTargetHealtBarUI();
-    }
-
-    private void DoHealthUI()
-    {
-        HealthUI.GetComponent<FillUI>().SetTo(Character.CurrentHealth / Character.MaxHealth);
-
-    }
-    private void DoStaminaUI()
-    {
-        StaminaUI.GetComponent<FillUI>().SetTo(Character.CurrentStamina / Character.MaxStamina);
-    }
-
-    private void DoManaUI()
-    {
-        ManaUI.GetComponent<FillUI>().SetTo(Character.CurrentMana / Character.MaxMana);
-
-    }
-
-    private void DoTargetHealtBarUI()
-    {
-        if (hasTarget)
-        //check if freindly, if so show only name, else show health bar
-        {
-            TargetName.GetComponent<Text>().text = TargetCharacter.Name;
-            if (!TargetCharacter.IsFollower)
-            {
-                //TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth);
-                //float targetsHealth = CombatTarget.GetComponent<CharacterController>().GetCurrentHealth();
-                TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth / TargetCharacter.MaxHealth);
-            }
-
-        }
-        else// if no target, hide UI
-        {
-            TargetUI.GetComponent<FillUI>().SetTo(0.0f);
-            TargetName.GetComponent<Text>().text = "";
         }
     }
 
@@ -593,6 +556,7 @@ public class CharacterController : MonoBehaviour
     }
 
 
+    
     void OnCollisionExit(Collision hit)
     {
         if (hit.gameObject.tag == "Ground")
@@ -600,6 +564,7 @@ public class CharacterController : MonoBehaviour
             IsGrounded = false;
         }
     }
+    
 
     void OnCollisionEnter(Collision hit)
     {
@@ -671,6 +636,17 @@ public class CharacterController : MonoBehaviour
                             hasTarget = true;
                             CombatTarget = hitColliders[i].gameObject;
                             TargetCharacter = hitColliders[i].gameObject.GetComponent<CharacterController>().GetCharacter();
+
+                            //TargetCharacterController = hitColliders[i].gameObject.GetComponent<CharacterController>().GetCharacterController();
+
+                            //Player = CameraFollowObj.gameObject.GetComponentInParent<CharacterController>();
+                            //TargetCharacterController = hitColliders[i].gameObject.GetComponent<CharacterController>().GetCharacterController();
+                            //TargetCharacterController = hitColliders[i].GetComponentInParent<CharacterController>();
+
+
+                            TargetCharacterController = CombatTarget.GetComponent<CharacterController>();
+
+                            Debug.Log("target char controller", TargetCharacterController);
                             //make the target beacon a child of its taret
                             TargetBeaconObject.gameObject.GetComponent<Transform>().parent = CombatTarget.GetComponent<Transform>();
                             break;
@@ -684,6 +660,7 @@ public class CharacterController : MonoBehaviour
                 Destroy(TargetBeaconObject);
                 CombatTarget = null;
                 TargetCharacter = null;
+                TargetCharacterController = null;
                 hasTarget = false;
             }
             TargetCoolDown = 0.05f;
@@ -746,9 +723,14 @@ public class CharacterController : MonoBehaviour
         return this.Character;
     }
 
+    public CharacterData GetTargetCharacter()
+    {
+        return this.TargetCharacter;
+    }
+
     public bool GetIsPlayer()
     {
-        return this.isPlayer;
+        return this.Character.IsPlayer;
     }
 
     public Transform GetCharacterTransform()
@@ -867,6 +849,11 @@ public class CharacterController : MonoBehaviour
     }
 
 
+    public bool GetHasTarget()
+    {
+        return this.hasTarget;
+    }
+
     public string GetUUID()
     {
         return this.Character.id;
@@ -892,6 +879,40 @@ public class CharacterController : MonoBehaviour
         Debug.Log("Loaded data for " + Character.Name + " from " + CharacterSaveFile);
 
     }
+
+
+    public void SetIsPlayer(bool NewStatus)
+    {
+        Character.IsPlayer = NewStatus;
+        cam = Camera.main;
+        this.tag = "player";
+    }
+    public void SwapIntoTarget()
+    {
+        Character.IsPlayer = false;
+        cam = null;
+        this.tag = "npc";
+        TargetCharacterController.SetIsPlayer(true);
+
+
+        Destroy(TargetBeaconObject);
+        CombatTarget = null;
+        TargetCharacter = null;
+        TargetCharacterController = null;
+        hasTarget = false;
+
+    }
+
+    public GameObject GetCameraTarget()
+    {
+        return CameraTarget;
+    }
+
+    public GameObject GetTargetsCameraTarget()
+    {
+        return TargetCharacterController.GetCameraTarget();
+    }
+
 
 }
 
