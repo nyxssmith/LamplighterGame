@@ -75,6 +75,8 @@ public class CharacterController : MonoBehaviour
 
     private float AnimationOverrideTimer = 0.0f;
 
+    NavMeshAgent NavAgent;
+
 
     //When character comes online, set vars needed for init
     private void Awake()
@@ -82,6 +84,8 @@ public class CharacterController : MonoBehaviour
 
         rb = gameObject.GetComponent<Rigidbody>();
         CharacterTransform = gameObject.GetComponent<Transform>();
+        NavAgent = this.gameObject.GetComponent<NavMeshAgent>();
+
 
         CDM.Init(CharacterSaveFileFolder, CharacterSaveFile);
 
@@ -94,6 +98,8 @@ public class CharacterController : MonoBehaviour
             cam = Camera.main;
             this.tag = "player";
         }
+
+        SetNavAgentStateFromIsPlayer();
     }
 
     private void FixedUpdate()
@@ -109,31 +115,6 @@ public class CharacterController : MonoBehaviour
         {
             Save();
         }
-
-
-
-        // Item controls TODO this better with npcs
-        if (Input.GetKey("q"))
-        {
-            ItemStatus = "Dropping";//applies to habd item
-        }
-        else if (Input.GetKeyDown("f"))
-        {
-            ItemStatus = "SwapHandBack";
-        }
-        else if (Input.GetKeyDown("g"))
-        {
-            ItemStatus = "SwapHandBelt";
-        }
-        //TODO use item from belt
-        else
-        {
-            ItemStatus = "";
-        }
-
-        CheckIfItemInHand();
-
-
 
 
         if (Character.IsPlayer)
@@ -178,7 +159,7 @@ public class CharacterController : MonoBehaviour
 
 
             // TODO coordinate this and the above drop system to work for npcs too
-            /*
+            
             // Item drop controll
             if (Input.GetKey("q"))
             {
@@ -199,7 +180,7 @@ public class CharacterController : MonoBehaviour
             }
 
             CheckIfItemInHand();
-            */
+            
 
 
 
@@ -223,6 +204,10 @@ public class CharacterController : MonoBehaviour
         //TODO rm this check so all charactes are animated
         //if (Character.IsPlayer)
         //{
+
+        // TODO rm this debug
+
+        SetNavAgentStateFromIsMoving();
 
         DoAnimationState();
         if (LastAnimationState != CurrentAnimationState)
@@ -350,7 +335,7 @@ public class CharacterController : MonoBehaviour
     private void AttackTarget()
     {
 
-        Debug.Log("Attacking", CombatTarget);
+        //Debug.Log("Attacking", CombatTarget);
 
         Transform TargetTransform = CombatTarget.GetComponent<Transform>();
         NavMeshAgent agent = GetComponent<NavMeshAgent>();
@@ -886,7 +871,11 @@ public class CharacterController : MonoBehaviour
         Character.IsPlayer = NewStatus;
         cam = Camera.main;
         this.tag = "player";
+        
+        SetNavAgentStateFromIsPlayer();
     }
+
+    //TODO set this to be from squad etc
     public void SwapIntoTarget()
     {
         Character.IsPlayer = false;
@@ -900,7 +889,9 @@ public class CharacterController : MonoBehaviour
         TargetCharacter = null;
         TargetCharacterController = null;
         hasTarget = false;
+        IsFighting = false;
 
+        SetNavAgentStateFromIsPlayer();
     }
 
     public GameObject GetCameraTarget()
@@ -913,6 +904,16 @@ public class CharacterController : MonoBehaviour
         return TargetCharacterController.GetCameraTarget();
     }
 
+    private void SetNavAgentStateFromIsPlayer(){
+        Debug.Log("my ai"+NavAgent);
+        NavAgent.enabled = !Character.IsPlayer;
+        Debug.Log("my ai is enbled"+NavAgent.enabled+"   "+Character.Name);
+    }
+
+
+    private void SetNavAgentStateFromIsMoving(){
+        NavAgent.enabled = IsMoving;
+    }
 
 }
 
