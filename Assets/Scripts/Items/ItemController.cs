@@ -272,6 +272,7 @@ public class ItemController : MonoBehaviour
         }//TODO else if basic etc
         else if (ItemClass == "POTION")
         {
+            Debug.Log("potion cooldown:"+CooldownTimer);
             if (CooldownTimer <= 0)
             {
                 Potion DrinkPotion = this.gameObject.GetComponent<Potion>();

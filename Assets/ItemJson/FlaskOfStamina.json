@@ -1,1 +1,17 @@
-{"Name":"Potion of Stamina","Damage":5.0,"IsPickup":true,"PrimaryActionClass":"POTION","SecondartActionClass":"NONE","Cooldown":5.0,"HoldingOffsetX":0.0,"HoldingOffsetY":0.0,"HoldingOffsetZ":0.0,"CanBeUsedFromBelt":true,"heldLocation":"Back","holderUUID":"c72ca895-d671-4c93-9c2f-c457e8f6ac19","x_pos":18.110904693603517,"y_pos":0.40000003576278689,"z_pos":29.511058807373048}
+{
+    "Name": "Potion of Stamina",
+    "Damage": 500.0,
+    "IsPickup": true,
+    "PrimaryActionClass": "POTION",
+    "SecondartActionClass": "NONE",
+    "Cooldown": 5.0,
+    "HoldingOffsetX": 0.0,
+    "HoldingOffsetY": 0.0,
+    "HoldingOffsetZ": 0.0,
+    "CanBeUsedFromBelt": true,
+    "heldLocation": "Back",
+    "holderUUID": "c72ca895-d671-4c93-9c2f-c457e8f6ac19",
+    "x_pos": 18.110904693603517,
+    "y_pos": 0.40000003576278689,
+    "z_pos": 29.511058807373048
+}

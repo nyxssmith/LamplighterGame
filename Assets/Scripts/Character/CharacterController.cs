@@ -78,6 +78,8 @@ public class CharacterController : MonoBehaviour
     NavMeshAgent NavAgent;
 
 
+    private float JumpCoolDown = 0.0f;
+
     //When character comes online, set vars needed for init
     private void Awake()
     {
@@ -159,7 +161,7 @@ public class CharacterController : MonoBehaviour
 
 
             // TODO coordinate this and the above drop system to work for npcs too
-            
+
             // Item drop controll
             if (Input.GetKey("q"))
             {
@@ -180,7 +182,7 @@ public class CharacterController : MonoBehaviour
             }
 
             CheckIfItemInHand();
-            
+
 
 
 
@@ -201,13 +203,17 @@ public class CharacterController : MonoBehaviour
     // things do to at frame time
     private void Update()
     {
-        //TODO rm this check so all charactes are animated
-        //if (Character.IsPlayer)
-        //{
 
-        // TODO rm this debug
+        // TODO check not fall from world
 
         SetNavAgentStateFromIsMoving();
+
+        if (Character.IsPlayer)
+        {
+
+            SetNavAgentStateFromIsPlayer();
+
+        }
 
         DoAnimationState();
         if (LastAnimationState != CurrentAnimationState)
@@ -243,10 +249,13 @@ public class CharacterController : MonoBehaviour
             //Debug.Log("should be getting state from item");
             AnimationOverrideTimer -= Time.deltaTime;
         }
-        else if (!IsGrounded && Character.IsPlayer)
+        /*
+        else if (!IsGrounded && Character.IsPlayer && (JumpCoolDown > 0.0f))
         {
             CurrentAnimationState = Character.midair_animation;
+            JumpCoolDown -= Time.deltaTime;
         }
+        */
         // sprinting for player
         else if (Input.GetKey(KeyCode.LeftShift) && Character.CurrentStamina > 10)
         {
@@ -524,24 +533,28 @@ public class CharacterController : MonoBehaviour
         }
 
         //Jumping
+        // TODO rm jumping
+        /*
         float DisstanceToTheGround = GetComponent<Collider>().bounds.extents.y;
 
         //IsGrounded = Physics.Raycast(CharacterTransform.position, Vector3.up, DisstanceToTheGround + 0.1f);
 
-        if ((IsGrounded == true) && (Input.GetButton("Jump"))) //if canjump boolean is true and if the player press the button jump , the player can jump.
+        if ((IsGrounded == true) && (Input.GetButton("Jump")) && (JumpCoolDown <= 0.0f)) //if canjump boolean is true and if the player press the button jump , the player can jump.
         {
             CurrentAnimationState = Character.jump_animation;
 
             Vector3 up = new Vector3(0f, Character.JumpHeight, 0.0f); // script for jumping
                                                                       //rb.AddForce (up * upper);
             rb.AddForce(up * Character.JumpHeight);
+            JumpCoolDown += 3.0f;
 
         }
+        */
 
     }
 
 
-    
+
     void OnCollisionExit(Collision hit)
     {
         if (hit.gameObject.tag == "Ground")
@@ -549,7 +562,7 @@ public class CharacterController : MonoBehaviour
             IsGrounded = false;
         }
     }
-    
+
 
     void OnCollisionEnter(Collision hit)
     {
@@ -871,7 +884,7 @@ public class CharacterController : MonoBehaviour
         Character.IsPlayer = NewStatus;
         cam = Camera.main;
         this.tag = "player";
-        
+
         SetNavAgentStateFromIsPlayer();
     }
 
@@ -904,16 +917,19 @@ public class CharacterController : MonoBehaviour
         return TargetCharacterController.GetCameraTarget();
     }
 
-    private void SetNavAgentStateFromIsPlayer(){
-        Debug.Log("my ai"+NavAgent);
+    private void SetNavAgentStateFromIsPlayer()
+    {
+        Debug.Log("my ai" + NavAgent);
         NavAgent.enabled = !Character.IsPlayer;
-        Debug.Log("my ai is enbled"+NavAgent.enabled+"   "+Character.Name);
+        Debug.Log("my ai is enbled" + NavAgent.enabled + "   " + Character.Name);
     }
 
 
-    private void SetNavAgentStateFromIsMoving(){
+    private void SetNavAgentStateFromIsMoving()
+    {
         NavAgent.enabled = IsMoving;
     }
+
 
 }
 
