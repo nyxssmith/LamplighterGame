@@ -38,6 +38,7 @@ public class CharacterData
     public float z_pos;
 
     public string id;
+    public string squadLeaderId;
 
 
 }

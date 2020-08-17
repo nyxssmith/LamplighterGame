@@ -5,7 +5,7 @@
     "CurrentMana": 100.0,
     "MaxMana": 100.0,
     "JumpHeight": 23.0,
-    "CurrentStamina": 838.4237670898438,
+    "CurrentStamina": 1000.8935546875,
     "MaxStamina": 1000.0,
     "StaminaBonusSpeed": 40.0,
     "StaminaRechargeRate": 0.010999999940395356,
@@ -26,8 +26,9 @@
     "landing_animation": "Landing",
     "midair_animation": "MidAir",
     "jump_animation": "Jump",
-    "x_pos": 13.215499877929688,
-    "y_pos": 1.0450348854064942,
-    "z_pos": 32.89101791381836,
-    "id": "c72ca895-d671-4c93-9c2f-c457e8f6ac19"
+    "x_pos": 12.93433666229248,
+    "y_pos": -0.01500028371810913,
+    "z_pos": 30.298471450805665,
+    "id": "c72ca895-d671-4c93-9c2f-c457e8f6ac19",
+    "squadLeaderId": ""
 }

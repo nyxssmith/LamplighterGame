@@ -8,6 +8,7 @@ public class ItemController : MonoBehaviour
 
     private Rigidbody rb;
     private Transform ItemTransform;
+    private Collider ItemCollider;
     private ItemData Item = new ItemData();
     private ItemDataManager IDM = new ItemDataManager();
     public string ItemSaveFileFolder = "Assets/ItemJson";
@@ -28,6 +29,7 @@ public class ItemController : MonoBehaviour
         //cam = Camera.main;
         rb = gameObject.GetComponent<Rigidbody>();
         ItemTransform = gameObject.GetComponent<Transform>();
+        ItemCollider = gameObject.GetComponent<Collider>();
 
         Debug.Log("Starting an item");
         IDM.Init(ItemSaveFileFolder, ItemSaveFile);
@@ -134,6 +136,7 @@ public class ItemController : MonoBehaviour
             if (Status == "Dropping" && Item.heldLocation == "Hand")
             {
                 Debug.Log("parent id dropping me");
+                EnableCollsion();
 
 
                 Transform HoldingCharacterTransform = HoldingCharacter.GetComponent<Transform>();
@@ -222,7 +225,16 @@ public class ItemController : MonoBehaviour
 
 
                     float action = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
-
+                    if (action > 0.0f)
+                    {
+                        // enable collision
+                        EnableCollsion();
+                    }
+                    else
+                    {
+                        //disable collision
+                        DisableCollsion();
+                    }
                     //mouse click inputs
                     if (action == 1.0f)
                     {
@@ -272,7 +284,7 @@ public class ItemController : MonoBehaviour
         }//TODO else if basic etc
         else if (ItemClass == "POTION")
         {
-            Debug.Log("potion cooldown:"+CooldownTimer);
+            Debug.Log("potion cooldown:" + CooldownTimer);
             if (CooldownTimer <= 0)
             {
                 Potion DrinkPotion = this.gameObject.GetComponent<Potion>();
@@ -313,6 +325,16 @@ public class ItemController : MonoBehaviour
         controller.SetTarget(TargetToSet);
         controller.SetFighting(true);
 
+    }
+
+    private void EnableCollsion()
+    {
+        ItemCollider.enabled = true;
+    }
+
+    private void DisableCollsion()
+    {
+        ItemCollider.enabled = false;
     }
 
     //TODO check if parent is asking for use function

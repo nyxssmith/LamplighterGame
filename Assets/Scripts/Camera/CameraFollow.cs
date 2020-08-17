@@ -150,6 +150,7 @@ public class CameraFollow : MonoBehaviour
         DoStaminaUI();
         DoManaUI();
         DoTargetHealtBarUI();
+        DoSquadUI();
     }
 
     private void DoHealthUI()
@@ -187,6 +188,11 @@ public class CameraFollow : MonoBehaviour
             TargetUI.GetComponent<FillUI>().SetTo(0.0f);
             TargetName.GetComponent<Text>().text = "";
         }
+    }
+
+
+    private void DoSquadUI(){
+
     }
 
 

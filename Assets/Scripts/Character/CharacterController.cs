@@ -8,14 +8,15 @@ using UnityEngine.AI;
 public class CharacterController : MonoBehaviour
 {
 
-    //Control settings
-
-    //Objects and vars not loaded from save file
+    //Parts of the character
     private Transform CharacterTransform;
     public GameObject CameraTarget;
     private Camera cam;
     private Rigidbody rb;
     private Physics physics;
+
+
+    // UI
 
     [SerializeField] GameObject ManaUI;
     [SerializeField] GameObject HealthUI;
@@ -31,30 +32,6 @@ public class CharacterController : MonoBehaviour
 
     public CharacterData Character = new CharacterData();
 
-    // variables that are used for interacting with world but dont matter for save
-    private string ItemStatus = "";//action items status, for swapping and dropping
-    private bool HasItemInHand = false;
-    private bool IsMoving = false;
-    private bool IsGrounded = true;
-
-    // Targeting and interacting
-    private GameObject FollowTarget = null;
-    private GameObject CombatTarget = null;
-    private bool IsFighting = false;
-    private float Action = 0.0f;// actions, 0 is none, 1 is left click, 2 is right click, 3 is belt action
-    private float ActionCooldown = 0.0f;// Attack cooldown for npcs = item cooldown*n
-    private CharacterData TargetCharacter = null;//save info on target character
-    private CharacterController TargetCharacterController = null;//save info on target character
-
-    public GameObject TargetBeacon; // prefab of the target beacon
-
-    private bool hasTarget = false; //toggle if a target exists
-    public float TargetCoolDown = 0.0f; //cooldown on targeting
-
-    private int rand; //random number used to isolate targets
-
-    public float HealthDamageCoolDown = 0.0f;
-
     private GameObject TargetBeaconObject = null; // the actual instance of the target beacon
 
 
@@ -68,17 +45,50 @@ public class CharacterController : MonoBehaviour
     public GameObject Back;
     public GameObject Belt;
 
+    private NavMeshAgent NavAgent;
 
 
+    // variables that are used for interacting with world but dont matter for save
+    private string ItemStatus = "";//action items status, for swapping and dropping
+    private bool HasItemInHand = false;
+    private bool IsMoving = false;
+    private bool IsGrounded = true;
+
+    private bool IsFighting = false;
+    private float Action = 0.0f;// actions, 0 is none, 1 is left click, 2 is right click, 3 is belt action
+    private float ActionCooldown = 0.0f;// Attack cooldown for npcs = item cooldown*n
+
+    public GameObject TargetBeacon; // prefab of the target beacon
+
+    private bool hasTarget = false; //toggle if a target exists
+    public float TargetCoolDown = 0.0f; //cooldown on targeting
+
+    private int rand; //random number used to isolate targets
+
+    public float HealthDamageCoolDown = 0.0f;
+
+    private float JumpCoolDown = 0.0f;
     private string CurrentAnimationState = "";
     private string LastAnimationState = "";
 
     private float AnimationOverrideTimer = 0.0f;
 
-    NavMeshAgent NavAgent;
+    private bool isSprinting = false;
+    private bool isSprintingCooldown = false;
+
+    private float StaminaLevelBeforeSprintAgain;
 
 
-    private float JumpCoolDown = 0.0f;
+
+    // Targeting and interacting with enemy and squad
+    private GameObject FollowTarget = null;
+    private GameObject CombatTarget = null;
+    private CharacterData TargetCharacter = null;//save info on target character
+    private CharacterController TargetCharacterController = null;//save info on target character
+
+
+
+
 
     //When character comes online, set vars needed for init
     private void Awake()
@@ -99,10 +109,16 @@ public class CharacterController : MonoBehaviour
         {
             cam = Camera.main;
             this.tag = "player";
+
         }
+        GetFollowTargetFromSquadLeaderId();
 
         SetNavAgentStateFromIsPlayer();
+
+        // must hit 80 stamina before going again
+        StaminaLevelBeforeSprintAgain = Character.MaxStamina * 0.85f;
     }
+
 
     private void FixedUpdate()
     {
@@ -257,7 +273,7 @@ public class CharacterController : MonoBehaviour
         }
         */
         // sprinting for player
-        else if (Input.GetKey(KeyCode.LeftShift) && Character.CurrentStamina > 10)
+        else if (isSprinting && Character.CurrentStamina > 10)
         {
             if (Character.IsPlayer)
             {
@@ -347,7 +363,7 @@ public class CharacterController : MonoBehaviour
         //Debug.Log("Attacking", CombatTarget);
 
         Transform TargetTransform = CombatTarget.GetComponent<Transform>();
-        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        //NavMeshAgent agent = GetComponent<NavMeshAgent>();
         float rotationSpeed = 30f; //speed of turning
 
         float range = 10f;
@@ -359,21 +375,24 @@ public class CharacterController : MonoBehaviour
         var distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
         if (distance <= range2 && distance >= range)
         {
-            agent.destination = CharacterTransform.position;
+            SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
             Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
         }
         else if (distance <= range && distance > stop)
         {
-            agent.destination = TargetTransform.position;
-            IsMoving = true;
+            //NavAgent.destination = TargetTransform.position;
+            //IsMoving = true;
+            NPCGOTOTargetWithSprint(TargetTransform);
+
 
         }
-        else if (distance <= stop)
+        else if ((distance <= stop) && (NavAgent.enabled))
         {
 
-            agent.destination = CharacterTransform.position;
+
+            SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
                 Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
@@ -390,7 +409,7 @@ public class CharacterController : MonoBehaviour
         }
         else
         {
-            agent.destination = CharacterTransform.position;
+            SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
         }
     }
@@ -414,21 +433,33 @@ public class CharacterController : MonoBehaviour
 
     }
 
+    private void SetNavAgentDestination(Vector3 goal_position)
+    {
+        if (NavAgent.enabled)
+        {
+            NavAgent.destination = goal_position;
+        }
+    }
+
     private void FollowPlayer()
     {
+        if (FollowTarget == null)
+        {
+            GetFollowTargetFromSquadLeaderId();
+        }
 
         Transform TargetTransform = FollowTarget.GetComponent<Transform>();
-        NavMeshAgent agent = GetComponent<NavMeshAgent>();
+        //NavMeshAgent agent = GetComponent<NavMeshAgent>();
         float rotationSpeed = 30f; //speed of turning
-        float range = 10f;
-        float range2 = 10f;
-        float stop = 3f; // this is range to player
+        float range = 250f;
+        float range2 = 250f;
+        float stop = 3.8f; // this is range to player
 
         //rotate to look at the player
         var distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
         if (distance <= range2 && distance >= range)
         {
-            agent.destination = CharacterTransform.position;
+            SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
             Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
@@ -436,22 +467,78 @@ public class CharacterController : MonoBehaviour
         else if (distance <= range && distance > stop)
         {
 
-            agent.destination = TargetTransform.position;
-            IsMoving = true;
+            //NavAgent.destination = TargetTransform.position;
+            //IsMoving = true;
+            NPCGOTOTargetWithSprint(TargetTransform);
+
 
         }
-        else if (distance <= stop)
+        else if ((distance <= stop) && (NavAgent.enabled))
         {
-            agent.destination = CharacterTransform.position;
+            SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
                 Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
         }
         else
         {
-            agent.destination = CharacterTransform.position;
+            SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
         }
+
+    }
+
+
+    private void NPCGOTOTargetWithSprint(Transform TargetPosition)
+    {
+        IsMoving = true;
+
+        Vector3 Start = CharacterTransform.position;
+        Vector3 End = TargetPosition.position;
+
+
+        SetNavAgentDestination(End);
+        float distance_to_go = (Start - End).magnitude;
+
+        // sprinting cooldown for npcs
+        if (isSprintingCooldown)
+        {
+            if (Character.CurrentStamina > StaminaLevelBeforeSprintAgain)
+            {
+                isSprintingCooldown = false;
+            }
+        }
+
+        if ((distance_to_go > 20.0f) && (Character.CurrentStamina > 1) && (!isSprintingCooldown))
+        {
+            Character.CurrentStamina = Character.CurrentStamina - Character.StaminaUseRate;
+            Character.CurrentSpeed = Character.BaseMovementSpeed + (Character.StaminaBonusSpeed * (Character.CurrentStamina / Character.MaxStamina * 0.7f));
+            isSprinting = true;
+        }
+        else
+        {
+            if (isSprinting)
+            {
+                isSprintingCooldown = true;
+            }
+            isSprinting = false;
+            if (Character.CurrentStamina < Character.MaxStamina)
+            {
+                if (Character.CurrentStamina <= 1)
+                {
+                    Character.CurrentStamina = 2;
+                }
+                else
+                {
+                    Character.CurrentStamina = Character.CurrentStamina + Character.CurrentStamina * Character.StaminaRechargeRate;
+                }
+            }
+            Character.CurrentSpeed = Character.BaseMovementSpeed;
+        }
+
+        NavAgent.speed = Character.CurrentSpeed;
+        Debug.Log("im " + Character.Name + " and my current speed is" + NavAgent.speed+" im sprinting"+isSprinting+" stamina"+Character.CurrentStamina);
+
 
     }
 
@@ -484,10 +571,11 @@ public class CharacterController : MonoBehaviour
         {
             Character.CurrentStamina = Character.CurrentStamina - Character.StaminaUseRate;
             Character.CurrentSpeed = Character.BaseMovementSpeed + (Character.StaminaBonusSpeed * (Character.CurrentStamina / Character.MaxStamina * 0.7f));
+            isSprinting = true;
         }
         else
         {
-
+            isSprinting = false;
             if (Character.CurrentStamina < Character.MaxStamina)
             {
                 if (Character.CurrentStamina <= 1)
@@ -919,9 +1007,7 @@ public class CharacterController : MonoBehaviour
 
     private void SetNavAgentStateFromIsPlayer()
     {
-        Debug.Log("my ai" + NavAgent);
         NavAgent.enabled = !Character.IsPlayer;
-        Debug.Log("my ai is enbled" + NavAgent.enabled + "   " + Character.Name);
     }
 
 
@@ -930,6 +1016,29 @@ public class CharacterController : MonoBehaviour
         NavAgent.enabled = IsMoving;
     }
 
+
+    private void GetFollowTargetFromSquadLeaderId()
+    {
+
+        // if character is a foller and in a squad find follow target
+        if (Character.IsFollower && (Character.squadLeaderId != ""))
+        {
+            var characterControllersList = FindObjectsOfType<CharacterController>();
+            string id;
+            foreach (CharacterController controller in characterControllersList)
+            {
+                id = controller.GetUUID();
+                Debug.Log("found id" + id);
+                if (id == Character.squadLeaderId)
+                {
+                    FollowTarget = controller.gameObject;
+                    Debug.Log(Character.Name + " found my followtagret " + FollowTarget);
+                    break;
+                }
+            }
+
+        }
+    }
 
 }
 
