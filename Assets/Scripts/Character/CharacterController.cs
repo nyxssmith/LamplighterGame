@@ -338,10 +338,33 @@ public class CharacterController : MonoBehaviour
 
     private void NPCMove()
     {
+
+
+        // stamina recharge for npc
+        if (!isSprinting)
+        {
+            if (Character.CurrentStamina < Character.MaxStamina)
+            {
+                if (Character.CurrentStamina <= 1)
+                {
+                    Character.CurrentStamina = 2;
+                }
+                else
+                {
+                    Character.CurrentStamina = Character.CurrentStamina + Character.CurrentStamina * Character.StaminaRechargeRate;
+                }
+            }
+        }
+
         //TODO if follower
         // todo if enemy
         // make sure if figting, also take control of is moving
         // TODO if enemy follower sees, target instead
+
+        // TODO check for enemies or factions in area
+
+
+
 
         // fight takes priority
         if (IsFighting)
@@ -354,6 +377,7 @@ public class CharacterController : MonoBehaviour
         }
         else
         {
+            // TODO schedule / wandering around a point
             IsMoving = false;
         }
 
@@ -536,17 +560,7 @@ public class CharacterController : MonoBehaviour
                 isSprintingCooldown = true;
             }
             isSprinting = false;
-            if (Character.CurrentStamina < Character.MaxStamina)
-            {
-                if (Character.CurrentStamina <= 1)
-                {
-                    Character.CurrentStamina = 2;
-                }
-                else
-                {
-                    Character.CurrentStamina = Character.CurrentStamina + Character.CurrentStamina * Character.StaminaRechargeRate;
-                }
-            }
+
             Character.CurrentSpeed = Character.BaseMovementSpeed;
         }
 

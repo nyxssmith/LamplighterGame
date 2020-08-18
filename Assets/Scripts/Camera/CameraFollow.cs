@@ -314,7 +314,8 @@ public class CameraFollow : MonoBehaviour
         string lineString = ListCounter.ToString() + " : " + targetCharacterController.GetCharacter().Name;
         if (isMe)
         {
-            lineString = "*" + lineString;
+            lineString = "* <color=green>" + lineString+"</color>";
+
 
         }
         if (targetCharacterController.GetSquadLeaderUUID() == targetCharacterController.GetUUID())

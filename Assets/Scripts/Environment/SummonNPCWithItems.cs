@@ -54,4 +54,8 @@ public class SummonNPCWithItems : MonoBehaviour
         }
 
     }
+
+
+    //TODO summon random follower with list of options for items to pick from
+    // and random names etc
 }

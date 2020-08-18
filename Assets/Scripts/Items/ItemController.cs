@@ -404,15 +404,20 @@ public class ItemController : MonoBehaviour
                 CharacterController CollidingCharacter = collision.gameObject.GetComponent<CharacterController>();
                 if (CollidingCharacter != null)
                 {
-                    //TODO remove this add set this to action part
-                    CollidingCharacter.AddValueToHealth(-1 * Item.Damage);
-                    // Set to target eachother
-                    SetTargetOnImpact(HoldingCharacter, collision.gameObject);
-                    // if can fight
-                    if (CollidingCharacter.GetCanFight())
+                    //ignore interactions with squadmates
+                    if (CollidingCharacter.GetSquadLeaderUUID() != HoldingCharacter.GetComponent<CharacterController>().GetSquadLeaderUUID())
                     {
-                        SetTargetOnImpact(collision.gameObject, HoldingCharacter);
 
+                        //TODO remove this add set this to action part
+                        CollidingCharacter.AddValueToHealth(-1 * Item.Damage);
+                        // Set to target eachother
+                        SetTargetOnImpact(HoldingCharacter, collision.gameObject);
+                        // if can fight
+                        if (CollidingCharacter.GetCanFight())
+                        {
+                            SetTargetOnImpact(collision.gameObject, HoldingCharacter);
+
+                        }
                     }
                 }
             }
@@ -448,10 +453,12 @@ public class ItemController : MonoBehaviour
         else if (Item.heldLocation == "Belt")
         {
             ItemTransform.parent = ParentController.GetBeltTransform();
-        }else{
+        }
+        else
+        {
             Debug.Log("set held location to not valid location");
         }
-        
+
 
         ItemTransform.localPosition = new Vector3(0, 0, 0);
 
