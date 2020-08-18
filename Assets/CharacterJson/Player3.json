@@ -16,8 +16,8 @@
     "TargetRange": 5.0,
     "CanFight": true,
     "IsPlayer": false,
-    "IsFollower": false,
-    "IsFollowing": false,
+    "IsFollower": true,
+    "IsFollowing": true,
     "idle_animation": "m_idle",
     "walking_forward_animation": "m_walking",
     "running_forward_animation": "m_running",
@@ -30,5 +30,5 @@
     "y_pos": -0.015000104904174805,
     "z_pos": 25.766803741455079,
     "id": "5b26a0ce-ad4d-4353-9cc9-75cfc31f4a7e",
-    "squadLeaderId": ""
+    "squadLeaderId": "c72ca895-d671-4c93-9c2f-c457e8f6ac19"
 }

@@ -78,6 +78,8 @@ public class CharacterController : MonoBehaviour
 
     private float StaminaLevelBeforeSprintAgain;
 
+    private bool NeedsUIUpdate = false;
+
 
 
     // Targeting and interacting with enemy and squad
@@ -687,6 +689,7 @@ public class CharacterController : MonoBehaviour
                 CombatTarget.GetComponent<CharacterController>().DoInteractAction(this.gameObject);
             }
         }
+        NeedsUIUpdate = true;
     }
 
     public void Target()
@@ -751,16 +754,34 @@ public class CharacterController : MonoBehaviour
             }
             TargetCoolDown = 0.05f;
         }
+        NeedsUIUpdate = true;
+
     }
 
     private void DoInteractAction(GameObject WhoInteracted)
     {
-        Debug.Log("I was interacted with by " + WhoInteracted);
+        Debug.Log("I was interacted with by " + WhoInteracted + " my leader is" + Character.squadLeaderId);
         Debug.Log(Character.IsFollower);
 
         // If a follower, then make then interact toggles follow
         if (Character.IsFollower)
         {
+
+            CharacterController InteractedCharacterController = WhoInteracted.GetComponent<CharacterController>();
+            if (InteractedCharacterController != null)
+            {
+                if (Character.squadLeaderId == "")
+                {
+                    Debug.Log("Joining squad of " + InteractedCharacterController);
+                    JoinSquadOfCharacter(InteractedCharacterController);
+                    //JoinSquadLeadBy(InteractedCharacterController.GetUUID());
+                }
+                else
+                {
+                    JoinSquadLeadBy("");
+                }
+            }
+            /*
             Debug.Log("im a follwer who was interacted with");
             Character.IsFollowing = !Character.IsFollowing;
             FollowTarget = WhoInteracted;
@@ -771,12 +792,16 @@ public class CharacterController : MonoBehaviour
                 IsMoving = false;
                 CurrentAnimationState = Character.idle_animation;
             }
+            */
         }
+        NeedsUIUpdate = true;
+
     }
 
     private void DoTargetedAction()// character will make a beacon above their head
     {
         Debug.Log("I was targetd");
+        NeedsUIUpdate = true;
 
         //TODO reacte to being targeted etc
 
@@ -984,27 +1009,37 @@ public class CharacterController : MonoBehaviour
         SetNavAgentStateFromIsPlayer();
     }
 
-    //TODO set this to be from squad etc
-    public void SwapIntoTarget(CharacterController SwapTargetCharacterController)
+    // swap into target as long as its not self and let camera know
+    public bool SwapIntoTarget(CharacterController SwapTargetCharacterController)
     {
-        /*
-        Character.IsPlayer = false;
-        cam = null;
-        this.tag = "npc";
-        */
-        SetIsPlayer(false);
-        SwapTargetCharacterController.SetIsPlayer(true);
+        if (SwapTargetCharacterController != this)
+        {
+            /*
+            Character.IsPlayer = false;
+            cam = null;
+            this.tag = "npc";
+            */
+            SetIsPlayer(false);
+            SwapTargetCharacterController.SetIsPlayer(true);
 
-        /*
-        Destroy(TargetBeaconObject);
-        CombatTarget = null;
-        TargetCharacter = null;
-        TargetCharacterController = null;
-        hasTarget = false;
-        IsFighting = false;
-        */
+            /*
+            Destroy(TargetBeaconObject);
+            CombatTarget = null;
+            TargetCharacter = null;
+            TargetCharacterController = null;
+            hasTarget = false;
+            IsFighting = false;
+            */
 
-        SetNavAgentStateFromIsPlayer();
+            // TODO cooldown set from being swapped into
+
+            SetNavAgentStateFromIsPlayer();
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     public GameObject GetCameraTarget()
@@ -1056,6 +1091,49 @@ public class CharacterController : MonoBehaviour
             }
 
         }
+    }
+
+    // starts following a leader when given leader uuid
+    private void JoinSquadLeadBy(string leader_uuid)
+    {
+        Character.squadLeaderId = leader_uuid;
+        if (leader_uuid != "")
+        {
+            Character.IsFollowing = true;
+        }
+        else
+        {
+            FollowTarget = null;
+            Character.IsFollowing = false;
+        }
+        NeedsUIUpdate = true;
+    }
+
+    // either joins a squad that the inviter is in and climbs that tree, or joins their squad owned by them
+    private void JoinSquadOfCharacter(CharacterController InviterController)
+    {
+        string InviterID = InviterController.GetUUID();
+        string InviterLeaderID = InviterController.GetSquadLeaderUUID();
+        // if inviter is leader or has none, join them
+        if (InviterID == InviterLeaderID || InviterLeaderID == "")
+        {
+            JoinSquadLeadBy(InviterID);
+        }
+        else
+        {
+            JoinSquadLeadBy(InviterLeaderID);
+        }
+
+    }
+
+    public bool GetNeedsUIUpdate()
+    {
+        return NeedsUIUpdate;
+    }
+
+    public void SetNeedsUIUpdate(bool newState)
+    {
+        NeedsUIUpdate = newState;
     }
 
 }

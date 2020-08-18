@@ -92,29 +92,63 @@ public class CameraFollow : MonoBehaviour
             GetPlayer();
         }
 
+
+        if (GetIfPlayerRequestedUIUpdate())
+        {
+            Debug.Log("player requested ui update");
+            GetPlayer();
+            GetPlayerCharacter();
+            SquadListText = GenerateSquadList();
+            Player.SetNeedsUIUpdate(false);
+        }
+
         GetPlayersTargetCharacter();
         DoUI();
 
 
-
-        // TODO move this to camera
-        if (Input.GetKeyDown("y"))
+        if (Input.GetKeyDown("j"))
         {
-            Debug.Log("swapping into target");
-            //SwitchToTarget();
+            Debug.Log("setting player to ask for ui update");
+            Player.SetNeedsUIUpdate(true);
         }
 
-        // get numbers 1-9 todo
+
+        // get numbers 1-9 and swap to squad member
         if (Input.GetKeyDown("1"))
         {
-            Debug.Log("pushed 1");
-            Debug.Log(SquadCharacterControllers[0]);
-            SwitchToTarget(SquadCharacterControllers[0]);
+            SafeSwithctoTarget(0);
         }
         if (Input.GetKeyDown("2"))
         {
-            Debug.Log("pushed 2");
-            SwitchToTarget(SquadCharacterControllers[1]);
+            SafeSwithctoTarget(1);
+        }
+        if (Input.GetKeyDown("3"))
+        {
+            SafeSwithctoTarget(2);
+        }
+        if (Input.GetKeyDown("4"))
+        {
+            SafeSwithctoTarget(3);
+        }
+        if (Input.GetKeyDown("5"))
+        {
+            SafeSwithctoTarget(4);
+        }
+        if (Input.GetKeyDown("6"))
+        {
+            SafeSwithctoTarget(5);
+        }
+        if (Input.GetKeyDown("7"))
+        {
+            SafeSwithctoTarget(6);
+        }
+        if (Input.GetKeyDown("8"))
+        {
+            SafeSwithctoTarget(7);
+        }
+        if (Input.GetKeyDown("9"))
+        {
+            SafeSwithctoTarget(8);
         }
 
 
@@ -136,15 +170,31 @@ public class CameraFollow : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, target.position, step);
     }
 
+    private void SafeSwithctoTarget(int SquadMemberIndexFromZero)
+    {
+
+        if (SquadCharacterControllers.Count >= SquadMemberIndexFromZero + 1)
+        {
+            SwitchToTarget(SquadCharacterControllers[SquadMemberIndexFromZero]);
+        }
+        else
+        {
+            Debug.Log("index is out of range");
+        }
+
+
+    }
 
     private void SwitchToTarget(CharacterController SwitchTargetCharacterController)
     {
-        CameraFollowObj = SwitchTargetCharacterController.GetCameraTarget();
-        Player.SwapIntoTarget(SwitchTargetCharacterController);
+        if (Player.SwapIntoTarget(SwitchTargetCharacterController))
+        {
+            CameraFollowObj = SwitchTargetCharacterController.GetCameraTarget();
 
-        GetPlayer();
-        GetPlayerCharacter();
-        SquadListText = GenerateSquadList();
+            GetPlayer();
+            GetPlayerCharacter();
+            SquadListText = GenerateSquadList();
+        }
     }
 
 
@@ -235,8 +285,6 @@ public class CameraFollow : MonoBehaviour
         foreach (CharacterController controller in characterControllersList)
         {
             id = controller.GetUUID();
-            Debug.Log("found id " + id + " im " + myId);
-            Debug.Log("char in my squad " + IsCharacterInMySquad(controller));
             if (IsCharacterInMySquad(controller))
             {
                 ListString = ListString + AddCharatcerNameToList(controller, counter, (id == myId));
@@ -245,6 +293,7 @@ public class CameraFollow : MonoBehaviour
             }
 
         }
+        Debug.Log("list of new squad"+SquadCharacterControllers.Count);
 
         return BaseSquadListText + ListString;
     }
@@ -276,12 +325,10 @@ public class CameraFollow : MonoBehaviour
         return lineString + "\n";
     }
 
-    private void SelectSquadMemberByNumber(int selectedMember)
+    private bool GetIfPlayerRequestedUIUpdate()
     {
-
-
+        return Player.GetNeedsUIUpdate();
     }
-
 
     private void SetFollowObject(GameObject newFollowObj)
     {
