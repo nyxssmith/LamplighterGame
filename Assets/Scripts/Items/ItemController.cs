@@ -419,6 +419,58 @@ public class ItemController : MonoBehaviour
         }
     }
 
+    public void SetHeldLocation(string newHeldLocation, CharacterController ParentController)
+    {
+        Debug.Log("I was set to be held by by " + ParentController.GetCharacter().Name);
+
+        Item.heldLocation = newHeldLocation;
+
+
+        isPickedUp = true;
+        rb.useGravity = false;
+        rb.isKinematic = true;
+
+        rb.constraints = RigidbodyConstraints.None;
+
+        //TODO move relivant to character
+        Physics.IgnoreCollision(ParentController.gameObject.GetComponent<Collider>(), GetComponent<Collider>());
+
+        //ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
+        HoldingCharacter = ParentController.gameObject;
+        if (Item.heldLocation == "Hand")
+        {
+            ItemTransform.parent = ParentController.GetHandTransform();
+        }
+        else if (Item.heldLocation == "Back")
+        {
+            ItemTransform.parent = ParentController.GetBackTransform();
+        }
+        else if (Item.heldLocation == "Belt")
+        {
+            ItemTransform.parent = ParentController.GetBeltTransform();
+        }else{
+            Debug.Log("set held location to not valid location");
+        }
+        
+
+        ItemTransform.localPosition = new Vector3(0, 0, 0);
+
+        Item.holderUUID = HoldingCharacter.GetComponent<CharacterController>().GetUUID();
+
+
+
+
+        if (Item.heldLocation == "Hand")
+        {
+            ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
+        }
+        else
+        {
+            ItemTransform.localPosition = new Vector3(0, 0, 0);
+        }
+        Debug.Log("held location updated postion:" + ItemTransform.position + Item.Name);
+    }
+
     //your code
 
     //onclick actions etc

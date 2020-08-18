@@ -429,6 +429,7 @@ public class CharacterController : MonoBehaviour
             //TODO if can, do unarmed spells etc
             // else do punch
             Debug.Log("unarmed attack");
+            Action = 0.0f;
         }
         // set attack cooldown
         //ActionCooldown = 2.5f;
@@ -481,6 +482,17 @@ public class CharacterController : MonoBehaviour
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
                 Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+
+            /*
+            // check not too close to squadmate
+            CharacterController nearestSquadmateController = CheckIsFarEnoughAwayFromSquadMate(CharacterTransform.position, 3.0f);
+            if (nearestSquadmateController != null)
+            {
+                Vector3 newPos = PickNewPositionAwayFromSquadMate(CharacterTransform.position, nearestSquadmateController);
+                SetNavAgentDestination(newPos);
+            }
+            */
+
         }
         else
         {
@@ -1081,11 +1093,11 @@ public class CharacterController : MonoBehaviour
             foreach (CharacterController controller in characterControllersList)
             {
                 id = controller.GetUUID();
-                Debug.Log("found id" + id);
+                //Debug.Log("found id" + id);
                 if (id == Character.squadLeaderId)
                 {
                     FollowTarget = controller.gameObject;
-                    Debug.Log(Character.Name + " found my followtagret " + FollowTarget);
+                    //Debug.Log(Character.Name + " found my followtagret " + FollowTarget);
                     break;
                 }
             }
@@ -1135,6 +1147,42 @@ public class CharacterController : MonoBehaviour
     {
         NeedsUIUpdate = newState;
     }
+
+
+    /*
+    TODO maybe fix this
+    private CharacterController CheckIsFarEnoughAwayFromSquadMate(Vector3 center, float radius)
+    {
+        // if too close to squadmate return their controller
+        Collider[] hitColliders = Physics.OverlapSphere(center, radius);
+        foreach (var hitCollider in hitColliders)
+        {
+            CharacterController controller = hitCollider.gameObject.GetComponent<CharacterController>();
+            if (controller != null)
+            {
+                if (controller.GetSquadLeaderUUID() == Character.squadLeaderId && controller.GetSquadLeaderUUID() != controller.GetUUID())
+                {
+                    return controller;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private Vector3 PickNewPositionAwayFromSquadMate(Vector3 CurrentPos, CharacterController SquadMateController)
+    {
+
+        // move away from other charater when nead
+        Vector3 SquadMatePos = SquadMateController.GetCharacterTransform().position;
+
+        Vector3 heading = SquadMatePos - CurrentPos;
+
+        return CurrentPos + heading;
+
+
+    }
+    */
 
 }
 
