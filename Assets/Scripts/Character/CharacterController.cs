@@ -537,7 +537,7 @@ public class CharacterController : MonoBehaviour
         }
 
         NavAgent.speed = Character.CurrentSpeed;
-        Debug.Log("im " + Character.Name + " and my current speed is" + NavAgent.speed+" im sprinting"+isSprinting+" stamina"+Character.CurrentStamina);
+        //Debug.Log("im " + Character.Name + " and my current speed is" + NavAgent.speed+" im sprinting"+isSprinting+" stamina"+Character.CurrentStamina);
 
 
     }
@@ -970,27 +970,39 @@ public class CharacterController : MonoBehaviour
     public void SetIsPlayer(bool NewStatus)
     {
         Character.IsPlayer = NewStatus;
-        cam = Camera.main;
-        this.tag = "player";
+        if (NewStatus)
+        {
+            cam = Camera.main;
+            this.tag = "player";
+        }
+        else
+        {
+            cam = null;
+            this.tag = "npc";
+        }
 
         SetNavAgentStateFromIsPlayer();
     }
 
     //TODO set this to be from squad etc
-    public void SwapIntoTarget()
+    public void SwapIntoTarget(CharacterController SwapTargetCharacterController)
     {
+        /*
         Character.IsPlayer = false;
         cam = null;
         this.tag = "npc";
-        TargetCharacterController.SetIsPlayer(true);
+        */
+        SetIsPlayer(false);
+        SwapTargetCharacterController.SetIsPlayer(true);
 
-
+        /*
         Destroy(TargetBeaconObject);
         CombatTarget = null;
         TargetCharacter = null;
         TargetCharacterController = null;
         hasTarget = false;
         IsFighting = false;
+        */
 
         SetNavAgentStateFromIsPlayer();
     }
@@ -1000,10 +1012,12 @@ public class CharacterController : MonoBehaviour
         return CameraTarget;
     }
 
+    /*
     public GameObject GetTargetsCameraTarget()
     {
         return TargetCharacterController.GetCameraTarget();
     }
+    */
 
     private void SetNavAgentStateFromIsPlayer()
     {
@@ -1016,6 +1030,10 @@ public class CharacterController : MonoBehaviour
         NavAgent.enabled = IsMoving;
     }
 
+    public string GetSquadLeaderUUID()
+    {
+        return Character.squadLeaderId;
+    }
 
     private void GetFollowTargetFromSquadLeaderId()
     {

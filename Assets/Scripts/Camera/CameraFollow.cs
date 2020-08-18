@@ -39,8 +39,15 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] GameObject StaminaUI;
     [SerializeField] GameObject TargetUI;//healthbar for target
     [SerializeField] GameObject TargetName;//name of target
+    [SerializeField] GameObject SquadList;//name of target
 
     private bool hasTarget = false;
+    private string BaseSquadListText = "[Squad List]";
+    private string SquadListText = "[Squad List]";
+
+    private List<CharacterController> SquadCharacterControllers = null;
+
+
 
     // Use this for initialization
     void Start()
@@ -54,6 +61,8 @@ public class CameraFollow : MonoBehaviour
         // TODO call on switch too
         GetPlayer();
         GetPlayerCharacter();
+        SquadListText = GenerateSquadList();
+
     }
 
     // Update is called once per frame
@@ -92,8 +101,22 @@ public class CameraFollow : MonoBehaviour
         if (Input.GetKeyDown("y"))
         {
             Debug.Log("swapping into target");
-            SwitchToTarget();
+            //SwitchToTarget();
         }
+
+        // get numbers 1-9 todo
+        if (Input.GetKeyDown("1"))
+        {
+            Debug.Log("pushed 1");
+            Debug.Log(SquadCharacterControllers[0]);
+            SwitchToTarget(SquadCharacterControllers[0]);
+        }
+        if (Input.GetKeyDown("2"))
+        {
+            Debug.Log("pushed 2");
+            SwitchToTarget(SquadCharacterControllers[1]);
+        }
+
 
 
     }
@@ -114,15 +137,14 @@ public class CameraFollow : MonoBehaviour
     }
 
 
-    private void SwitchToTarget()
+    private void SwitchToTarget(CharacterController SwitchTargetCharacterController)
     {
-
-        CameraFollowObj = Player.GetTargetsCameraTarget();
-        Player.SwapIntoTarget();
+        CameraFollowObj = SwitchTargetCharacterController.GetCameraTarget();
+        Player.SwapIntoTarget(SwitchTargetCharacterController);
 
         GetPlayer();
         GetPlayerCharacter();
-
+        SquadListText = GenerateSquadList();
     }
 
 
@@ -191,7 +213,72 @@ public class CameraFollow : MonoBehaviour
     }
 
 
-    private void DoSquadUI(){
+    private void DoSquadUI()
+    {
+
+
+        SquadList.GetComponent<Text>().text = SquadListText;
+
+    }
+
+    private string GenerateSquadList()
+    {
+        // clear squadlist
+        SquadCharacterControllers = new List<CharacterController>();
+
+        string ListString = "\n";
+        int counter = 1;
+        string myId = Player.GetUUID();
+        // get all characters who have same squad leader
+        var characterControllersList = FindObjectsOfType<CharacterController>();
+        string id;
+        foreach (CharacterController controller in characterControllersList)
+        {
+            id = controller.GetUUID();
+            Debug.Log("found id " + id + " im " + myId);
+            Debug.Log("char in my squad " + IsCharacterInMySquad(controller));
+            if (IsCharacterInMySquad(controller))
+            {
+                ListString = ListString + AddCharatcerNameToList(controller, counter, (id == myId));
+                SquadCharacterControllers.Add(controller);
+                counter = counter + 1;
+            }
+
+        }
+
+        return BaseSquadListText + ListString;
+    }
+
+    private bool IsCharacterInMySquad(CharacterController targetCharacterController)
+    {
+        string mySquadLeader = Player.GetSquadLeaderUUID();
+        string theirSquadLeader = targetCharacterController.GetSquadLeaderUUID();
+        if (mySquadLeader == theirSquadLeader)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private string AddCharatcerNameToList(CharacterController targetCharacterController, int ListCounter, bool isMe)
+    {
+        string lineString = ListCounter.ToString() + " : " + targetCharacterController.GetCharacter().Name;
+        if (isMe)
+        {
+            lineString = "*" + lineString;
+
+        }
+        if (targetCharacterController.GetSquadLeaderUUID() == targetCharacterController.GetUUID())
+        {
+
+            lineString = "#" + lineString;
+        }
+        return lineString + "\n";
+    }
+
+    private void SelectSquadMemberByNumber(int selectedMember)
+    {
+
 
     }
 
