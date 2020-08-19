@@ -82,6 +82,10 @@ public class CharacterController : MonoBehaviour
 
     private string myFaction;
 
+    private float selfDestructTimer = 2.0f;
+
+    private bool selfDestuctStarted = false;
+
 
     // Targeting and interacting with enemy and squad
     private GameObject FollowTarget = null;
@@ -222,15 +226,19 @@ public class CharacterController : MonoBehaviour
     private void Update()
     {
 
+        if (selfDestuctStarted)
+        {
+            SelfDestruct();
+        }
+
+
         // TODO check not fall from world
 
         SetNavAgentStateFromIsMoving();
 
         if (Character.IsPlayer)
         {
-
             SetNavAgentStateFromIsPlayer();
-
         }
 
         DoAnimationState();
@@ -252,7 +260,10 @@ public class CharacterController : MonoBehaviour
 
         if (Character.CurrentHealth <= 0.0f)
         {
-            Destroy(this.gameObject);
+            // drop all items and swap to diff squadmate
+            Action = -1.0f;//drop all items on death
+            //Destroy(this.gameObject);
+            StartSelfDestruct();
         }
         //}
     }
@@ -403,6 +414,11 @@ public class CharacterController : MonoBehaviour
     private void AttackTarget()
     {
 
+        if (CheckIfTargetIsDead())
+        {
+            IsFighting = false;
+            return;
+        }
         //Debug.Log("Attacking", CombatTarget);
 
         Transform TargetTransform = CombatTarget.GetComponent<Transform>();
@@ -467,6 +483,16 @@ public class CharacterController : MonoBehaviour
             }
 
         }
+    }
+
+    private bool CheckIfTargetIsDead()
+    {
+        if (TargetCharacterController.GetCurrentHealth() <= 0.0f)
+        {
+            return true;
+        }
+
+        return false;
     }
 
     // pick and do an attack option
@@ -1009,8 +1035,11 @@ public class CharacterController : MonoBehaviour
         hasTarget = true;
         CombatTarget = TargetToSet;
         TargetCharacter = TargetToSet.gameObject.GetComponent<CharacterController>().GetCharacter();
+        TargetCharacterController = CombatTarget.GetComponent<CharacterController>();
+
         //make the target beacon a child of its taret
         TargetBeaconObject.gameObject.GetComponent<Transform>().parent = CombatTarget.GetComponent<Transform>();
+
 
     }
 
@@ -1125,6 +1154,10 @@ public class CharacterController : MonoBehaviour
         return Character.squadLeaderId;
     }
 
+    public void SetSquadLeaderUUID(string newUUID)
+    {
+        Character.squadLeaderId = newUUID;
+    }
     private void GetFollowTargetFromSquadLeaderId()
     {
 
@@ -1333,5 +1366,33 @@ public class CharacterController : MonoBehaviour
         return 0.0f;
     }
 
+    public void StartSelfDestruct()
+    {
+        selfDestuctStarted = true;
+        NeedsUIUpdate = true;
+
+
+
+
+    }
+    private void SelfDestruct()
+    {
+        if (selfDestructTimer <= 0.0f)
+        {
+            Destroy(this.gameObject);
+        }
+        else
+        {
+            selfDestructTimer -= Time.deltaTime;
+            if (FollowTarget != null)
+            {
+                CharacterController controller = FollowTarget.gameObject.GetComponent<CharacterController>();
+                controller.SetNeedsUIUpdate(true);
+                Character.squadLeaderId = "";
+            }
+        }
+
+
+    }
 }
 

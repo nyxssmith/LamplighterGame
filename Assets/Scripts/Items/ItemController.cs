@@ -132,8 +132,9 @@ public class ItemController : MonoBehaviour
         if (HoldingCharacter != null)
         {
             string Status = HoldingCharacter.GetComponent<CharacterController>().GetItemStatus();
+            float action = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
 
-            if (Status == "Dropping" && Item.heldLocation == "Hand")
+            if ((Status == "Dropping" && Item.heldLocation == "Hand" )|| action == -1.0f)
             {
                 Debug.Log("parent id dropping me");
                 EnableCollsion();
@@ -224,7 +225,6 @@ public class ItemController : MonoBehaviour
                 {
 
 
-                    float action = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
                     if (action > 0.0f)
                     {
                         // enable collision
@@ -272,7 +272,7 @@ public class ItemController : MonoBehaviour
 
     private void DoPrimaryAction()
     {
-        Debug.Log("Pressed primary button.");
+        //Debug.Log("Pressed primary button.");
 
         string ItemClass = Item.PrimaryActionClass;
         if (ItemClass == "SUMMON")
@@ -296,7 +296,7 @@ public class ItemController : MonoBehaviour
         else
         {
             // TODO move to attac secion maybe?
-            Debug.Log("doing basic attack 01");
+            //Debug.Log("doing basic attack 01");
             float animationDuration = 1.0f;
             AnimateHoldingCharacter("m_slash1", animationDuration);
         }

@@ -69,6 +69,8 @@ public class CameraFollow : MonoBehaviour
     void Update()
     {
 
+        CheckIfCurrentCharacterDied();
+
         // We setup the rotation of the sticks here
         float inputX = Input.GetAxis("RightStickHorizontal");
         float inputZ = Input.GetAxis("RightStickVertical");
@@ -293,7 +295,7 @@ public class CameraFollow : MonoBehaviour
             }
 
         }
-        Debug.Log("list of new squad"+SquadCharacterControllers.Count);
+        Debug.Log("list of new squad" + SquadCharacterControllers.Count);
 
         return BaseSquadListText + ListString;
     }
@@ -314,7 +316,7 @@ public class CameraFollow : MonoBehaviour
         string lineString = ListCounter.ToString() + " : " + targetCharacterController.GetCharacter().Name;
         if (isMe)
         {
-            lineString = "* <color=green>" + lineString+"</color>";
+            lineString = "* <color=green>" + lineString + "</color>";
 
 
         }
@@ -336,6 +338,47 @@ public class CameraFollow : MonoBehaviour
         CameraFollowObj = newFollowObj;
     }
 
+
+    private void CheckIfCurrentCharacterDied()
+    {
+        if (Player.GetCurrentHealth() <= 0.0f)
+        {
+            string id;
+            int count = 0;
+            int squadMemberToRemove = -1;
+            int squadMemberToSwapTo = -1;
+            foreach (CharacterController controller in SquadCharacterControllers)
+            {
+                id = controller.GetUUID();
+                if (id != Player.GetUUID())
+                {
+                    squadMemberToSwapTo = count;
+                }
+                else
+                {
+                    squadMemberToRemove = count;
+                }
+
+                if (squadMemberToSwapTo > 0 && squadMemberToRemove > 0)
+                {
+                    break;
+                }
+                count = count + 1;
+            }
+
+            // destroy old player
+            Player.StartSelfDestruct();
+            Player.SetSquadLeaderUUID("");
+            // swap to new one
+            SafeSwithctoTarget(squadMemberToSwapTo);
+            SquadCharacterControllers.RemoveAt(squadMemberToRemove);
+            // reset ui etc
+            GetPlayer();
+            GetPlayerCharacter();
+            SquadListText = GenerateSquadList();
+            Player.SetNeedsUIUpdate(true);
+        }
+    }
 
 
 
