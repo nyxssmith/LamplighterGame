@@ -407,7 +407,7 @@ public class ItemController : MonoBehaviour
                     //ignore interactions with squadmates
                     if (CollidingCharacter.GetSquadLeaderUUID() != HoldingCharacter.GetComponent<CharacterController>().GetSquadLeaderUUID())
                     {
-
+                        //Debug.Log("attacked and hit "+CollidingCharacter.GetIsPlayer());
                         //TODO remove this add set this to action part
                         CollidingCharacter.AddValueToHealth(-1 * Item.Damage);
                         // Set to target eachother
@@ -418,6 +418,8 @@ public class ItemController : MonoBehaviour
                             SetTargetOnImpact(collision.gameObject, HoldingCharacter);
 
                         }
+                    }else{
+                        //Debug.Log("hit squadmate?");
                     }
                 }
             }

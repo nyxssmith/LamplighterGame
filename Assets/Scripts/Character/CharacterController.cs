@@ -80,6 +80,7 @@ public class CharacterController : MonoBehaviour
 
     private bool NeedsUIUpdate = false;
 
+    private string myFaction;
 
 
     // Targeting and interacting with enemy and squad
@@ -119,6 +120,9 @@ public class CharacterController : MonoBehaviour
 
         // must hit 80 stamina before going again
         StaminaLevelBeforeSprintAgain = Character.MaxStamina * 0.85f;
+
+        DetermineMyFaction();
+
     }
 
 
@@ -135,6 +139,9 @@ public class CharacterController : MonoBehaviour
         {
             Save();
         }
+
+        // for all characters look for hand item
+        CheckIfItemInHand();
 
 
         if (Character.IsPlayer)
@@ -198,13 +205,6 @@ public class CharacterController : MonoBehaviour
             {
                 ItemStatus = "";
             }
-
-            CheckIfItemInHand();
-
-
-
-
-
 
             /*
             if (Input.GetKeyDown("g")) {
@@ -356,6 +356,7 @@ public class CharacterController : MonoBehaviour
             }
         }
 
+
         //TODO if follower
         // todo if enemy
         // make sure if figting, also take control of is moving
@@ -363,22 +364,38 @@ public class CharacterController : MonoBehaviour
 
         // TODO check for enemies or factions in area
 
-
-
-
-        // fight takes priority
-        if (IsFighting)
+        // if they are following player or in a squad
+        if (Character.IsFollower && Character.squadLeaderId != "")
         {
-            AttackTarget();
-        }
-        else if (Character.IsFollowing)
-        {
-            FollowPlayer();
+
+            // fight takes priority
+            if (IsFighting)
+            {
+                AttackTarget();
+            }
+            else if (Character.IsFollowing)
+            {
+                FollowPlayer();
+            }
+            else
+            {
+                // TODO schedule / wandering around a point
+                IsMoving = false;
+            }
+
         }
         else
         {
-            // TODO schedule / wandering around a point
-            IsMoving = false;
+            if (!IsFighting)
+            {
+                // non follower npc movement here
+                // TODO schedule and wandering
+                CheckForOtherFactionsToFight();
+            }
+            else
+            {
+                AttackTarget();
+            }
         }
 
     }
@@ -437,6 +454,18 @@ public class CharacterController : MonoBehaviour
         {
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
+            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
+    Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+
+            if (ActionCooldown > 0.0f)
+            {
+                ActionCooldown -= Time.deltaTime;
+            }
+            else
+            {
+                Attack();
+            }
+
         }
     }
 
@@ -1197,6 +1226,112 @@ public class CharacterController : MonoBehaviour
 
     }
     */
+
+    private void CheckForOtherFactionsToFight()
+    {
+        Collider[] hitColliders = Physics.OverlapSphere(CharacterTransform.position, Character.TargetRange);
+        foreach (var hitCollider in hitColliders)
+        {
+            CharacterController controller = hitCollider.gameObject.GetComponent<CharacterController>();
+            if (controller != null)
+            {
+
+                if (GetMyAlignmentWithFaction(controller.GetFaction()) < 0.0f)
+                {
+                    //Debug.Log(Character.id+"I should attack"+controller.GetUUID());
+                    SetTarget(controller.gameObject);
+                    IsFighting = true;
+                }
+            }
+        }
+
+    }
+
+
+
+    private void DetermineMyFaction()
+    {
+        // sets the current faction to the one that character is highest with
+        myFaction = "none";
+        float highestFactionScore = 0.0f;
+
+        if (Character.magic_faction > highestFactionScore)
+        {
+            myFaction = "magic_faction";
+            highestFactionScore = Character.magic_faction;
+        }
+
+        if (Character.tech_faction > highestFactionScore)
+        {
+            myFaction = "tech_faction";
+            highestFactionScore = Character.tech_faction;
+        }
+        if (Character.bandit_faction > highestFactionScore)
+        {
+            myFaction = "bandit_faction";
+            highestFactionScore = Character.bandit_faction;
+        }
+        if (Character.lamplighter_faction > highestFactionScore)
+        {
+            myFaction = "lamplighter_faction";
+            highestFactionScore = Character.lamplighter_faction;
+        }
+        if (Character.settlements_faction > highestFactionScore)
+        {
+            myFaction = "settlements_faction";
+            highestFactionScore = Character.settlements_faction;
+        }
+        if (Character.farmer_faction > highestFactionScore)
+        {
+            myFaction = "farmer_faction";
+            highestFactionScore = Character.farmer_faction;
+        }
+
+        if (Character.wild_faction > highestFactionScore)
+        {
+            myFaction = "wild_faction";
+            highestFactionScore = Character.wild_faction;
+        }
+    }
+
+    public string GetFaction()
+    {
+        return myFaction;
+    }
+
+    public float GetMyAlignmentWithFaction(string faction)
+    {
+        if (faction == "magic_faction")
+        {
+            return Character.magic_faction;
+        }
+        else if (faction == "tech_faction")
+        {
+            return Character.tech_faction;
+        }
+        else if (faction == "bandit_faction")
+        {
+            return Character.bandit_faction;
+        }
+        else if (faction == "lamplighter_faction")
+        {
+            return Character.lamplighter_faction;
+        }
+        else if (faction == "settlements_faction")
+        {
+            return Character.settlements_faction;
+        }
+        else if (faction == "farmer_faction")
+        {
+            return Character.farmer_faction;
+        }
+        else if (faction == "wild_faction")
+        {
+            return Character.wild_faction;
+        }
+
+        return 0.0f;
+    }
 
 }
 

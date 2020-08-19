@@ -1,5 +1,5 @@
 {
-    "Name": "Player4",
+    "Name": "Lamplighter Player4",
     "CurrentHealth": 100.0,
     "MaxHealth": 100.0,
     "CurrentMana": 100.0,
@@ -30,5 +30,12 @@
     "y_pos": -0.01500028371810913,
     "z_pos": 30.298471450805665,
     "id": "t76ca895-d671-4c93-9c2f-c888e8f6ac19",
-    "squadLeaderId": "c72ca895-d671-4c93-9c2f-c457e8f6ac19"
+    "squadLeaderId": "c72ca895-d671-4c93-9c2f-c457e8f6ac19",
+    "magic_faction":0.0,
+    "tech_faction":0.0,
+    "bandit_faction":-1.0,
+    "lamplighter_faction":1.0,
+    "settlements_faction":0.0,
+    "farmer_faction":0.0,
+    "wild_faction":0.0
 }

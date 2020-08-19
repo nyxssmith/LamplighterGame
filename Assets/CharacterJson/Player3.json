@@ -1,5 +1,5 @@
 {
-    "Name": "Player3",
+    "Name": "Magic Player3",
     "CurrentHealth": 100.0,
     "MaxHealth": 100.0,
     "CurrentMana": 100.0,
@@ -30,5 +30,12 @@
     "y_pos": -0.015000104904174805,
     "z_pos": 25.766803741455079,
     "id": "5b26a0ce-ad4d-4353-9cc9-75cfc31f4a7e",
-    "squadLeaderId": "c72ca895-d671-4c93-9c2f-c457e8f6ac19"
+    "squadLeaderId": "c72ca895-d671-4c93-9c2f-c457e8f6ac19",
+    "magic_faction":1.0,
+    "tech_faction":0.0,
+    "bandit_faction":0.0,
+    "lamplighter_faction":0.5,
+    "settlements_faction":0.0,
+    "farmer_faction":0.0,
+    "wild_faction":0.0
 }

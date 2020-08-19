@@ -1,5 +1,5 @@
 {
-    "Name": "Player2",
+    "Name": "Tech Player2",
     "CurrentHealth": 100.0,
     "MaxHealth": 100.0,
     "CurrentMana": 0.0,
@@ -29,5 +29,13 @@
     "y_pos": -117.50151824951172,
     "z_pos": -8.654263496398926,
     "id": "0",
-    "squadLeaderId": ""
+    "squadLeaderId": "",
+    "magic_faction":0.0,
+    "tech_faction":1.0,
+    "bandit_faction":0.0,
+    "lamplighter_faction":0.5,
+    "settlements_faction":0.0,
+    "farmer_faction":0.0,
+    "wild_faction":0.0
+    
 }

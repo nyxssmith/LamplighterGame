@@ -69,7 +69,11 @@ public class CharacterDataManager
             Character.id = Guid.NewGuid().ToString();
             Save(Character);
         }
-
+        // if -1 is id, make a new one but dont save to file
+        else if (Character.id == "-1")
+        {
+            Character.id = Guid.NewGuid().ToString();
+        }
         return Character;
 
 
