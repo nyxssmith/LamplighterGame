@@ -41,12 +41,13 @@ public class CharacterController : MonoBehaviour
 
     public GameObject Hand;
 
-    //TODO implement this with items
     public GameObject Back;
     public GameObject Belt;
 
     private NavMeshAgent NavAgent;
 
+
+    private IsLoadedController LoadedController;
 
     // variables that are used for interacting with world but dont matter for save
     private string ItemStatus = "";//action items status, for swapping and dropping
@@ -101,11 +102,12 @@ public class CharacterController : MonoBehaviour
     private void Awake()
     {
 
+        //parts of the character
         rb = gameObject.GetComponent<Rigidbody>();
         CharacterTransform = gameObject.GetComponent<Transform>();
         NavAgent = this.gameObject.GetComponent<NavMeshAgent>();
 
-
+        //load chracter save into character
         CDM.Init(CharacterSaveFileFolder, CharacterSaveFile);
 
         Load();
@@ -126,6 +128,13 @@ public class CharacterController : MonoBehaviour
         StaminaLevelBeforeSprintAgain = Character.MaxStamina * 0.85f;
 
         DetermineMyFaction();
+
+
+
+        // get the load controller and update if is player
+        LoadedController = gameObject.GetComponent<IsLoadedController>();
+        LoadedController.SetIsPlayer(Character.IsPlayer);
+
 
     }
 
@@ -231,6 +240,16 @@ public class CharacterController : MonoBehaviour
             SelfDestruct();
         }
 
+        if (AnimationOverrideTimer > 0.0f)
+        {
+            SetCharacterCanMove(false);
+        }
+        else
+        {
+            SetCharacterCanMove(true);
+        }
+
+
 
         // TODO check not fall from world
 
@@ -277,6 +296,7 @@ public class CharacterController : MonoBehaviour
         {
             //Debug.Log("should be getting state from item");
             AnimationOverrideTimer -= Time.deltaTime;
+            // set contraints on character transform
         }
         /*
         else if (!IsGrounded && Character.IsPlayer && (JumpCoolDown > 0.0f))
@@ -288,6 +308,7 @@ public class CharacterController : MonoBehaviour
         // sprinting for player
         else if (isSprinting && Character.CurrentStamina > 10)
         {
+
             if (Character.IsPlayer)
             {
                 //TODO check state of character
@@ -638,6 +659,7 @@ public class CharacterController : MonoBehaviour
 
     private void PlayerMove()
     {
+
 
         // Getting the direction to move through player input
         float hMove = Input.GetAxis("Horizontal");
@@ -1391,6 +1413,27 @@ public class CharacterController : MonoBehaviour
                 Character.squadLeaderId = "";
             }
         }
+    }
+
+    private void SetCharacterCanMove(bool newState)
+    {
+        //CharacterTransform
+        if (newState)
+        {
+            // can move
+            rb.constraints = RigidbodyConstraints.None;
+
+        }
+        else
+        {
+            rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+
+            // cant move
+        }
+    }
+
+
+    public void SetLoadedControllerIsPlayer(bool newState){
 
 
     }

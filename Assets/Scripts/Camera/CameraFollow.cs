@@ -191,6 +191,12 @@ public class CameraFollow : MonoBehaviour
     {
         if (Player.SwapIntoTarget(SwitchTargetCharacterController))
         {
+            
+            // set that new character is player to its loadcontroller
+            Player.SetLoadedControllerIsPlayer(false);
+            SwitchTargetCharacterController.SetLoadedControllerIsPlayer(true);
+
+            // set the new player for the isloadedcontroller
             CameraFollowObj = SwitchTargetCharacterController.GetCameraTarget();
 
             GetPlayer();
