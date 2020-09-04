@@ -38,6 +38,14 @@ public class CharacterData
     public float z_pos;
 
     public string id;
+    public string squadLeaderId;
 
+    public float magic_faction;
+    public float tech_faction;
+    public float bandit_faction;
+    public float lamplighter_faction;
+    public float settlements_faction;
+    public float farmer_faction;
+    public float wild_faction;
 
 }

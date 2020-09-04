@@ -39,8 +39,15 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] GameObject StaminaUI;
     [SerializeField] GameObject TargetUI;//healthbar for target
     [SerializeField] GameObject TargetName;//name of target
+    [SerializeField] GameObject SquadList;//name of target
 
     private bool hasTarget = false;
+    private string BaseSquadListText = "[Squad List]";
+    private string SquadListText = "[Squad List]";
+
+    private List<CharacterController> SquadCharacterControllers = null;
+
+
 
     // Use this for initialization
     void Start()
@@ -54,11 +61,15 @@ public class CameraFollow : MonoBehaviour
         // TODO call on switch too
         GetPlayer();
         GetPlayerCharacter();
+        SquadListText = GenerateSquadList();
+
     }
 
     // Update is called once per frame
     void Update()
     {
+
+        CheckIfCurrentCharacterDied();
 
         // We setup the rotation of the sticks here
         float inputX = Input.GetAxis("RightStickHorizontal");
@@ -83,17 +94,65 @@ public class CameraFollow : MonoBehaviour
             GetPlayer();
         }
 
+
+        if (GetIfPlayerRequestedUIUpdate())
+        {
+            Debug.Log("player requested ui update");
+            GetPlayer();
+            GetPlayerCharacter();
+            SquadListText = GenerateSquadList();
+            Player.SetNeedsUIUpdate(false);
+        }
+
         GetPlayersTargetCharacter();
         DoUI();
 
 
-
-        // TODO move this to camera
-        if (Input.GetKeyDown("y"))
+        if (Input.GetKeyDown("j"))
         {
-            Debug.Log("swapping into target");
-            SwitchToTarget();
+            Debug.Log("setting player to ask for ui update");
+            Player.SetNeedsUIUpdate(true);
         }
+
+
+        // get numbers 1-9 and swap to squad member
+        if (Input.GetKeyDown("1"))
+        {
+            SafeSwithctoTarget(0);
+        }
+        if (Input.GetKeyDown("2"))
+        {
+            SafeSwithctoTarget(1);
+        }
+        if (Input.GetKeyDown("3"))
+        {
+            SafeSwithctoTarget(2);
+        }
+        if (Input.GetKeyDown("4"))
+        {
+            SafeSwithctoTarget(3);
+        }
+        if (Input.GetKeyDown("5"))
+        {
+            SafeSwithctoTarget(4);
+        }
+        if (Input.GetKeyDown("6"))
+        {
+            SafeSwithctoTarget(5);
+        }
+        if (Input.GetKeyDown("7"))
+        {
+            SafeSwithctoTarget(6);
+        }
+        if (Input.GetKeyDown("8"))
+        {
+            SafeSwithctoTarget(7);
+        }
+        if (Input.GetKeyDown("9"))
+        {
+            SafeSwithctoTarget(8);
+        }
+
 
 
     }
@@ -113,16 +172,37 @@ public class CameraFollow : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, target.position, step);
     }
 
-
-    private void SwitchToTarget()
+    private void SafeSwithctoTarget(int SquadMemberIndexFromZero)
     {
 
-        CameraFollowObj = Player.GetTargetsCameraTarget();
-        Player.SwapIntoTarget();
+        if (SquadCharacterControllers.Count >= SquadMemberIndexFromZero + 1)
+        {
+            SwitchToTarget(SquadCharacterControllers[SquadMemberIndexFromZero]);
+        }
+        else
+        {
+            Debug.Log("index is out of range");
+        }
 
-        GetPlayer();
-        GetPlayerCharacter();
 
+    }
+
+    private void SwitchToTarget(CharacterController SwitchTargetCharacterController)
+    {
+        if (Player.SwapIntoTarget(SwitchTargetCharacterController))
+        {
+            
+            // set that new character is player to its loadcontroller
+            //Player.SetLoadedControllerIsPlayer(false);
+            //SwitchTargetCharacterController.SetLoadedControllerIsPlayer(true);
+
+            // set the new player for the isloadedcontroller
+            CameraFollowObj = SwitchTargetCharacterController.GetCameraTarget();
+
+            GetPlayer();
+            GetPlayerCharacter();
+            SquadListText = GenerateSquadList();
+        }
     }
 
 
@@ -150,6 +230,7 @@ public class CameraFollow : MonoBehaviour
         DoStaminaUI();
         DoManaUI();
         DoTargetHealtBarUI();
+        DoSquadUI();
     }
 
     private void DoHealthUI()
@@ -190,11 +271,120 @@ public class CameraFollow : MonoBehaviour
     }
 
 
+    private void DoSquadUI()
+    {
+
+
+        SquadList.GetComponent<Text>().text = SquadListText;
+
+    }
+
+    private string GenerateSquadList()
+    {
+        // clear squadlist
+        SquadCharacterControllers = new List<CharacterController>();
+
+        string ListString = "\n";
+        int counter = 1;
+        string myId = Player.GetUUID();
+        // get all characters who have same squad leader
+        var characterControllersList = FindObjectsOfType<CharacterController>();
+        string id;
+        foreach (CharacterController controller in characterControllersList)
+        {
+            id = controller.GetUUID();
+            if (IsCharacterInMySquad(controller))
+            {
+                ListString = ListString + AddCharatcerNameToList(controller, counter, (id == myId));
+                SquadCharacterControllers.Add(controller);
+                counter = counter + 1;
+            }
+
+        }
+        Debug.Log("list of new squad" + SquadCharacterControllers.Count);
+
+        return BaseSquadListText + ListString;
+    }
+
+    private bool IsCharacterInMySquad(CharacterController targetCharacterController)
+    {
+        string mySquadLeader = Player.GetSquadLeaderUUID();
+        string theirSquadLeader = targetCharacterController.GetSquadLeaderUUID();
+        if (mySquadLeader == theirSquadLeader)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    private string AddCharatcerNameToList(CharacterController targetCharacterController, int ListCounter, bool isMe)
+    {
+        string lineString = ListCounter.ToString() + " : " + targetCharacterController.GetCharacter().Name;
+        if (isMe)
+        {
+            lineString = "* <color=green>" + lineString + "</color>";
+
+
+        }
+        if (targetCharacterController.GetSquadLeaderUUID() == targetCharacterController.GetUUID())
+        {
+
+            lineString = "#" + lineString;
+        }
+        return lineString + "\n";
+    }
+
+    private bool GetIfPlayerRequestedUIUpdate()
+    {
+        return Player.GetNeedsUIUpdate();
+    }
+
     private void SetFollowObject(GameObject newFollowObj)
     {
         CameraFollowObj = newFollowObj;
     }
 
+
+    private void CheckIfCurrentCharacterDied()
+    {
+        if (Player.GetCurrentHealth() <= 0.0f)
+        {
+            string id;
+            int count = 0;
+            int squadMemberToRemove = -1;
+            int squadMemberToSwapTo = -1;
+            foreach (CharacterController controller in SquadCharacterControllers)
+            {
+                id = controller.GetUUID();
+                if (id != Player.GetUUID())
+                {
+                    squadMemberToSwapTo = count;
+                }
+                else
+                {
+                    squadMemberToRemove = count;
+                }
+
+                if (squadMemberToSwapTo > 0 && squadMemberToRemove > 0)
+                {
+                    break;
+                }
+                count = count + 1;
+            }
+
+            // destroy old player
+            Player.StartSelfDestruct();
+            Player.SetSquadLeaderUUID("");
+            // swap to new one
+            SafeSwithctoTarget(squadMemberToSwapTo);
+            SquadCharacterControllers.RemoveAt(squadMemberToRemove);
+            // reset ui etc
+            GetPlayer();
+            GetPlayerCharacter();
+            SquadListText = GenerateSquadList();
+            Player.SetNeedsUIUpdate(true);
+        }
+    }
 
 
 

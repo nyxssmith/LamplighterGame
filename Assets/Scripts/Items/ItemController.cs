@@ -8,6 +8,7 @@ public class ItemController : MonoBehaviour
 
     private Rigidbody rb;
     private Transform ItemTransform;
+    private Collider ItemCollider;
     private ItemData Item = new ItemData();
     private ItemDataManager IDM = new ItemDataManager();
     public string ItemSaveFileFolder = "Assets/ItemJson";
@@ -28,6 +29,7 @@ public class ItemController : MonoBehaviour
         //cam = Camera.main;
         rb = gameObject.GetComponent<Rigidbody>();
         ItemTransform = gameObject.GetComponent<Transform>();
+        ItemCollider = gameObject.GetComponent<Collider>();
 
         Debug.Log("Starting an item");
         IDM.Init(ItemSaveFileFolder, ItemSaveFile);
@@ -130,10 +132,12 @@ public class ItemController : MonoBehaviour
         if (HoldingCharacter != null)
         {
             string Status = HoldingCharacter.GetComponent<CharacterController>().GetItemStatus();
+            float action = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
 
-            if (Status == "Dropping" && Item.heldLocation == "Hand")
+            if ((Status == "Dropping" && Item.heldLocation == "Hand" )|| action == -1.0f)
             {
                 Debug.Log("parent id dropping me");
+                EnableCollsion();
 
 
                 Transform HoldingCharacterTransform = HoldingCharacter.GetComponent<Transform>();
@@ -221,8 +225,16 @@ public class ItemController : MonoBehaviour
                 {
 
 
-                    float action = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
-
+                    if (action > 0.0f)
+                    {
+                        // enable collision
+                        EnableCollsion();
+                    }
+                    else
+                    {
+                        //disable collision
+                        DisableCollsion();
+                    }
                     //mouse click inputs
                     if (action == 1.0f)
                     {
@@ -260,7 +272,7 @@ public class ItemController : MonoBehaviour
 
     private void DoPrimaryAction()
     {
-        Debug.Log("Pressed primary button.");
+        //Debug.Log("Pressed primary button.");
 
         string ItemClass = Item.PrimaryActionClass;
         if (ItemClass == "SUMMON")
@@ -272,6 +284,7 @@ public class ItemController : MonoBehaviour
         }//TODO else if basic etc
         else if (ItemClass == "POTION")
         {
+            Debug.Log("potion cooldown:" + CooldownTimer);
             if (CooldownTimer <= 0)
             {
                 Potion DrinkPotion = this.gameObject.GetComponent<Potion>();
@@ -283,7 +296,7 @@ public class ItemController : MonoBehaviour
         else
         {
             // TODO move to attac secion maybe?
-            Debug.Log("doing basic attack 01");
+            //Debug.Log("doing basic attack 01");
             float animationDuration = 1.0f;
             AnimateHoldingCharacter("m_slash1", animationDuration);
         }
@@ -312,6 +325,16 @@ public class ItemController : MonoBehaviour
         controller.SetTarget(TargetToSet);
         controller.SetFighting(true);
 
+    }
+
+    private void EnableCollsion()
+    {
+        ItemCollider.enabled = true;
+    }
+
+    private void DisableCollsion()
+    {
+        ItemCollider.enabled = false;
     }
 
     //TODO check if parent is asking for use function
@@ -381,19 +404,80 @@ public class ItemController : MonoBehaviour
                 CharacterController CollidingCharacter = collision.gameObject.GetComponent<CharacterController>();
                 if (CollidingCharacter != null)
                 {
-                    //TODO remove this add set this to action part
-                    CollidingCharacter.AddValueToHealth(-1 * Item.Damage);
-                    // Set to target eachother
-                    SetTargetOnImpact(HoldingCharacter, collision.gameObject);
-                    // if can fight
-                    if (CollidingCharacter.GetCanFight())
+                    //ignore interactions with squadmates
+                    if (CollidingCharacter.GetSquadLeaderUUID() != HoldingCharacter.GetComponent<CharacterController>().GetSquadLeaderUUID())
                     {
-                        SetTargetOnImpact(collision.gameObject, HoldingCharacter);
+                        //Debug.Log("attacked and hit "+CollidingCharacter.GetIsPlayer());
+                        //TODO remove this add set this to action part
+                        CollidingCharacter.AddValueToHealth(-1 * Item.Damage);
+                        // Set to target eachother
+                        SetTargetOnImpact(HoldingCharacter, collision.gameObject);
+                        // if can fight
+                        if (CollidingCharacter.GetCanFight())
+                        {
+                            SetTargetOnImpact(collision.gameObject, HoldingCharacter);
 
+                        }
+                    }else{
+                        //Debug.Log("hit squadmate?");
                     }
                 }
             }
         }
+    }
+
+    public void SetHeldLocation(string newHeldLocation, CharacterController ParentController)
+    {
+        Debug.Log("I was set to be held by by " + ParentController.GetCharacter().Name);
+
+        Item.heldLocation = newHeldLocation;
+
+
+        isPickedUp = true;
+        rb.useGravity = false;
+        rb.isKinematic = true;
+
+        rb.constraints = RigidbodyConstraints.None;
+
+        //TODO move relivant to character
+        Physics.IgnoreCollision(ParentController.gameObject.GetComponent<Collider>(), GetComponent<Collider>());
+
+        //ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
+        HoldingCharacter = ParentController.gameObject;
+        if (Item.heldLocation == "Hand")
+        {
+            ItemTransform.parent = ParentController.GetHandTransform();
+        }
+        else if (Item.heldLocation == "Back")
+        {
+            ItemTransform.parent = ParentController.GetBackTransform();
+        }
+        else if (Item.heldLocation == "Belt")
+        {
+            ItemTransform.parent = ParentController.GetBeltTransform();
+        }
+        else
+        {
+            Debug.Log("set held location to not valid location");
+        }
+
+
+        ItemTransform.localPosition = new Vector3(0, 0, 0);
+
+        Item.holderUUID = HoldingCharacter.GetComponent<CharacterController>().GetUUID();
+
+
+
+
+        if (Item.heldLocation == "Hand")
+        {
+            ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
+        }
+        else
+        {
+            ItemTransform.localPosition = new Vector3(0, 0, 0);
+        }
+        Debug.Log("held location updated postion:" + ItemTransform.position + Item.Name);
     }
 
     //your code
