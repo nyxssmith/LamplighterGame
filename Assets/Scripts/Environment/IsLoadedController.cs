@@ -32,6 +32,8 @@ public class IsLoadedController : MonoBehaviour
 
     public void Update()
     {
+        // TODO rm this from all or repurpose it
+        /*
         if (isPlayer)
         {
 
@@ -57,6 +59,7 @@ public class IsLoadedController : MonoBehaviour
             }
 
         }
+        */
 
     }
 

@@ -16,6 +16,7 @@ public class CharacterController : MonoBehaviour
     private Physics physics;
 
 
+
     // UI
 
     [SerializeField] GameObject ManaUI;
@@ -23,6 +24,10 @@ public class CharacterController : MonoBehaviour
     [SerializeField] GameObject StaminaUI;
     [SerializeField] GameObject TargetUI;//healthbar for target
     [SerializeField] GameObject TargetName;//name of target
+
+    public SpriteRenderer Circle;
+
+    private Color UIColor;
 
 
     //Character save manager
@@ -134,6 +139,11 @@ public class CharacterController : MonoBehaviour
         // get the load controller and update if is player
         LoadedController = gameObject.GetComponent<IsLoadedController>();
         LoadedController.SetIsPlayer(Character.IsPlayer);
+
+        // pick ui color
+        SetColor();
+        Circle.color = UIColor;
+        Debug.Log("set cirice color"+Circle.color);
 
 
     }
@@ -285,6 +295,8 @@ public class CharacterController : MonoBehaviour
             StartSelfDestruct();
         }
         //}
+
+        DoTargetCircle();
     }
 
 
@@ -823,6 +835,11 @@ public class CharacterController : MonoBehaviour
                         int TargetRand = hitColliders[i].gameObject.GetComponent<CharacterController>().GetRand();
                         if (TargetRand != rand)
                         {
+                            SetTarget(hitColliders[i].gameObject);
+
+
+                            // old target logic moved
+                            /*
                             SummonPositon = TargetTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
                             TargetBeaconObject = Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
                             hasTarget = true;
@@ -841,6 +858,11 @@ public class CharacterController : MonoBehaviour
                             Debug.Log("target char controller", TargetCharacterController);
                             //make the target beacon a child of its taret
                             TargetBeaconObject.gameObject.GetComponent<Transform>().parent = CombatTarget.GetComponent<Transform>();
+                            TargetBeaconObject.gameObject.GetComponent<SpriteRenderer>();
+                            SpriteRenderer arrow = GetComponent<SpriteRenderer>();
+                            arrow.color = Color.blue;
+                            */
+
                             break;
                         }
                     }
@@ -1043,6 +1065,7 @@ public class CharacterController : MonoBehaviour
     public void SetTarget(GameObject TargetToSet)
     {
 
+
         Destroy(TargetBeaconObject);
         CombatTarget = null;
         TargetCharacter = null;
@@ -1054,6 +1077,8 @@ public class CharacterController : MonoBehaviour
         Transform TargetTransform = TargetToSet.GetComponent<Transform>();
         Vector3 SummonPositon = TargetTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
         TargetBeaconObject = Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
+        TargetBeaconObject.gameObject.GetComponent<SpriteRenderer>().color = UIColor;
+
         hasTarget = true;
         CombatTarget = TargetToSet;
         TargetCharacter = TargetToSet.gameObject.GetComponent<CharacterController>().GetCharacter();
@@ -1432,10 +1457,35 @@ public class CharacterController : MonoBehaviour
         }
     }
 
+    private void SetColor()
+    {
+        // sets players unique color
+        UIColor = Color.yellow;
+        float red = Random.Range(0.0f, 255.0f);
+        float green = Random.Range(0.0f, 255.0f);
+        float blue = Random.Range(0.0f, 255.0f);
 
-    public void SetLoadedControllerIsPlayer(bool newState){
+        UIColor = new Color(red, green, blue);
+    }
 
+    private void DoTargetCircle()
+    {
+        if (hasTarget)
+        {
+            // if have target reenable circle
+            if (!Circle.enabled)
+            {
+                Circle.enabled = true;
+            }
+
+
+        }
+        else
+        {
+            Circle.enabled = false;
+        }
 
     }
+
 }
 
