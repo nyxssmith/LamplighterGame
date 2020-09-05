@@ -458,8 +458,8 @@ public class CharacterController : MonoBehaviour
         //NavMeshAgent agent = GetComponent<NavMeshAgent>();
         float rotationSpeed = 30f; //speed of turning
 
-        float range = 10f;
-        float range2 = 10f;
+        float range = 1000f;
+        float range2 = 1000f;
         float stop = Character.Reach; // this is range to player
 
 
@@ -1077,8 +1077,8 @@ public class CharacterController : MonoBehaviour
         SpriteRenderer[] SpriteRendersInTargetBeacon = TargetBeaconObject.gameObject.GetComponentsInChildren<SpriteRenderer>();
         SpriteRendersInTargetBeacon[0].color = UIColor;
 
-        Light[] LightsInTargetBeacon = TargetBeaconObject.gameObject.GetComponentsInChildren<Light>();
-        LightsInTargetBeacon[0].color = UIColor;
+        //Light[] LightsInTargetBeacon = TargetBeaconObject.gameObject.GetComponentsInChildren<Light>();
+        //LightsInTargetBeacon[0].color = UIColor;
 
 
 
