@@ -134,7 +134,7 @@ public class ItemController : MonoBehaviour
             string Status = HoldingCharacter.GetComponent<CharacterController>().GetItemStatus();
             float action = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
 
-            if ((Status == "Dropping" && Item.heldLocation == "Hand" )|| action == -1.0f)
+            if ((Status == "Dropping" && Item.heldLocation == "Hand") || action == -1.0f)
             {
                 Debug.Log("parent id dropping me");
                 EnableCollsion();
@@ -293,6 +293,21 @@ public class ItemController : MonoBehaviour
                 CooldownTimer += Item.Cooldown;
             }
         }
+        else if (ItemClass == "BASIC")
+        {
+            if (CooldownTimer <= 0)
+            {
+                // TODO move to attac secion maybe?
+                //Debug.Log("doing basic attack 01");
+                float animationDuration = 1.0f;
+                AnimateHoldingCharacter("m_slash1", animationDuration);
+                CooldownTimer += Item.Cooldown;
+            }
+        }
+        else if (ItemClass == "NONE")
+        {
+            // do nothing if class si none
+        }
         else
         {
             // TODO move to attac secion maybe?
@@ -388,7 +403,7 @@ public class ItemController : MonoBehaviour
             if (!isPickedUp)
             {
                 Debug.Log("Collision without picked up");
-
+                // when item is dropped on ground
                 ItemTransform.position += new Vector3(0.0f, 0.2f, 0.0f);
                 rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
                 rb.AddTorque(transform.up * 0.2f);
@@ -404,6 +419,11 @@ public class ItemController : MonoBehaviour
                 CharacterController CollidingCharacter = collision.gameObject.GetComponent<CharacterController>();
                 if (CollidingCharacter != null)
                 {
+
+                    // cancle all physics
+                    CollidingCharacter.SetVelocity(new Vector3(0,0,0));
+                    HoldingCharacter.GetComponent<CharacterController>().SetVelocity(new Vector3(0,0,0));
+
                     //ignore interactions with squadmates
                     if (CollidingCharacter.GetSquadLeaderUUID() != HoldingCharacter.GetComponent<CharacterController>().GetSquadLeaderUUID())
                     {
@@ -416,9 +436,10 @@ public class ItemController : MonoBehaviour
                         if (CollidingCharacter.GetCanFight())
                         {
                             SetTargetOnImpact(collision.gameObject, HoldingCharacter);
-
                         }
-                    }else{
+                    }
+                    else
+                    {
                         //Debug.Log("hit squadmate?");
                     }
                 }

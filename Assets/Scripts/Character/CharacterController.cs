@@ -143,7 +143,7 @@ public class CharacterController : MonoBehaviour
         // pick ui color
         SetColor();
         Circle.color = UIColor;
-        Debug.Log("set cirice color"+Circle.color);
+        Debug.Log("set cirice color" + Circle.color);
 
 
     }
@@ -1065,19 +1065,22 @@ public class CharacterController : MonoBehaviour
     public void SetTarget(GameObject TargetToSet)
     {
 
+        DeTarget();
 
-        Destroy(TargetBeaconObject);
-        CombatTarget = null;
-        TargetCharacter = null;
-        hasTarget = false;
-
-        this.TargetCoolDown = 0.0f;
 
 
         Transform TargetTransform = TargetToSet.GetComponent<Transform>();
         Vector3 SummonPositon = TargetTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
         TargetBeaconObject = Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
-        TargetBeaconObject.gameObject.GetComponent<SpriteRenderer>().color = UIColor;
+
+        // set the color of target beacon
+        SpriteRenderer[] SpriteRendersInTargetBeacon = TargetBeaconObject.gameObject.GetComponentsInChildren<SpriteRenderer>();
+        SpriteRendersInTargetBeacon[0].color = UIColor;
+
+        Light[] LightsInTargetBeacon = TargetBeaconObject.gameObject.GetComponentsInChildren<Light>();
+        LightsInTargetBeacon[0].color = UIColor;
+
+
 
         hasTarget = true;
         CombatTarget = TargetToSet;
@@ -1426,6 +1429,7 @@ public class CharacterController : MonoBehaviour
     {
         if (selfDestructTimer <= 0.0f)
         {
+            DeTarget();
             Destroy(this.gameObject);
         }
         else
@@ -1461,30 +1465,41 @@ public class CharacterController : MonoBehaviour
     {
         // sets players unique color
         UIColor = Color.yellow;
-        float red = Random.Range(0.0f, 255.0f);
-        float green = Random.Range(0.0f, 255.0f);
-        float blue = Random.Range(0.0f, 255.0f);
+        float red = Random.Range(0.05f, 0.95f);
+        float green = Random.Range(0.05f, 0.95f);
+        float blue = Random.Range(0.05f, 0.95f);
 
-        UIColor = new Color(red, green, blue);
+        UIColor = new Color(red, green, blue, 0.85f);
     }
 
     private void DoTargetCircle()
     {
-        if (hasTarget)
+        if (hasTarget && IsFighting)
         {
             // if have target reenable circle
             if (!Circle.enabled)
             {
                 Circle.enabled = true;
             }
-
-
         }
         else
         {
             Circle.enabled = false;
         }
 
+    }
+
+    private void DeTarget()
+    {
+        Destroy(TargetBeaconObject);
+        CombatTarget = null;
+        TargetCharacter = null;
+        hasTarget = false;
+        this.TargetCoolDown = 0.0f;
+    }
+
+    public void SetVelocity(Vector3 VelocityVector){
+        rb.velocity = VelocityVector;
     }
 
 }
