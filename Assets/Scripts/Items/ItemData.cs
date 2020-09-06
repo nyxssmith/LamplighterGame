@@ -3,6 +3,7 @@ public class ItemData
 {
     public string Name;
     public float Damage;
+    public float Range;
     public bool IsPickup;
     public string PrimaryActionClass;
     public string SecondartActionClass;

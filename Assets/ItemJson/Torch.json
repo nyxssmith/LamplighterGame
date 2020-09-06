@@ -1,6 +1,7 @@
 {
     "Name": "Torch",
     "Damage": 5.0,
+    "Range": 2.0,
     "IsPickup": true,
     "PrimaryActionClass": "BASIC",
     "SecondartActionClass": "NONE",

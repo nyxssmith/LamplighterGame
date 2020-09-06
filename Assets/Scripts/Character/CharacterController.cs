@@ -88,7 +88,7 @@ public class CharacterController : MonoBehaviour
 
     private string myFaction;
 
-    private float selfDestructTimer = 2.0f;
+    private float selfDestructTimer = 1.0f;
 
     private bool selfDestuctStarted = false;
 
@@ -458,8 +458,8 @@ public class CharacterController : MonoBehaviour
         //NavMeshAgent agent = GetComponent<NavMeshAgent>();
         float rotationSpeed = 30f; //speed of turning
 
-        float range = 1000f;
-        float range2 = 1000f;
+        float range = 25f;
+        float range2 = 25f;
         float stop = Character.Reach; // this is range to player
 
 
@@ -825,7 +825,7 @@ public class CharacterController : MonoBehaviour
                 Vector3 center = CharacterTransform.position + (CharacterTransform.forward * Character.TargetRange / 2.0f);
                 Collider[] hitColliders = Physics.OverlapSphere(center, radius);
                 int i = 0;
-                Vector3 SummonPositon = center;
+                //Vector3 SummonPositon = center;
 
                 while (i < hitColliders.Length)
                 {
@@ -1434,6 +1434,8 @@ public class CharacterController : MonoBehaviour
         }
         else
         {
+            IsMoving = false;
+            DeTarget();
             selfDestructTimer -= Time.deltaTime;
             if (FollowTarget != null)
             {

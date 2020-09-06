@@ -17,6 +17,15 @@ public class ItemController : MonoBehaviour
     private bool isPickedUp = false;
     private float CooldownTimer = 0f;
 
+    private float CurrentItemAction = 0.0f;
+
+    public float CanDoAction = 0.0f; // which action it can do currently
+    // 0 for none
+    // 1 for primary
+    // 2 for secondary
+    // 3 for TODO
+    public CharacterController ActionTargetCharacterController = null;
+
 
     private GameObject HoldingCharacter;
 
@@ -132,9 +141,9 @@ public class ItemController : MonoBehaviour
         if (HoldingCharacter != null)
         {
             string Status = HoldingCharacter.GetComponent<CharacterController>().GetItemStatus();
-            float action = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
+            CurrentItemAction = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
 
-            if ((Status == "Dropping" && Item.heldLocation == "Hand") || action == -1.0f)
+            if ((Status == "Dropping" && Item.heldLocation == "Hand") || CurrentItemAction == -1.0f)
             {
                 Debug.Log("parent id dropping me");
                 EnableCollsion();
@@ -225,7 +234,7 @@ public class ItemController : MonoBehaviour
                 {
 
 
-                    if (action > 0.0f)
+                    if (CurrentItemAction > 0.0f)
                     {
                         // enable collision
                         EnableCollsion();
@@ -236,19 +245,19 @@ public class ItemController : MonoBehaviour
                         DisableCollsion();
                     }
                     //mouse click inputs
-                    if (action == 1.0f)
+                    if (CurrentItemAction == 1.0f)
                     {
                         DoPrimaryAction();
                         HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
 
                     }
-                    if (action == 2.0f)
+                    if (CurrentItemAction == 2.0f)
                     {
                         DoSecondaryAction();
                         HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
 
                     }
-                    if (action == 3.0f)
+                    if (CurrentItemAction == 3.0f)
                     {
                         //TODO use action
                         DoSecondaryAction();
@@ -272,60 +281,102 @@ public class ItemController : MonoBehaviour
 
     private void DoPrimaryAction()
     {
-        //Debug.Log("Pressed primary button.");
-
-        string ItemClass = Item.PrimaryActionClass;
-        if (ItemClass == "SUMMON")
+        // do item with cooldown
+        if (CooldownTimer <= 0.0f)
         {
-            Debug.Log("SUMMONIGNGGG");
-            SummonPrefab Summoner = this.gameObject.GetComponent<SummonPrefab>();
-            Debug.Log(Summoner);
-            Summoner.Summon();
-        }//TODO else if basic etc
-        else if (ItemClass == "POTION")
-        {
-            Debug.Log("potion cooldown:" + CooldownTimer);
-            if (CooldownTimer <= 0)
+            string ItemClass = Item.PrimaryActionClass;
+            if (ItemClass == "SUMMON")
             {
-                Potion DrinkPotion = this.gameObject.GetComponent<Potion>();
-                DrinkPotion.SetCharacter(HoldingCharacter.GetComponent<CharacterController>());
-                DrinkPotion.Drink(Item.Damage);
+                // doesnt need charactercorller target
+                SetCanDoAction(1.0f);
                 CooldownTimer += Item.Cooldown;
-            }
-        }
-        else if (ItemClass == "BASIC")
-        {
-            if (CooldownTimer <= 0)
+
+                // TODO this later like stamina potion
+                /*
+
+                // TODO move this to a per item thing that checks for current action
+                Debug.Log("SUMMONIGNGGG");
+                SummonPrefab Summoner = this.gameObject.GetComponent<SummonPrefab>();
+                Debug.Log(Summoner);
+                Summoner.Summon();
+                */
+
+            }//TODO else if basic etc
+            else if (ItemClass == "POTION")
             {
+
+                SetCanDoAction(1.0f);
+                SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
+
+                CooldownTimer += Item.Cooldown;
+
+
+            }
+            else if (ItemClass == "BASIC")
+            {
+
+
+                // do basic attack hit, if it hits then canDoAction is true
+                float animationDuration = 1.0f;
+                AnimateHoldingCharacter("m_slash1", animationDuration);
+                CooldownTimer += Item.Cooldown;
+
+                // DO attack
+                DoAttack();
+
+
+
+            }
+            else if (ItemClass == "SPELL")
+            {
+                SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
+                SetCanDoAction(1.0f);
+                CooldownTimer += Item.Cooldown;
+
+                // do nothing if class si none
+            }
+            else if (ItemClass == "NONE")
+            {
+                // do nothing if class si none
+            }
+            else
+            {
+                // TODO rm this part
                 // TODO move to attac secion maybe?
                 //Debug.Log("doing basic attack 01");
                 float animationDuration = 1.0f;
                 AnimateHoldingCharacter("m_slash1", animationDuration);
-                CooldownTimer += Item.Cooldown;
             }
-        }
-        else if (ItemClass == "NONE")
-        {
-            // do nothing if class si none
-        }
-        else
-        {
-            // TODO move to attac secion maybe?
-            //Debug.Log("doing basic attack 01");
-            float animationDuration = 1.0f;
-            AnimateHoldingCharacter("m_slash1", animationDuration);
+
         }
 
     }
 
     private void DoSecondaryAction()
     {
+        // TODO copy exact from primary but 1.0f to 2.0f
+
         // TODO base this on item json
         Debug.Log("Pressed Seconary button. TODO THIS");
         Debug.Log("doing basic attack 02");
         float animationDuration = 1.0f;
         AnimateHoldingCharacter("m_slash2", animationDuration);
 
+    }
+
+
+    // set canDoAction
+    public void SetCanDoAction(float newStatus)
+    {
+        CanDoAction = newStatus;
+    }
+    public void SetActionTargetCharacterController(CharacterController newController)
+    {
+        ActionTargetCharacterController = newController;
+    }
+    public float GetDamage()
+    {
+        return Item.Damage;
     }
 
     private void AnimateHoldingCharacter(string animation, float overrideDuration)
@@ -358,6 +409,67 @@ public class ItemController : MonoBehaviour
     //Basic (act like sword and do attack)
 
     //Summon (look for summonprefab and set allow to true once)
+    private void DoAttack()
+    {
+        /*
+        make points of 1m diamtter spheres in front of character
+        if sphere hits target or new to target, then do hit
+
+        */
+
+        CharacterController HitCharacterController = null;
+        CharacterController HoldingCharacterController = HoldingCharacter.GetComponent<CharacterController>();
+        float i = 0.5f;
+        Transform HoldingCharacterTransform = HoldingCharacter.GetComponent<Transform>();
+        Vector3 center;
+        while (i < Item.Range)
+        {
+
+            //summon overlap sphere i meters out with diameter of 1 (radius of .5)
+            // check hit target
+            // if hit target, break
+            // get overlap
+            bool hit = false;
+            center = HoldingCharacterTransform.position + (HoldingCharacterTransform.forward * i);
+            Collider[] hitColliders = Physics.OverlapSphere(center, 0.5f);
+            int j = 0;
+            while (j < hitColliders.Length)
+            {
+                HitCharacterController = hitColliders[j].gameObject.GetComponent<CharacterController>();
+                if (HitCharacterController != null)
+                {
+                    // if not targeting self or sqwuad
+                    if (HitCharacterController.GetUUID() != HoldingCharacterController.GetUUID() && HitCharacterController.GetSquadLeaderUUID() != HoldingCharacterController.GetSquadLeaderUUID())
+                    {
+                        break;
+                    }
+                }
+            }
+            if (hit)
+            {
+                break;
+            }
+            i += 0.5f;
+        }
+
+        if (HitCharacterController != null)
+        {
+            //do actual hit if got hit
+            SetCanDoAction(1.0f);
+            SetActionTargetCharacterController(HoldingCharacterController);
+
+            // Set to target eachother
+            SetTargetOnImpact(HoldingCharacter, HitCharacterController.gameObject);
+            // if can fight
+            if (HitCharacterController.GetCanFight())
+            {
+                SetTargetOnImpact(HitCharacterController.gameObject, HoldingCharacter);
+            }
+
+        }
+
+    }
+
 
 
     void OnCollisionEnter(Collision collision)
@@ -412,44 +524,58 @@ public class ItemController : MonoBehaviour
 
 
         }
+        /*
         else if (isPickedUp)
         {
-            if (Item.heldLocation == "Hand")// if item in hand, do dmg on impact
+
+            // TODO move this to attack
+            if (Item.heldLocation == "Hand" && CurrentItemAction > 0.0f)// if item in hand, do dmg on impact
             {
                 CharacterController CollidingCharacter = collision.gameObject.GetComponent<CharacterController>();
                 if (CollidingCharacter != null)
                 {
-
-                    // cancle all physics
-                    CollidingCharacter.SetVelocity(new Vector3(0,0,0));
-                    HoldingCharacter.GetComponent<CharacterController>().SetVelocity(new Vector3(0,0,0));
-
-                    //ignore interactions with squadmates
-                    if (CollidingCharacter.GetSquadLeaderUUID() != HoldingCharacter.GetComponent<CharacterController>().GetSquadLeaderUUID())
+                    // cant hit self
+                    if (CollidingCharacter.GetUUID() != HoldingCharacter.GetComponent<CharacterController>().GetUUID())
                     {
-                        //Debug.Log("attacked and hit "+CollidingCharacter.GetIsPlayer());
-                        //TODO remove this add set this to action part
-                        CollidingCharacter.AddValueToHealth(-1 * Item.Damage);
-                        // Set to target eachother
-                        SetTargetOnImpact(HoldingCharacter, collision.gameObject);
-                        // if can fight
-                        if (CollidingCharacter.GetCanFight())
+
+                        // cancle all physics
+                        CollidingCharacter.SetVelocity(new Vector3(0, 0, 0));
+                        HoldingCharacter.GetComponent<CharacterController>().SetVelocity(new Vector3(0, 0, 0));
+
+                        //ignore interactions with squadmates
+                        if (CollidingCharacter.GetSquadLeaderUUID() != HoldingCharacter.GetComponent<CharacterController>().GetSquadLeaderUUID())
                         {
-                            SetTargetOnImpact(collision.gameObject, HoldingCharacter);
+
+                            SetCanDoAction(1.0f);
+                            SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
+
+
+                            // move this to per item
+                            //CollidingCharacter.AddValueToHealth(-1 * Item.Damage);
+
+
+                            // Set to target eachother
+                            SetTargetOnImpact(HoldingCharacter, collision.gameObject);
+                            // if can fight
+                            if (CollidingCharacter.GetCanFight())
+                            {
+                                SetTargetOnImpact(collision.gameObject, HoldingCharacter);
+                            }
                         }
-                    }
-                    else
-                    {
-                        //Debug.Log("hit squadmate?");
+                        else
+                        {
+                            //Debug.Log("hit squadmate?");
+                        }
                     }
                 }
             }
         }
+        */
     }
 
     public void SetHeldLocation(string newHeldLocation, CharacterController ParentController)
     {
-        Debug.Log("I was set to be held by by " + ParentController.GetCharacter().Name);
+        //Debug.Log("I was set to be held by by " + ParentController.GetCharacter().Name);
 
         Item.heldLocation = newHeldLocation;
 
@@ -498,11 +624,8 @@ public class ItemController : MonoBehaviour
         {
             ItemTransform.localPosition = new Vector3(0, 0, 0);
         }
-        Debug.Log("held location updated postion:" + ItemTransform.position + Item.Name);
+        //Debug.Log("held location updated postion:" + ItemTransform.position + Item.Name);
     }
 
-    //your code
-
-    //onclick actions etc
 
 }
