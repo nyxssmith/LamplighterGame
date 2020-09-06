@@ -403,12 +403,6 @@ public class ItemController : MonoBehaviour
         ItemCollider.enabled = false;
     }
 
-    //TODO check if parent is asking for use function
-
-    // ITEM CLASS
-    //Basic (act like sword and do attack)
-
-    //Summon (look for summonprefab and set allow to true once)
     private void DoAttack()
     {
         /*
@@ -416,6 +410,7 @@ public class ItemController : MonoBehaviour
         if sphere hits target or new to target, then do hit
 
         */
+
 
         CharacterController HitCharacterController = null;
         CharacterController HoldingCharacterController = HoldingCharacter.GetComponent<CharacterController>();
@@ -444,24 +439,30 @@ public class ItemController : MonoBehaviour
                         break;
                     }
                 }
+                j+=1;
             }
             if (hit)
             {
                 break;
             }
             i += 0.5f;
+
+
+            //if(i >= 5.0f){
+            //    break;
+            //}
         }
 
         if (HitCharacterController != null)
         {
             //do actual hit if got hit
             SetCanDoAction(1.0f);
-            SetActionTargetCharacterController(HoldingCharacterController);
+            SetActionTargetCharacterController(HitCharacterController);
 
             // Set to target eachother
             SetTargetOnImpact(HoldingCharacter, HitCharacterController.gameObject);
-            // if can fight
-            if (HitCharacterController.GetCanFight())
+            // if can fight and doesnt yet have a terget
+            if (HitCharacterController.GetCanFight() && !HitCharacterController.GetHasTarget())
             {
                 SetTargetOnImpact(HitCharacterController.gameObject, HoldingCharacter);
             }
@@ -487,9 +488,9 @@ public class ItemController : MonoBehaviour
                     if (!CollidingCharacter.GetHasItemInHand())
                     {
 
-                        Debug.DrawRay(contact.point, contact.normal, Color.white);
+                        //Debug.DrawRay(contact.point, contact.normal, Color.white);
 
-                        Debug.Log("I was hit by " + collision.gameObject.GetComponent<CharacterController>().GetCharacter().Name);
+                        //Debug.Log("I was hit by " + collision.gameObject.GetComponent<CharacterController>().GetCharacter().Name);
                         isPickedUp = true;
                         rb.useGravity = false;
                         rb.isKinematic = true;

@@ -1068,9 +1068,11 @@ public class CharacterController : MonoBehaviour
         DeTarget();
 
 
-
         Transform TargetTransform = TargetToSet.GetComponent<Transform>();
-        Vector3 SummonPositon = TargetTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
+        float RandZ = Random.Range(-0.2f, 0.2f);
+        float RandX = Random.Range(-0.2f, 0.2f);
+        //Vector3 SummonPositon = TargetTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
+        Vector3 SummonPositon = TargetTransform.position + new Vector3(RandX, 2.0f, RandZ);
         TargetBeaconObject = Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
 
         // set the color of target beacon
