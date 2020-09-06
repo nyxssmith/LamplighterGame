@@ -21,6 +21,7 @@ public class CharacterData
     public bool IsPlayer;
     public bool IsFollower;
     public bool IsFollowing;
+    public string DefaultTask;
 
 
     public string idle_animation;

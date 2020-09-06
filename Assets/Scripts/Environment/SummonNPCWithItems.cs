@@ -20,6 +20,8 @@ public class SummonNPCWithItems : MonoBehaviour
         SummonPositon = this.transform.position;
 
         Summon();
+        Destroy(this.gameObject);
+
     }
 
     public void Update()

@@ -18,6 +18,7 @@
     "IsPlayer": true,
     "IsFollower": true,
     "IsFollowing": false,
+    "DefaultTask": "",
     "idle_animation": "Idle01",
     "walking_forward_animation": "Walking",
     "running_forward_animation": "Running",

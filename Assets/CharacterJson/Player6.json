@@ -1,5 +1,5 @@
 {
-    "Name": "Bandit Player5",
+    "Name": "Farmer Player6",
     "CurrentHealth": 100.0,
     "MaxHealth": 100.0,
     "CurrentMana": 100.0,
@@ -18,7 +18,7 @@
     "IsPlayer": false,
     "IsFollower": false,
     "IsFollowing": true,
-    "DefaultTask": "BANDIT",
+    "DefaultTask": "FARM",
     "idle_animation": "Idle01",
     "walking_forward_animation": "Walking",
     "running_forward_animation": "Running",
@@ -32,11 +32,11 @@
     "z_pos": 30.298471450805665,
     "id": "-1",
     "squadLeaderId": "",
-    "magic_faction": -1.0,
-    "tech_faction": -1.0,
-    "bandit_faction": 1.0,
-    "lamplighter_faction": -1.0,
-    "settlements_faction": -1.0,
-    "farmer_faction": -1.0,
+    "magic_faction": 0.0,
+    "tech_faction": 0.0,
+    "bandit_faction": 0.0,
+    "lamplighter_faction": 0.0,
+    "settlements_faction": 0.0,
+    "farmer_faction": 1.0,
     "wild_faction": 0.0
 }

@@ -93,6 +93,15 @@ public class CharacterController : MonoBehaviour
     private bool selfDestuctStarted = false;
 
 
+    // schedule and task stuff
+
+
+    // will do current task, when done, if no next task will do last task, current task can set next task
+    private string CurrentTask = "";
+    private string NextTask = "";
+    private string LastTask = "";
+
+
     // Targeting and interacting with enemy and squad
     private GameObject FollowTarget = null;
     private GameObject CombatTarget = null;
@@ -145,6 +154,7 @@ public class CharacterController : MonoBehaviour
         Circle.color = UIColor;
         Debug.Log("set cirice color" + Circle.color);
 
+        CurrentTask = Character.DefaultTask;
 
     }
 
@@ -327,7 +337,6 @@ public class CharacterController : MonoBehaviour
                 if (Input.GetKey("w"))
                 {
                     CurrentAnimationState = Character.running_forward_animation;
-
                 }
                 else if (Input.GetKey("s"))
                 {
@@ -401,13 +410,6 @@ public class CharacterController : MonoBehaviour
         }
 
 
-        //TODO if follower
-        // todo if enemy
-        // make sure if figting, also take control of is moving
-        // TODO if enemy follower sees, target instead
-
-        // TODO check for enemies or factions in area
-
         // if they are following player or in a squad
         if (Character.IsFollower && Character.squadLeaderId != "")
         {
@@ -422,9 +424,8 @@ public class CharacterController : MonoBehaviour
                 FollowPlayer();
             }
             else
-            {
-                // TODO schedule / wandering around a point
-                IsMoving = false;
+            {// if they are following leader and not following, do task
+                DoTask();
             }
 
         }
@@ -432,9 +433,9 @@ public class CharacterController : MonoBehaviour
         {
             if (!IsFighting)
             {
-                // non follower npc movement here
-                // TODO schedule and wandering
-                CheckForOtherFactionsToFight();
+                // if not fighting, then do task
+                DoTask();
+
             }
             else
             {
@@ -444,12 +445,141 @@ public class CharacterController : MonoBehaviour
 
     }
 
+    // schedule etc
+    private void DoTask()
+    {
+        /*
+        Task list
+
+        FARM find a farm and ask for task
+        BANDIT look for factions to fight
+        LAMPLIGHT look for more lamps to light down road etc
+        WANDERPOINT wander around a point
+        WANDER wander aimlessly
+        SLEEP find bed and sleep
+        STAND stand still
+        BEMERCHANT be a merchant
+        SHOP find a merchant and buy something
+        HOME go home
+        FINDENEMY look for other factions to fight
+
+        */
+        Debug.Log("current task is"+CurrentTask+Character.Name);
+
+        if (CurrentTask == "FARM")
+        {
+            /*
+            set to go to nearest farm then wanderpoint, next task is more farm
+            if already in farm field, then wanderpoint again until time done then set to sleep
+            */
+
+        }
+        else if (CurrentTask == "BANDIT")
+        {
+            /*
+            wander around a point and check for factions to fight
+            set ucrrent task to wander, next to bandit
+            */
+
+
+            if (NextTask == "FINDENEMY")
+            {
+                CurrentTask = "WANDERPOINT";
+                NextTask = "BANDIT";
+            }
+            else if (NextTask == "WANDERPOINT")
+            {
+                CurrentTask = "FINDENEMY";
+                NextTask = "BANDIT";
+            }else{
+                CurrentTask = "FINDENEMY";
+                NextTask = "BANDIT";    
+            }
+
+        }
+        else if (CurrentTask == "LAMPLIGHT")
+        {
+
+            // TODO change this
+            if (NextTask == "FINDENEMY")
+            {
+                CurrentTask = "WANDERPOINT";
+                NextTask = "LAMPLIGHT";
+            }
+            else if (NextTask == "WANDERPOINT")
+            {
+                CurrentTask = "FINDENEMY";
+                NextTask = "LAMPLIGHT";
+            }else{
+                CurrentTask = "FINDENEMY";
+                NextTask = "LAMPLIGHT";    
+            }
+        }
+        else if (CurrentTask == "WANDERPOINT")
+        {
+            /*
+            Wander around a point to a new point, then do next task
+            */
+            Debug.Log("wandering point");
+
+            string tempTask = CurrentTask;
+            CurrentTask = NextTask;
+            NextTask = tempTask;
+
+        }
+        else if (CurrentTask == "WANDER")
+        {
+
+        }
+        else if (CurrentTask == "SLEEP")
+        {
+
+        }
+        else if (CurrentTask == "STAND")
+        {
+            IsMoving = false;
+        }
+        else if (CurrentTask == "BEMERCHANT")
+        {
+
+        }
+        else if (CurrentTask == "SHOP")
+        {
+
+        }
+        else if (CurrentTask == "HOME")
+        {
+            // either go home or find nearest
+
+        }
+        else if (CurrentTask == "FINDENEMY")
+        {
+            CheckForOtherFactionsToFight();
+
+            string tempTask = CurrentTask;
+            CurrentTask = NextTask;
+            NextTask = tempTask;
+
+        }
+        else if (CurrentTask == "")
+        {
+            IsMoving = false;
+        }
+        else
+        {
+            IsMoving = false;
+        }
+
+
+    }
+
     private void AttackTarget()
     {
 
         if (CheckIfTargetIsDead())
         {
             IsFighting = false;
+            DeTarget();
             return;
         }
         //Debug.Log("Attacking", CombatTarget);
@@ -610,6 +740,8 @@ public class CharacterController : MonoBehaviour
         {
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
+            // if near player, do current task
+            DoTask();
         }
 
     }
@@ -1432,7 +1564,6 @@ public class CharacterController : MonoBehaviour
         if (selfDestructTimer <= 0.0f)
         {
             DeTarget();
-            Destroy(this.gameObject);
         }
         else
         {
@@ -1490,7 +1621,6 @@ public class CharacterController : MonoBehaviour
         {
             Circle.enabled = false;
         }
-
     }
 
     private void DeTarget()
@@ -1502,9 +1632,19 @@ public class CharacterController : MonoBehaviour
         this.TargetCoolDown = 0.0f;
     }
 
-    public void SetVelocity(Vector3 VelocityVector){
+    public void SetVelocity(Vector3 VelocityVector)
+    {
         rb.velocity = VelocityVector;
     }
+
+
+    // wander around point
+
+    // look for new task
+
+    //look for task by name
+    // since schedule is list of names
+
 
 }
 

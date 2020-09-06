@@ -462,7 +462,7 @@ public class ItemController : MonoBehaviour
             // Set to target eachother
             SetTargetOnImpact(HoldingCharacter, HitCharacterController.gameObject);
             // if can fight and doesnt yet have a terget
-            if (HitCharacterController.GetCanFight() && !HitCharacterController.GetHasTarget())
+            if (HitCharacterController.GetCanFight() && !HitCharacterController.GetIsPlayer())
             {
                 SetTargetOnImpact(HitCharacterController.gameObject, HoldingCharacter);
             }
@@ -499,6 +499,8 @@ public class ItemController : MonoBehaviour
 
                         //TODO move relivant to character
                         Physics.IgnoreCollision(collision.gameObject.GetComponent<Collider>(), GetComponent<Collider>());
+
+
 
                         //ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
                         HoldingCharacter = collision.gameObject;

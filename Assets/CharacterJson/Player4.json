@@ -18,6 +18,7 @@
     "IsPlayer": false,
     "IsFollower": true,
     "IsFollowing": true,
+    "DefaultTask": "LAMPLIGHT",
     "idle_animation": "Idle01",
     "walking_forward_animation": "Walking",
     "running_forward_animation": "Running",

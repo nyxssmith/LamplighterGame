@@ -17,6 +17,7 @@
     "CanFight": true,
     "IsFollower": false,
     "IsFollowing": false,
+    "DefaultTask": "",
     "idle_animation": "m_idle",
     "walking_forward_animation": "m_walking",
     "running_forward_animation": "m_running",
