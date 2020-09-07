@@ -158,7 +158,7 @@ public class CharacterController : MonoBehaviour
         // pick ui color
         SetColor();
         Circle.color = UIColor;
-        Debug.Log("set cirice color" + Circle.color);
+        MakeSpeechBubble("set cirice color" + Circle.color);
 
         CurrentTask = Character.DefaultTask;
 
@@ -680,7 +680,7 @@ public class CharacterController : MonoBehaviour
         {
             //TODO if can, do unarmed spells etc
             // else do punch
-            Debug.Log("unarmed attack");
+            MakeSpeechBubble("unarmed attack");
             Action = 0.0f;
         }
         // set attack cooldown
@@ -983,7 +983,7 @@ public class CharacterController : MonoBehaviour
         {
             if (!hasTarget)// if doesnt have a target, find one
             {
-                Debug.Log("fiding targt");
+                MakeSpeechBubble("fiding targt");
                 rand = Random.Range(1, 254);
 
                 float radius = Character.TargetRange / 2.0f;
@@ -1050,8 +1050,8 @@ public class CharacterController : MonoBehaviour
 
     private void DoInteractAction(GameObject WhoInteracted)
     {
-        Debug.Log("I was interacted with by " + WhoInteracted + " my leader is" + Character.squadLeaderId);
-        Debug.Log(Character.IsFollower);
+        MakeSpeechBubble("I was interacted with by " + WhoInteracted + " my leader is" + Character.squadLeaderId);
+        MakeSpeechBubble(Character.IsFollower.ToString());
 
         // If a follower, then make then interact toggles follow
         if (Character.IsFollower)
@@ -1062,7 +1062,7 @@ public class CharacterController : MonoBehaviour
             {
                 if (Character.squadLeaderId == "")
                 {
-                    Debug.Log("Joining squad of " + InteractedCharacterController);
+                    MakeSpeechBubble("Joining squad of " + InteractedCharacterController);
                     JoinSquadOfCharacter(InteractedCharacterController);
                     //JoinSquadLeadBy(InteractedCharacterController.GetUUID());
                 }
@@ -1124,7 +1124,7 @@ public class CharacterController : MonoBehaviour
 
     private void DoTargetedAction()// character will make a beacon above their head
     {
-        Debug.Log("I was targetd");
+        MakeSpeechBubble("I was targetd");
         NeedsUIUpdate = true;
 
         //TODO reacte to being targeted etc
@@ -1307,7 +1307,7 @@ public class CharacterController : MonoBehaviour
 
     public void Save()
     {
-        Debug.Log("Saving " + Character.Name);
+        MakeSpeechBubble("Saving " + Character.Name);
         Character.x_pos = CharacterTransform.position.x;
         Character.y_pos = CharacterTransform.position.y;
         Character.z_pos = CharacterTransform.position.z;
@@ -1322,7 +1322,7 @@ public class CharacterController : MonoBehaviour
         // TODO move this to recall potion
         //CharacterTransform.position = new Vector3(Character.x_pos, Character.y_pos, Character.z_pos);
 
-        Debug.Log("Loaded data for " + Character.Name + " from " + CharacterSaveFile);
+        MakeSpeechBubble("Loaded data for " + Character.Name + " from " + CharacterSaveFile);
 
     }
 

@@ -4,11 +4,11 @@ using UnityEngine;
 public class DaylightCycle : MonoBehaviour {
     private Transform CenterOfRotation;
 
-    public float RotationDegree = 180.0f;
+    public float RotationDegree = 0.0f;
 
     void Start () {
         CenterOfRotation = gameObject.GetComponent<Transform> ();
-        RotationDegree = 180.0f;
+        RotationDegree += 220.0f;
 
     }
 
@@ -20,9 +20,6 @@ public class DaylightCycle : MonoBehaviour {
         }
 
         CenterOfRotation.localEulerAngles = new Vector3(RotationDegree,0.0f,0.0f);
-
-
-        
 
         if (Input.GetKey ("[")) {
             RotationDegree -= 0.5f;
