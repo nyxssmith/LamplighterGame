@@ -8,6 +8,7 @@ public class DaylightCycle : MonoBehaviour {
 
     void Start () {
         CenterOfRotation = gameObject.GetComponent<Transform> ();
+        RotationDegree = 180.0f;
 
     }
 
@@ -30,12 +31,11 @@ public class DaylightCycle : MonoBehaviour {
             RotationDegree += 0.5f;
         }
 
-
-
-
-
     }
 
+    public float GetTime(){
+        return RotationDegree;
+    }
 
 
 }

@@ -26,6 +26,7 @@ public class CharacterController : MonoBehaviour
     [SerializeField] GameObject TargetName;//name of target
 
     public SpriteRenderer Circle;
+    public GameObject SpeechBubblePreFab;
 
     private Color UIColor;
 
@@ -91,6 +92,11 @@ public class CharacterController : MonoBehaviour
     private float selfDestructTimer = 1.0f;
 
     private bool selfDestuctStarted = false;
+
+    private GameObject SpeechBubbleObject = null;
+    private List<GameObject> SpeechBubbles = new List<GameObject>();
+
+
 
 
     // schedule and task stuff
@@ -464,7 +470,7 @@ public class CharacterController : MonoBehaviour
         FINDENEMY look for other factions to fight
 
         */
-        Debug.Log("current task is"+CurrentTask+Character.Name);
+        //Debug.Log("current task is" + CurrentTask + Character.Name);
 
         if (CurrentTask == "FARM")
         {
@@ -491,9 +497,11 @@ public class CharacterController : MonoBehaviour
             {
                 CurrentTask = "FINDENEMY";
                 NextTask = "BANDIT";
-            }else{
+            }
+            else
+            {
                 CurrentTask = "FINDENEMY";
-                NextTask = "BANDIT";    
+                NextTask = "BANDIT";
             }
 
         }
@@ -510,9 +518,11 @@ public class CharacterController : MonoBehaviour
             {
                 CurrentTask = "FINDENEMY";
                 NextTask = "LAMPLIGHT";
-            }else{
+            }
+            else
+            {
                 CurrentTask = "FINDENEMY";
-                NextTask = "LAMPLIGHT";    
+                NextTask = "LAMPLIGHT";
             }
         }
         else if (CurrentTask == "WANDERPOINT")
@@ -520,7 +530,7 @@ public class CharacterController : MonoBehaviour
             /*
             Wander around a point to a new point, then do next task
             */
-            Debug.Log("wandering point");
+            //Debug.Log("wandering point");
 
             string tempTask = CurrentTask;
             CurrentTask = NextTask;
@@ -914,28 +924,51 @@ public class CharacterController : MonoBehaviour
     private void Interact()
     {
 
-        RaycastHit hit;
-        if (Physics.Raycast(CharacterTransform.position, CharacterTransform.forward, out hit, Character.Reach))
-        {
-            //Debug.Log (hit);
-            Debug.Log("Interacted with" + hit.collider.gameObject);
-            hit.collider.gameObject.GetComponent<CharacterController>().DoInteractAction(this.gameObject);
-            //hit.collider.gameObject.target = this;
 
-            //IInteractable interactable = hit.collider.GetComponent<IInteractable> ();
 
-            //if (interactable != null) {
-            //    interactable.ShowInteractability ();
-            //    interactable.Interact ();
-            //}
-        }
-        else
+        CharacterController HitCharacterController;
+        Vector3 center = CharacterTransform.position + (CharacterTransform.forward * 0.5f);
+        Collider[] hitColliders = Physics.OverlapSphere(center, 0.5f);
+        int j = 0;
+        bool interacted = false;
+        while (j < hitColliders.Length)
         {
-            if (CombatTarget != null)
+            HitCharacterController = hitColliders[j].gameObject.GetComponent<CharacterController>();
+            if (HitCharacterController != null)
             {
-                CombatTarget.GetComponent<CharacterController>().DoInteractAction(this.gameObject);
+                // if not targeting self or sqwuad
+                if (HitCharacterController.GetUUID() != GetUUID())
+                {
+                    MakeSpeechBubble("Interacted with " + HitCharacterController.GetCharacter().Name);
+                    // Do interaction with a character controller (talking)
+                    HitCharacterController.DoInteractAction(this.gameObject);
+
+                    interacted = true;
+                    break;
+                }
             }
+            else
+            {
+                if (hitColliders[j].gameObject.tag != "Ground")
+                {
+                    // hitColliders[j].gameObject is what we interacted with
+                    MakeSpeechBubble("Interacted with world");
+                    // TODO do interaction here
+
+                    interacted = true;
+                    break;
+                }
+
+            }
+            j += 1;
         }
+
+        if (!interacted)
+        {
+            // pushed E and didnt get anything, do squad commands
+            MakeSpeechBubble("Squad cmd");
+        }
+
         NeedsUIUpdate = true;
     }
 
@@ -1054,6 +1087,40 @@ public class CharacterController : MonoBehaviour
         NeedsUIUpdate = true;
 
     }
+
+
+    private void MakeSpeechBubble(string WhatToSay)
+    {
+        // TODO make stacking speechbubbles above head max 3 with string of what to say
+        // make expire after n seconds
+
+        // make new list of speechbubbles
+        List<GameObject> tempList = new List<GameObject>();
+        // move all bubbles up and remove null bubbles from list
+        foreach (GameObject bubble in SpeechBubbles)
+        {
+            if (bubble != null)
+            {
+                SpeechBubble speechBubble = bubble.GetComponent<SpeechBubble>();
+                speechBubble.moveUp();
+                tempList.Add(bubble);
+            }
+        }
+        SpeechBubbles = tempList;
+
+        // make new bubble
+        //float RandZ = Random.Range(-0.2f, 0.2f);
+        //float RandX = Random.Range(-0.2f, 0.2f);
+        //Vector3 SummonPositon = CharacterTransform.position + new Vector3(RandX, 2.0f, RandZ);
+
+        Vector3 SummonPositon = CharacterTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
+        SpeechBubbleObject = Instantiate(SpeechBubblePreFab, SummonPositon, Quaternion.identity);
+        SpeechBubbleObject.GetComponent<SpeechBubble>().SetText(WhatToSay);
+        SpeechBubbleObject.gameObject.GetComponent<Transform>().parent = CharacterTransform;
+        SpeechBubbles.Add(SpeechBubbleObject);
+    }
+
+
 
     private void DoTargetedAction()// character will make a beacon above their head
     {
@@ -1564,6 +1631,7 @@ public class CharacterController : MonoBehaviour
         if (selfDestructTimer <= 0.0f)
         {
             DeTarget();
+            Destroy(this.gameObject);
         }
         else
         {
