@@ -108,6 +108,9 @@ public class CharacterController : MonoBehaviour
     private string LastTask = "";
 
 
+    // TODO current quest stuff
+
+
     // Targeting and interacting with enemy and squad
     private GameObject FollowTarget = null;
     private GameObject CombatTarget = null;
@@ -458,7 +461,7 @@ public class CharacterController : MonoBehaviour
         Task list
 
         FARM find a farm and ask for task
-        BANDIT look for factions to fight
+        BANDIT look for factions to fight and also wander around a point
         LAMPLIGHT look for more lamps to light down road etc
         WANDERPOINT wander around a point
         WANDER wander aimlessly
@@ -1583,6 +1586,7 @@ public class CharacterController : MonoBehaviour
         return myFaction;
     }
 
+    // gets characters alignment with each faction dependin on which was asked for
     public float GetMyAlignmentWithFaction(string faction)
     {
         if (faction == "magic_faction")

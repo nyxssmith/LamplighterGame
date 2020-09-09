@@ -9,6 +9,8 @@ public class Torch : MonoBehaviour
     //Parent of the potion
     private CharacterController Character;
     private ItemController BaseItem;
+    public GameObject TorchFlame;
+    private FlameController TorchFlameController;
     private bool CheckStillHeld = false;
 
     // which action to trigger on
@@ -17,6 +19,10 @@ public class Torch : MonoBehaviour
     void Start()
     {
         BaseItem = this.gameObject.GetComponent<ItemController>();
+        // torches are always lit by default
+        TorchFlameController = TorchFlame.GetComponent<FlameController>();
+        TorchFlameController.SetLitStatus(true);
+        TorchFlameController.SetTimeLeft(5);
     }
 
     public void SetCharacter(CharacterController CurrentCharacter)

@@ -47,6 +47,8 @@ public class SpeechBubble : MonoBehaviour
         }else{
             text.color = Color.white;
         }
+        // debug to see time
+        //SetText(currentTime.ToString());
 
 
     }
@@ -59,7 +61,6 @@ public class SpeechBubble : MonoBehaviour
     public void moveUp(){
         transform.position = transform.position+new Vector3(0.0f,0.2f,0.0f);
     }
-
 
 
 }
