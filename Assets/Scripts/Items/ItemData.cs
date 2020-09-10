@@ -11,6 +11,7 @@ public class ItemData
     public float HoldingOffsetX;
     public float HoldingOffsetY;
     public float HoldingOffsetZ;
+    public float HoldingRotationOffset;
 
     public bool CanBeUsedFromBelt;
 

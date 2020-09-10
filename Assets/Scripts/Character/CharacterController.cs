@@ -1092,7 +1092,7 @@ public class CharacterController : MonoBehaviour
     }
 
 
-    private void MakeSpeechBubble(string WhatToSay)
+    public void MakeSpeechBubble(string WhatToSay)
     {
         // TODO make stacking speechbubbles above head max 3 with string of what to say
         // make expire after n seconds

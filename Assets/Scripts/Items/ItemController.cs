@@ -211,18 +211,23 @@ public class ItemController : MonoBehaviour
             {
                 //Keep the item above the player / at location
                 // TODO have it check which slot its held in
+                ItemTransform.localRotation = Quaternion.identity;
 
                 if (Item.heldLocation == "Hand")
                 {
                     ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
+
+                    ItemTransform.localRotation = Quaternion.Euler(Item.HoldingRotationOffset, 0.0f, 0.0f);
+
+
                 }
                 else
                 {
                     ItemTransform.localPosition = new Vector3(0, 0, 0);
+                    ItemTransform.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
                 }
 
                 //ItemTransform.localPosition = new Vector3(0, 1, 0);
-                ItemTransform.localRotation = Quaternion.identity;
 
                 //cooldown timer if needed
                 if (CooldownTimer > 0)
@@ -319,6 +324,23 @@ public class ItemController : MonoBehaviour
                 // do basic attack hit, if it hits then canDoAction is true
                 float animationDuration = 1.0f;
                 AnimateHoldingCharacter("m_slash1", animationDuration);
+                CooldownTimer += Item.Cooldown;
+
+                // DO attack
+                DoAttack();
+
+
+
+            }
+            else if (ItemClass == "SPEAR")
+            {
+
+
+                // do basic attack hit, if it hits then canDoAction is true
+                float animationDuration = 1.0f;
+
+                // TODO held format must change
+                AnimateHoldingCharacter("m_spear_stab2", animationDuration);
                 CooldownTimer += Item.Cooldown;
 
                 // DO attack
@@ -439,7 +461,7 @@ public class ItemController : MonoBehaviour
                         break;
                     }
                 }
-                j+=1;
+                j += 1;
             }
             if (hit)
             {

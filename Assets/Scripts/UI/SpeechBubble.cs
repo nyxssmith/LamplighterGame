@@ -8,7 +8,8 @@ public class SpeechBubble : MonoBehaviour
     public TextMesh text;
 
     // how long object stays around
-    private float LifeTimeLength = 5.0f;
+    private float LifeTimeLength = 0.5f;
+    //private float LifeTimeLength = 5.0f;
     private float TTL;
 
 
