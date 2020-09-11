@@ -12,7 +12,11 @@ using System.Linq;
 public class FlameController : MonoBehaviour
 {
 
-    public GameObject Fire;
+
+    public ParticleSystem Flare;
+    public ParticleSystem Fire;
+
+    public Light FireLight;
 
     private Color FireColor;// color of the fire to make
 
@@ -30,11 +34,24 @@ public class FlameController : MonoBehaviour
     {
 
         //collider = this.gameObject.GetComponent<collider>();
-        Fire.SetActive(isLit);
         if (DurationLeft == 0)
         {
             DurationLeft = Duration;
         }
+        if (isLit)
+        {
+            Fire.Play();
+            Flare.Play();
+            FireLight.enabled = true;
+        }
+        else
+        {
+            Fire.Stop();
+            Flare.Stop();
+            FireLight.enabled =false;
+
+        }
+
 
     }
 
@@ -74,10 +91,24 @@ public class FlameController : MonoBehaviour
         // if status changed, update it
         if (isLit != newStatus)
         {
-            Fire.SetActive(newStatus);
+            FireLight.enabled = newStatus;
+
+            if (newStatus)
+            {
+
+                Fire.Play();
+                Flare.Play();
+            }
+            else
+            {
+
+                Fire.Stop();
+                Flare.Stop();
+            }
         }
         //TODO set the lit status
         isLit = newStatus;
+
 
 
 
@@ -112,6 +143,8 @@ public class FlameController : MonoBehaviour
     {
         return FireColor;
     }
+
+
 
 
 
