@@ -1659,6 +1659,12 @@ public class CharacterController : MonoBehaviour
             // can move
             rb.constraints = RigidbodyConstraints.None;
 
+            // if has target face them
+            if (hasTarget)
+            {
+                CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation, Quaternion.LookRotation(CombatTarget.gameObject.transform.position - CharacterTransform.position), 90.0f * Time.deltaTime);
+            }
+
         }
         else
         {

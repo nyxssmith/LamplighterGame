@@ -439,6 +439,8 @@ public class ItemController : MonoBehaviour
         float i = 0.5f;
         Transform HoldingCharacterTransform = HoldingCharacter.GetComponent<Transform>();
         Vector3 center;
+        bool hit = false;
+
         while (i < Item.Range)
         {
 
@@ -446,7 +448,6 @@ public class ItemController : MonoBehaviour
             // check hit target
             // if hit target, break
             // get overlap
-            bool hit = false;
             center = HoldingCharacterTransform.position + (HoldingCharacterTransform.forward * i);
             Collider[] hitColliders = Physics.OverlapSphere(center, 0.5f);
             int j = 0;
@@ -458,6 +459,12 @@ public class ItemController : MonoBehaviour
                     // if not targeting self or sqwuad
                     if (HitCharacterController.GetUUID() != HoldingCharacterController.GetUUID() && HitCharacterController.GetSquadLeaderUUID() != HoldingCharacterController.GetSquadLeaderUUID())
                     {
+
+
+                        Debug.Log("hit controller is" + HitCharacterController.GetCharacter().Name);
+                        Debug.Log("squad uuid is" + HitCharacterController.GetSquadLeaderUUID());
+                        Debug.Log("my squad uuid is" + HoldingCharacterController.GetSquadLeaderUUID());
+                        hit = true;
                         break;
                     }
                 }
@@ -474,9 +481,9 @@ public class ItemController : MonoBehaviour
             //    break;
             //}
         }
-
-        if (HitCharacterController != null)
+        if (HitCharacterController != null && hit)
         {
+
             //do actual hit if got hit
             SetCanDoAction(1.0f);
             SetActionTargetCharacterController(HitCharacterController);

@@ -34,7 +34,6 @@ public class Torch : MonoBehaviour
     {
         if (BaseItem.CanDoAction == ActionToFunctionOn)
         {
-
             BaseItem.CanDoAction = 0.0f;
             SetCharacter(BaseItem.ActionTargetCharacterController);
             BaseItem.SetActionTargetCharacterController(null);
