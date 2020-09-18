@@ -16,6 +16,8 @@ public class BuildingController : MonoBehaviour
     public GameObject FloorAndWalls;
     //public GameObject DetectionBox;
 
+    private bool RoofEnabled = true;
+
 
     public void Start()
     {
@@ -32,27 +34,37 @@ public class BuildingController : MonoBehaviour
 
     private void OnTriggerEnter(Collider EnteringCharacter)
     {
-        Debug.Log("enter"+EnteringCharacter);
-        CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
-        if (EnteringCharacterController != null)
+        if (RoofEnabled)
         {
-            if (EnteringCharacterController.GetIsPlayer())
+            //Debug.Log("enter" + EnteringCharacter);
+            
+            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+            if (EnteringCharacterController != null)
             {
-                DisableRoof();
+                if (EnteringCharacterController.GetIsPlayer())
+                {
+                    DisableRoof();
+                }
             }
+            
         }
     }
 
     private void OnTriggerExit(Collider EnteringCharacter)
     {
-                Debug.Log("exit"+EnteringCharacter);
-        CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
-        if (EnteringCharacterController != null)
+        if (!RoofEnabled)
         {
-            if (EnteringCharacterController.GetIsPlayer())
+            //Debug.Log("exit" + EnteringCharacter);
+            
+            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+            if (EnteringCharacterController != null)
             {
-                EndableRoof();
+                if (EnteringCharacterController.GetIsPlayer())
+                {
+                    EndableRoof();
+                }
             }
+            
         }
     }
 
@@ -60,12 +72,14 @@ public class BuildingController : MonoBehaviour
     {
         Debug.Log("disable roof");
         Roof.SetActive(false);
+        RoofEnabled = false;
         //Roof.enabled = false;
     }
     private void EndableRoof()
     {
         Debug.Log("enable roof");
         Roof.SetActive(true);
+        RoofEnabled = true;
 
         //Roof.enabled = true;
     }

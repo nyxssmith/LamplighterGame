@@ -96,6 +96,9 @@ public class CharacterController : MonoBehaviour
     private GameObject SpeechBubbleObject = null;
     private List<GameObject> SpeechBubbles = new List<GameObject>();
 
+    private Vector3 WanderPointCenter = new Vector3(0.0f, -1.0f, 0.0f);
+    private Vector3 WanderPointGoal = new Vector3(0.0f, -1.0f, 0.0f);
+
 
 
 
@@ -106,6 +109,7 @@ public class CharacterController : MonoBehaviour
     private string CurrentTask = "";
     private string NextTask = "";
     private string LastTask = "";
+    private string NextNextTask = "";
 
 
     // TODO current quest stuff
@@ -419,38 +423,46 @@ public class CharacterController : MonoBehaviour
         }
 
 
-        // if they are following player or in a squad
-        if (Character.IsFollower && Character.squadLeaderId != "")
+        // fighting takes priority
+        if (IsFighting)
         {
-
-            // fight takes priority
-            if (IsFighting)
-            {
-                AttackTarget();
-            }
-            else if (Character.IsFollowing)
-            {
-                FollowPlayer();
-            }
-            else
-            {// if they are following leader and not following, do task
-                DoTask();
-            }
-
+            AttackTarget();
         }
         else
         {
-            if (!IsFighting)
+
+
+            // if they are following player or in a squad
+            if (Character.IsFollower && Character.squadLeaderId != "")
             {
-                // if not fighting, then do task
-                DoTask();
+                // add follow to the queqe of tasks if can
+                if (Character.IsFollowing && CurrentTask != "FOLLOW" && NextNextTask == "")
+                {
+                    NextNextTask = "FOLLOW";
+                }
 
             }
-            else
-            {
-                AttackTarget();
-            }
+
+            // do task specified
+            DoTask();
         }
+
+    }
+
+    private void IncrementTask()
+    {
+        LastTask = CurrentTask;
+        CurrentTask = NextTask;
+        if (NextNextTask != "")
+        {
+            NextTask = NextNextTask;
+            NextNextTask = "";
+        }
+        else
+        {
+            NextTask = LastTask;
+        }
+
 
     }
 
@@ -475,12 +487,33 @@ public class CharacterController : MonoBehaviour
         */
         //Debug.Log("current task is" + CurrentTask + Character.Name);
 
-        if (CurrentTask == "FARM")
+        if (CurrentTask == "" || CurrentTask == null)
+        {
+            CurrentTask = Character.DefaultTask;
+        }
+
+
+        //MakeSpeechBubble("CURRENT " + CurrentTask + " next " + NextTask + " last " + LastTask + " nextnext " + NextNextTask);
+
+
+
+        if (CurrentTask == "FOLLOW")
+        {
+            bool doneFollowing = FollowPlayer();
+            if (doneFollowing)
+            {
+                MakeSpeechBubble("Done following");
+                IncrementTask();
+
+            }
+        }
+        else if (CurrentTask == "FARM")
         {
             /*
             set to go to nearest farm then wanderpoint, next task is more farm
             if already in farm field, then wanderpoint again until time done then set to sleep
             */
+            //find farm sets the new wanderpoint
 
         }
         else if (CurrentTask == "BANDIT")
@@ -491,41 +524,39 @@ public class CharacterController : MonoBehaviour
             */
 
 
-            if (NextTask == "FINDENEMY")
+            if (LastTask == "WANDERPOINT")
+            {
+                NextTask = "FINDENEMY";
+            }
+            else if (LastTask == "FINDENEMY")
             {
                 CurrentTask = "WANDERPOINT";
-                NextTask = "BANDIT";
-            }
-            else if (NextTask == "WANDERPOINT")
-            {
-                CurrentTask = "FINDENEMY";
-                NextTask = "BANDIT";
             }
             else
             {
-                CurrentTask = "FINDENEMY";
-                NextTask = "BANDIT";
+                NextTask = "FINDENEMY";
+                NextNextTask = "BANDIT";
+                IncrementTask();
             }
 
         }
         else if (CurrentTask == "LAMPLIGHT")
         {
 
-            // TODO change this
-            if (NextTask == "FINDENEMY")
+
+            if (LastTask == "WANDERPOINT")
+            {
+                NextTask = "FINDENEMY";
+            }
+            else if (LastTask == "FINDENEMY")
             {
                 CurrentTask = "WANDERPOINT";
-                NextTask = "LAMPLIGHT";
-            }
-            else if (NextTask == "WANDERPOINT")
-            {
-                CurrentTask = "FINDENEMY";
-                NextTask = "LAMPLIGHT";
             }
             else
             {
-                CurrentTask = "FINDENEMY";
-                NextTask = "LAMPLIGHT";
+                NextTask = "FINDENEMY";
+                NextNextTask = "LAMPLIGHT";
+                IncrementTask();
             }
         }
         else if (CurrentTask == "WANDERPOINT")
@@ -534,10 +565,18 @@ public class CharacterController : MonoBehaviour
             Wander around a point to a new point, then do next task
             */
             //Debug.Log("wandering point");
-
-            string tempTask = CurrentTask;
-            CurrentTask = NextTask;
-            NextTask = tempTask;
+            bool arrived = WanderAroundPoint();
+            if (arrived)
+            {
+                IncrementTask();
+            }
+            /*else{
+                if(NextTask != "WANDERPOINT"){
+                    NextNextTask = NextTask;
+                    NextTask = "WANDERPOINT";
+                }
+            }
+            */
 
         }
         else if (CurrentTask == "WANDER")
@@ -569,9 +608,7 @@ public class CharacterController : MonoBehaviour
         {
             CheckForOtherFactionsToFight();
 
-            string tempTask = CurrentTask;
-            CurrentTask = NextTask;
-            NextTask = tempTask;
+            IncrementTask();
 
         }
         else if (CurrentTask == "")
@@ -583,6 +620,11 @@ public class CharacterController : MonoBehaviour
             IsMoving = false;
         }
 
+        // reset if stuck in task loop
+        if (NextTask == CurrentTask)
+        {
+            NextTask = "";
+        }
 
     }
 
@@ -691,6 +733,62 @@ public class CharacterController : MonoBehaviour
 
     }
 
+    private bool WanderAroundPoint()
+    {
+
+        float wanderRange = 3.0f;
+
+        MakeSpeechBubble("Wandering around point: " + WanderPointCenter.ToString() + " to " + WanderPointGoal.ToString());
+
+        if (WanderPointGoal.y <= -1)
+        {
+            if (WanderPointCenter.y <= -1.0f)
+            {
+                WanderPointCenter = CharacterTransform.position;
+            }
+
+            float newX = Random.Range(-1.0f * wanderRange, wanderRange);// + WanderPointCenter.x;
+            float newZ = Random.Range(-1.0f * wanderRange, wanderRange);// + WanderPointCenter.z;
+
+            // summon a target transform around self
+
+            WanderPointGoal = new Vector3(WanderPointCenter.x + newX, WanderPointCenter.y, WanderPointCenter.z + newZ);
+            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation, Quaternion.LookRotation(WanderPointGoal - CharacterTransform.position), 90.0f * Time.deltaTime);
+
+            IsMoving = true;
+            SetNavAgentDestination(WanderPointGoal);
+
+
+            return true;
+        }
+        else
+        {
+
+            Vector3 CharXZpos = new Vector3(CharacterTransform.position.x, 0.0f, CharacterTransform.position.z);
+            Vector3 GoalXZpos = new Vector3(WanderPointGoal.x, 0.0f, WanderPointGoal.z);
+
+            float distance = Vector3.Distance(CharXZpos, GoalXZpos);
+            if (distance < Character.Reach)
+            {
+                WanderPointGoal = new Vector3(0.0f, -2.0f, 0.0f);
+                IsMoving = false;
+                SetNavAgentDestination(CharacterTransform.position);
+
+                return true;
+            }
+
+
+            IsMoving = true;
+
+            SetNavAgentDestination(WanderPointGoal);
+
+            // check that have reached destination
+
+            return false;
+        }
+
+    }
+
     private void SetNavAgentDestination(Vector3 goal_position)
     {
         if (NavAgent.enabled)
@@ -699,7 +797,7 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    private void FollowPlayer()
+    private bool FollowPlayer()
     {
         if (FollowTarget == null)
         {
@@ -709,7 +807,7 @@ public class CharacterController : MonoBehaviour
         Transform TargetTransform = FollowTarget.GetComponent<Transform>();
         //NavMeshAgent agent = GetComponent<NavMeshAgent>();
         float rotationSpeed = 30f; //speed of turning
-        float range = 250f;
+        float range = 250f;// follow range
         float range2 = 250f;
         float stop = 3.8f; // this is range to player
 
@@ -717,6 +815,7 @@ public class CharacterController : MonoBehaviour
         var distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
         if (distance <= range2 && distance >= range)
         {
+            Debug.Log("following is here why???");
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
@@ -724,7 +823,7 @@ public class CharacterController : MonoBehaviour
         }
         else if (distance <= range && distance > stop)
         {
-
+            // go to target if within follow range and then stop
             //NavAgent.destination = TargetTransform.position;
             //IsMoving = true;
             NPCGOTOTargetWithSprint(TargetTransform);
@@ -754,9 +853,11 @@ public class CharacterController : MonoBehaviour
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
             // if near player, do current task
-            DoTask();
+            WanderPointCenter = CharacterTransform.position;// reset wander point to be set when needed
+            MakeSpeechBubble("doing task" + NextTask);
+            return true;
         }
-
+        return false;
     }
 
 
@@ -1659,10 +1760,15 @@ public class CharacterController : MonoBehaviour
             // can move
             rb.constraints = RigidbodyConstraints.None;
 
-            // if has target face them
+            // if has target face them if close enough
+
             if (hasTarget)
             {
-                CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation, Quaternion.LookRotation(CombatTarget.gameObject.transform.position - CharacterTransform.position), 90.0f * Time.deltaTime);
+                float distance = Vector3.Distance(CharacterTransform.position, CombatTarget.gameObject.transform.position);
+                if (distance <= Character.Reach)
+                {
+                    CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation, Quaternion.LookRotation(CombatTarget.gameObject.transform.position - CharacterTransform.position), 90.0f * Time.deltaTime);
+                }
             }
 
         }
