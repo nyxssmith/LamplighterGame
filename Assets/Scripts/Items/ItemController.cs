@@ -14,7 +14,7 @@ public class ItemController : MonoBehaviour
     public string ItemSaveFileFolder = "Assets/ItemJson";
     public string ItemSaveFile = "Torch.json";
 
-    private bool isPickedUp = false;
+    public bool isPickedUp = false;
     private float CooldownTimer = 0f;
 
     private float CurrentItemAction = 0.0f;
@@ -140,8 +140,16 @@ public class ItemController : MonoBehaviour
         // ask parent if dropped
         if (HoldingCharacter != null)
         {
-            string Status = HoldingCharacter.GetComponent<CharacterController>().GetItemStatus();
-            CurrentItemAction = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
+
+            if (ActionTargetCharacterController == null)
+            {
+                SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
+            }
+
+            string Status = ActionTargetCharacterController.GetItemStatus();
+            //string Status = HoldingCharacter.GetComponent<CharacterController>().GetItemStatus();
+            CurrentItemAction = ActionTargetCharacterController.GetItemActionFloat();
+            //CurrentItemAction = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
 
             if ((Status == "Dropping" && Item.heldLocation == "Hand") || CurrentItemAction == -1.0f)
             {
@@ -173,17 +181,24 @@ public class ItemController : MonoBehaviour
                 rb.useGravity = true;
                 rb.isKinematic = false;
                 Status = "";
+
+                if (CurrentItemAction == -1)
+                {
+                    Item.ownerUUID = "";
+                }
             }
             else if (Status == "SwapHandBack")
             {
                 if (Item.heldLocation == "Hand")
                 {
-                    ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBackTransform();
+                    ItemTransform.parent = ActionTargetCharacterController.GetBackTransform();
+                    //ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBackTransform();
                     Item.heldLocation = "Back";
                 }
                 else if (Item.heldLocation == "Back")
                 {
-                    ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
+                    ItemTransform.parent = ActionTargetCharacterController.GetHandTransform();
+                    //ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
                     Item.heldLocation = "Hand";
                 }
 
@@ -195,12 +210,14 @@ public class ItemController : MonoBehaviour
 
                 if (Item.heldLocation == "Hand")
                 {
-                    ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBeltTransform();
+                    ItemTransform.parent = ActionTargetCharacterController.GetBeltTransform();
+                    //ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBeltTransform();
                     Item.heldLocation = "Belt";
                 }
                 else if (Item.heldLocation == "Belt")
                 {
-                    ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
+                    ItemTransform.parent = ActionTargetCharacterController.GetHandTransform();
+                    //ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
                     Item.heldLocation = "Hand";
                 }
 
@@ -253,20 +270,23 @@ public class ItemController : MonoBehaviour
                     if (CurrentItemAction == 1.0f)
                     {
                         DoPrimaryAction();
-                        HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
+                        //HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
+                        ActionTargetCharacterController.ResetItemActionFloat();
 
                     }
                     if (CurrentItemAction == 2.0f)
                     {
                         DoSecondaryAction();
-                        HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
+                        //HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
+                        ActionTargetCharacterController.ResetItemActionFloat();
 
                     }
                     if (CurrentItemAction == 3.0f)
                     {
                         //TODO use action
                         DoSecondaryAction();
-                        HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
+                        //HoldingCharacter.GetComponent<CharacterController>().ResetItemActionFloat();
+                        ActionTargetCharacterController.ResetItemActionFloat();
 
                     }
 
@@ -311,7 +331,7 @@ public class ItemController : MonoBehaviour
             {
 
                 SetCanDoAction(1.0f);
-                SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
+                //SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
 
                 CooldownTimer += Item.Cooldown;
 
@@ -351,7 +371,7 @@ public class ItemController : MonoBehaviour
             }
             else if (ItemClass == "SPELL")
             {
-                SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
+                //SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
                 SetCanDoAction(1.0f);
                 CooldownTimer += Item.Cooldown;
 
@@ -403,8 +423,9 @@ public class ItemController : MonoBehaviour
 
     private void AnimateHoldingCharacter(string animation, float overrideDuration)
     {
-        CharacterController controller = HoldingCharacter.GetComponent<CharacterController>();
-        controller.SetAnimation(animation, overrideDuration);
+        //CharacterController controller = HoldingCharacter.GetComponent<CharacterController>();
+        //controller.SetAnimation(animation, overrideDuration);
+        ActionTargetCharacterController.SetAnimation(animation, overrideDuration);
     }
 
     private void SetTargetOnImpact(GameObject WhosTargetToSet, GameObject TargetToSet)
@@ -457,13 +478,15 @@ public class ItemController : MonoBehaviour
                 if (HitCharacterController != null)
                 {
                     // if not targeting self or sqwuad
-                    if (HitCharacterController.GetUUID() != HoldingCharacterController.GetUUID() && HitCharacterController.GetSquadLeaderUUID() != HoldingCharacterController.GetSquadLeaderUUID())
+                    //if (HitCharacterController.GetUUID() != HoldingCharacterController.GetUUID() && HitCharacterController.GetSquadLeaderUUID() != HoldingCharacterController.GetSquadLeaderUUID())
+                    if (HitCharacterController.GetUUID() != ActionTargetCharacterController.GetUUID() && HitCharacterController.GetSquadLeaderUUID() != ActionTargetCharacterController.GetSquadLeaderUUID())
                     {
 
 
                         Debug.Log("hit controller is" + HitCharacterController.GetCharacter().Name);
                         Debug.Log("squad uuid is" + HitCharacterController.GetSquadLeaderUUID());
-                        Debug.Log("my squad uuid is" + HoldingCharacterController.GetSquadLeaderUUID());
+                        //Debug.Log("my squad uuid is" + HoldingCharacterController.GetSquadLeaderUUID());
+                        Debug.Log("my squad uuid is" + ActionTargetCharacterController.GetSquadLeaderUUID());
                         hit = true;
                         break;
                     }
@@ -533,12 +556,24 @@ public class ItemController : MonoBehaviour
 
                         //ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
                         HoldingCharacter = collision.gameObject;
-                        ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
+
+
+                        SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
+
+                        //ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
+                        ItemTransform.parent = ActionTargetCharacterController.GetHandTransform();
 
                         ItemTransform.localPosition = new Vector3(0, 0, 0);
 
                         Item.heldLocation = "Hand";
-                        Item.holderUUID = HoldingCharacter.GetComponent<CharacterController>().GetUUID();
+                        Item.holderUUID = ActionTargetCharacterController.GetUUID();
+                        //Item.holderUUID = HoldingCharacter.GetComponent<CharacterController>().GetUUID();
+
+                        if (Item.ownerUUID == "")
+                        {
+                            Item.ownerUUID = Item.holderUUID;
+                        }
+
                         break;
                     }
                     //}
@@ -643,7 +678,13 @@ public class ItemController : MonoBehaviour
 
         ItemTransform.localPosition = new Vector3(0, 0, 0);
 
-        Item.holderUUID = HoldingCharacter.GetComponent<CharacterController>().GetUUID();
+        if (ActionTargetCharacterController == null)
+        {
+            SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
+        }
+
+        Item.holderUUID = ActionTargetCharacterController.GetUUID();
+
 
 
 
@@ -657,6 +698,32 @@ public class ItemController : MonoBehaviour
             ItemTransform.localPosition = new Vector3(0, 0, 0);
         }
         //Debug.Log("held location updated postion:" + ItemTransform.position + Item.Name);
+    }
+
+
+    public string GetOwner()
+    {
+        return Item.ownerUUID;
+    }
+
+    public void SetOwner(string newOwner)
+    {
+        Item.ownerUUID = newOwner;
+    }
+
+    public float GetValue()
+    {
+        return Item.Value;
+    }
+
+    public float GetKnockback()
+    {
+        return Item.Knockback;
+    }
+
+    public CharacterController GetHoldingCharacterController()
+    {
+        return HoldingCharacter.gameObject.GetComponent<CharacterController>();
     }
 
 

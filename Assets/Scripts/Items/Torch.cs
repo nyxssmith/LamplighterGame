@@ -44,6 +44,18 @@ public class Torch : MonoBehaviour
     public void DoHit(float Damage)
     {
         Character.AddValueToHealth(-1.0f*Damage);
+
+        // TODO
+        // do knokcback
+        Debug.Log("doing knockback");
+        Transform holder = BaseItem.GetHoldingCharacterController().GetCharacterTransform();
+        Transform hit = Character.GetCharacterTransform();
+
+        Vector3 velocityVector = holder.position - hit.position;
+        Debug.Log(velocityVector);
+        Debug.Log(velocityVector.normalized*(-1.0f*BaseItem.GetKnockback())+new Vector3(0.0f,BaseItem.GetKnockback(),0.0f));
+        //Character.SetVelocity(velocityVector.normalized*(-1.0f*BaseItem.GetKnockback()));
+        Character.SetVelocity(velocityVector.normalized*(-1.0f*BaseItem.GetKnockback())+new Vector3(0.0f,BaseItem.GetKnockback()/3,0.0f));
     }
 
 

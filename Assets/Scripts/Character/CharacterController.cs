@@ -738,7 +738,7 @@ public class CharacterController : MonoBehaviour
 
         float wanderRange = 3.0f;
 
-        MakeSpeechBubble("Wandering around point: " + WanderPointCenter.ToString() + " to " + WanderPointGoal.ToString());
+        //MakeSpeechBubble("Wandering around point: " + WanderPointCenter.ToString() + " to " + WanderPointGoal.ToString());
 
         if (WanderPointGoal.y <= -1)
         {
@@ -1100,7 +1100,6 @@ public class CharacterController : MonoBehaviour
                 {
                     if (hitColliders[i].gameObject.GetComponent<CharacterController>() != null)
                     {
-                        Transform TargetTransform = hitColliders[i].gameObject.GetComponent<Transform>();
                         int TargetRand = hitColliders[i].gameObject.GetComponent<CharacterController>().GetRand();
                         if (TargetRand != rand)
                         {
@@ -1818,16 +1817,12 @@ public class CharacterController : MonoBehaviour
 
     public void SetVelocity(Vector3 VelocityVector)
     {
+        SetCharacterCanMove(true);
         rb.velocity = VelocityVector;
     }
 
 
-    // wander around point
 
-    // look for new task
-
-    //look for task by name
-    // since schedule is list of names
 
 
 }

@@ -13,7 +13,10 @@
     "CanBeUsedFromBelt": false,
     "heldLocation": "Hand",
     "holderUUID": "5b26a0ce-ad4d-4353-9cc9-75cfc31f4a7e",
+    "ownerUUID": "5b26a0ce-ad4d-4353-9cc9-75cfc31f4a7e",
     "x_pos": 5.2576212882995609,
     "y_pos": 0.6910681128501892,
-    "z_pos": 20.761838912963868
+    "z_pos": 20.761838912963868,
+    "Description": "",
+    "Value":10
 }
