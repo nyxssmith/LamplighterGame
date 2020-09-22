@@ -5,7 +5,6 @@ using UnityEngine;
 public class ItemController : MonoBehaviour
 {
 
-
     private Rigidbody rb;
     private Transform ItemTransform;
     private Collider ItemCollider;
@@ -13,6 +12,11 @@ public class ItemController : MonoBehaviour
     private ItemDataManager IDM = new ItemDataManager();
     public string ItemSaveFileFolder = "Assets/ItemJson";
     public string ItemSaveFile = "Torch.json";
+
+    // label stuff
+    //public GameObject SpeechBubblePreFab;
+
+    //public Collider PlayerInRangeForBubbleCollider; 
 
     public bool isPickedUp = false;
     private float CooldownTimer = 0f;
@@ -60,6 +64,16 @@ public class ItemController : MonoBehaviour
         if (Input.GetKeyDown("o"))
         {
             Save();
+        }
+
+        // for debug
+        if (Input.GetKeyDown("k"))
+        {
+            if (isPickedUp && Item.heldLocation == "Hand")
+            {
+                string summary = GetSummaryString();
+                ActionTargetCharacterController.MakeSpeechBubble("Item is\n" + summary);
+            }
         }
 
 
@@ -716,15 +730,53 @@ public class ItemController : MonoBehaviour
         return Item.Value;
     }
 
-    public float GetKnockback()
-    {
-        return Item.Knockback;
-    }
 
     public CharacterController GetHoldingCharacterController()
     {
         return HoldingCharacter.gameObject.GetComponent<CharacterController>();
     }
+
+
+    public string GetSummaryString()
+    {
+        /*
+        gives summary string
+        */
+
+        int DamagePlusCount = (int)(Item.Damage / 10.0f);
+        int ItemDollarSignCount = (int)(Item.Value / 10.0f);
+
+        if (DamagePlusCount < 1)
+        {
+            DamagePlusCount = 1;
+        }
+
+        if (ItemDollarSignCount < 1)
+        {
+            ItemDollarSignCount = 1;
+        }
+
+
+        string valueString = "Value: " + new string('$', ItemDollarSignCount) + "\n";
+        string damageString = "Damage: " + new string('+', DamagePlusCount) + "\n";
+
+        if (Item.PrimaryActionClass == "POTION" || Item.PrimaryActionClass == "SUMMON" || Item.PrimaryActionClass == "NONE")
+        {
+            damageString = "";
+        }
+
+
+        string summary = Item.Name + "\n" + Item.Description + "\n" + damageString + valueString;
+
+        return summary;
+
+
+    }
+
+    public bool GetIsPickedUp(){
+        return isPickedUp;
+    }
+
 
 
 }

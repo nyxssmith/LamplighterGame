@@ -1824,6 +1824,5 @@ public class CharacterController : MonoBehaviour
 
 
 
-
 }
 

@@ -1,7 +1,6 @@
 {
     "Name": "Torch",
     "Damage": 5.0,
-    "Knockback": 50.0,
     "Range": 2.0,
     "IsPickup": true,
     "PrimaryActionClass": "BASIC",
@@ -18,6 +17,6 @@
     "x_pos": 5.2576212882995609,
     "y_pos": 0.6910681128501892,
     "z_pos": 20.761838912963868,
-    "Description": "Torch",
+    "Description": "A basic torch",
     "Value":10
 }

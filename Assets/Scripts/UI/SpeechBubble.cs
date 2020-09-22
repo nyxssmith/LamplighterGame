@@ -8,11 +8,11 @@ public class SpeechBubble : MonoBehaviour
     public TextMesh text;
 
     // how long object stays around
-    private float LifeTimeLength = 0.5f;
-    //private float LifeTimeLength = 5.0f;
+    //private float LifeTimeLength = 0.5f;
+    private float LifeTimeLength = 5.0f; // set to -10 for infintie
     private float TTL;
 
-
+    private bool DoCountdown = true;
     private float StartDayTime = 10.0f;
     private float EndDayTime = 165.0f;
 
@@ -32,20 +32,26 @@ public class SpeechBubble : MonoBehaviour
         transform.LookAt(Camera.main.transform);
 
         // do time down
-        if (TTL <= 0.0f)
+        if (DoCountdown)
         {
-            Destroy(this.gameObject);
-        }
-        else
-        {
-            TTL -= Time.deltaTime;
+            if (TTL <= 0.0f)
+            {
+                Destroy(this.gameObject);
+            }
+            else
+            {
+                TTL -= Time.deltaTime;
+            }
         }
 
         // if day or night change font color
         float currentTime = TimeCycle.GetTime();
-        if(currentTime > StartDayTime && currentTime < EndDayTime ){
+        if (currentTime > StartDayTime && currentTime < EndDayTime)
+        {
             text.color = Color.black;
-        }else{
+        }
+        else
+        {
             text.color = Color.white;
         }
         // debug to see time
@@ -59,8 +65,18 @@ public class SpeechBubble : MonoBehaviour
         text.text = newText;
     }
 
-    public void moveUp(){
-        transform.position = transform.position+new Vector3(0.0f,0.2f,0.0f);
+    public void moveUp()
+    {
+        transform.position = transform.position + new Vector3(0.0f, 0.2f, 0.0f);
+    }
+
+    public void SetTime(float newTime)
+    {
+        TTL = newTime;
+    }
+
+    public void SetDoCountdown(bool newState){
+        DoCountdown = newState;
     }
 
 
