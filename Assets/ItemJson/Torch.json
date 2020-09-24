@@ -10,7 +10,7 @@
     "HoldingOffsetY": 4.0,
     "HoldingOffsetZ": 0.0,
     "HoldingRotationOffset": 0.0,
-    "CanBeGoOnBelt": false,
+    "CanBePutOnBelt": false,
     "heldLocation": "Hand",
     "holderUUID": "5b26a0ce-ad4d-4353-9cc9-75cfc31f4a7e",
     "ownerUUID": "",

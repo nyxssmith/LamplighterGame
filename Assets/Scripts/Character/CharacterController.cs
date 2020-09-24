@@ -251,8 +251,7 @@ public class CharacterController : MonoBehaviour
                 // check that hand item can go to belt
                 bool CanDoSwap = HeldItemController.GetCanGoOnBelt();
 
-                MakeSpeechBubble("swapping to belt can i: " + CanDoSwap.ToString() + HeldItemController.ToString());
-                if (CanDoSwap)
+                if (CanDoSwap || !HasItemInHand)
                 {
                     ItemStatus = "SwapHandBelt";
                 }

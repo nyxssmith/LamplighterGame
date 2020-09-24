@@ -15,15 +15,21 @@ public class NearbyText : MonoBehaviour
 
     private ItemController BaseItem;
 
+    private Transform TextTransform;
+
     void Start()
     {
         BaseItem = this.gameObject.GetComponentInParent<ItemController>();
+        TextTransform = this.gameObject.GetComponent<Transform>();
     }
 
     void Update()
     {
         if (IsShowingText)
         {
+
+            //TextTransform.position = new Vector3(TextTransform.position.x, BaseItem.GetItemTransform().position.y, TextTransform.position.z);
+
             if (BaseItem.GetIsPickedUp())
             {
                 DisableText();
@@ -45,7 +51,6 @@ public class NearbyText : MonoBehaviour
                 if (EnteringCharacterController.GetIsPlayer())
                 {
                     EnableText();
-                    IsShowingText = true;
 
                 }
             }
@@ -66,7 +71,6 @@ public class NearbyText : MonoBehaviour
                 if (EnteringCharacterController.GetIsPlayer())
                 {
                     DisableText();
-                    IsShowingText = false;
                 }
             }
 
@@ -74,8 +78,9 @@ public class NearbyText : MonoBehaviour
     }
 
 
-    private void EnableText()
+    public void EnableText()
     {
+        IsShowingText = true;
 
         string WhatToSay = BaseItem.GetSummaryString();
         Vector3 SummonPositon = this.transform.position + new Vector3(0.0f, 2.0f, 0.0f);
@@ -88,6 +93,8 @@ public class NearbyText : MonoBehaviour
 
     private void DisableText()
     {
+        IsShowingText = false;
+
         if (text != null)
         {
             text.GetComponent<SpeechBubble>().SetDoCountdown(true);

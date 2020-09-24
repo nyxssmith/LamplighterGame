@@ -200,6 +200,13 @@ public class ItemController : MonoBehaviour
                 {
                     Item.ownerUUID = "";
                 }
+
+
+                // get the lable text and enable text
+
+                NearbyText label = this.gameObject.GetComponent<NearbyText>();
+                label.EnableText();
+
             }
             else if (Status == "SwapHandBack")
             {
@@ -781,6 +788,9 @@ public class ItemController : MonoBehaviour
         return Item.CanBePutOnBelt;
     }
 
+    public Transform GetItemTransform(){
+        return ItemTransform;
+    }
 
 
 }
