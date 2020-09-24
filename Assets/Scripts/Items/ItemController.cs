@@ -777,6 +777,10 @@ public class ItemController : MonoBehaviour
         return isPickedUp;
     }
 
+    public bool GetCanGoOnBelt(){
+        return Item.CanBePutOnBelt;
+    }
+
 
 
 }

@@ -99,6 +99,10 @@ public class CharacterController : MonoBehaviour
     private Vector3 WanderPointCenter = new Vector3(0.0f, -1.0f, 0.0f);
     private Vector3 WanderPointGoal = new Vector3(0.0f, -1.0f, 0.0f);
 
+    private float StandingStillTimer = 0.0f;
+
+    private ItemController HeldItemController;
+
 
 
 
@@ -244,9 +248,16 @@ public class CharacterController : MonoBehaviour
             }
             else if (Input.GetKeyDown("g"))
             {
-                ItemStatus = "SwapHandBelt";
+                // check that hand item can go to belt
+                bool CanDoSwap = HeldItemController.GetCanGoOnBelt();
+
+                MakeSpeechBubble("swapping to belt can i: " + CanDoSwap.ToString() + HeldItemController.ToString());
+                if (CanDoSwap)
+                {
+                    ItemStatus = "SwapHandBelt";
+                }
+
             }
-            //TODO use item from belt
             else
             {
                 ItemStatus = "";
@@ -432,6 +443,8 @@ public class CharacterController : MonoBehaviour
         {
 
 
+
+            SetCharacterCanMove(true);
             // if they are following player or in a squad
             if (Character.IsFollower && Character.squadLeaderId != "")
             {
@@ -445,6 +458,7 @@ public class CharacterController : MonoBehaviour
 
             // do task specified
             DoTask();
+
         }
 
     }
@@ -495,9 +509,43 @@ public class CharacterController : MonoBehaviour
 
         //MakeSpeechBubble("CURRENT " + CurrentTask + " next " + NextTask + " last " + LastTask + " nextnext " + NextNextTask);
 
+        // default wandering range radius
+        float wanderRange = 3.0f;
 
 
-        if (CurrentTask == "FOLLOW")
+        if (StandingStillTimer > 0.0f)
+        {
+
+            bool ShouldOverrideStanding = false;
+            // TODO make followers iverride standing
+            
+            if (Character.IsFollowing && FollowTarget != null)
+            {
+
+                Transform TargetTransform = FollowTarget.GetComponent<Transform>();
+                float distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
+
+                ShouldOverrideStanding = distance > 10.0f;
+
+            }
+            
+            if (ShouldOverrideStanding)
+            {
+                // go to next task to try to get to following
+                StandingStillTimer = 0.0f;
+                SetCharacterCanMove(true);
+                //IncrementTask();
+
+            }
+            else
+            {
+
+                StandingStillTimer -= Time.deltaTime;
+                SetCharacterCanMove(false);
+
+            }
+
+        }else if (CurrentTask == "FOLLOW")
         {
             bool doneFollowing = FollowPlayer();
             if (doneFollowing)
@@ -565,9 +613,21 @@ public class CharacterController : MonoBehaviour
             Wander around a point to a new point, then do next task
             */
             //Debug.Log("wandering point");
-            bool arrived = WanderAroundPoint();
-            if (arrived)
+
+            // bandits will wander farther
+            if (LastTask == "BANDIT")
             {
+                wanderRange = 10.0f;
+            }
+            // TODO based on lasttask get role and set wnader range
+
+            // todo also set this for time to stand still
+
+            bool arrived = WanderAroundPoint(wanderRange);
+            if (arrived && !IsMoving)
+            {
+                StandStillForTime(10.0f);
+
                 IncrementTask();
             }
             /*else{
@@ -733,15 +793,21 @@ public class CharacterController : MonoBehaviour
 
     }
 
-    private bool WanderAroundPoint()
+    public void StandStillForTime(float newTime)
+    {
+        StandingStillTimer = newTime;
+    }
+
+    private bool WanderAroundPoint(float wanderRange)
     {
 
-        float wanderRange = 3.0f;
+        //float wanderRange = 3.0f;
 
         //MakeSpeechBubble("Wandering around point: " + WanderPointCenter.ToString() + " to " + WanderPointGoal.ToString());
 
         if (WanderPointGoal.y <= -1)
         {
+            // get a new wanderpoint
             if (WanderPointCenter.y <= -1.0f)
             {
                 WanderPointCenter = CharacterTransform.position;
@@ -750,7 +816,6 @@ public class CharacterController : MonoBehaviour
             float newX = Random.Range(-1.0f * wanderRange, wanderRange);// + WanderPointCenter.x;
             float newZ = Random.Range(-1.0f * wanderRange, wanderRange);// + WanderPointCenter.z;
 
-            // summon a target transform around self
 
             WanderPointGoal = new Vector3(WanderPointCenter.x + newX, WanderPointCenter.y, WanderPointCenter.z + newZ);
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation, Quaternion.LookRotation(WanderPointGoal - CharacterTransform.position), 90.0f * Time.deltaTime);
@@ -758,8 +823,7 @@ public class CharacterController : MonoBehaviour
             IsMoving = true;
             SetNavAgentDestination(WanderPointGoal);
 
-
-            return true;
+            return false;
         }
         else
         {
@@ -1237,11 +1301,19 @@ public class CharacterController : MonoBehaviour
 
     private void CheckIfItemInHand()//updates the hand var
     {
+
+        //TODO enable or disable spell if hand empty
+
         Transform handTransform = Hand.GetComponent<Transform>();
         int i = 0;
         foreach (Transform child in handTransform)
         {
             //Debug.Log("is child of hand" + child);
+            ItemController heldItemController = child.gameObject.GetComponent<ItemController>();
+            if (heldItemController != null)
+            {
+                HeldItemController = heldItemController;
+            }
             i += 1;
         }
         if (i >= 1)
@@ -1251,6 +1323,11 @@ public class CharacterController : MonoBehaviour
         else
         {
             HasItemInHand = false;
+        }
+        // if somehow holding many items, drop em all
+        if (i >= 2)
+        {
+            ItemStatus = "Dropping";
         }
     }
 

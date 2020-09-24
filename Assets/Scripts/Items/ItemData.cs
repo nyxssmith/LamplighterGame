@@ -13,7 +13,7 @@ public class ItemData
     public float HoldingOffsetZ;
     public float HoldingRotationOffset;
 
-    public bool CanBeUsedFromBelt;
+    public bool CanBePutOnBelt;
 
     public string heldLocation;
     public string holderUUID;
