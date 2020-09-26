@@ -205,7 +205,10 @@ public class ItemController : MonoBehaviour
                 // get the lable text and enable text
 
                 NearbyText label = this.gameObject.GetComponent<NearbyText>();
-                label.EnableText();
+                if (label != null)
+                {
+                    label.EnableText();
+                }
 
             }
             else if (Status == "SwapHandBack")
@@ -780,15 +783,18 @@ public class ItemController : MonoBehaviour
 
     }
 
-    public bool GetIsPickedUp(){
+    public bool GetIsPickedUp()
+    {
         return isPickedUp;
     }
 
-    public bool GetCanGoOnBelt(){
+    public bool GetCanGoOnBelt()
+    {
         return Item.CanBePutOnBelt;
     }
 
-    public Transform GetItemTransform(){
+    public Transform GetItemTransform()
+    {
         return ItemTransform;
     }
 

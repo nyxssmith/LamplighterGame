@@ -189,15 +189,15 @@ public class CharacterController : MonoBehaviour
     {
 
         // save and load for all chars
-        if (Input.GetKeyDown("i"))
-        {
+        //if (Input.GetKeyDown("i"))
+        //{
 
-            Load();
-        }
-        if (Input.GetKeyDown("o"))
-        {
-            Save();
-        }
+        //    Load();
+        //}
+        //if (Input.GetKeyDown("o"))
+        //{
+        //    Save();
+        //}
 
         // for all characters look for hand item
         CheckIfItemInHand();
@@ -1977,7 +1977,7 @@ public class CharacterController : MonoBehaviour
 
             // if has target face them if close enough
 
-            if (hasTarget)
+            if (hasTarget && CombatTarget != null)
             {
                 float distance = Vector3.Distance(CharacterTransform.position, CombatTarget.gameObject.transform.position);
                 if (distance <= Character.Reach)

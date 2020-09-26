@@ -41,20 +41,29 @@ public class NearbyText : MonoBehaviour
     }
     private void OnTriggerEnter(Collider EnteringCharacter)
     {
-        if (!IsShowingText && !BaseItem.GetIsPickedUp())
+        if (BaseItem != null)
         {
-            //Debug.Log("enter" + EnteringCharacter);
-
-            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
-            if (EnteringCharacterController != null)
+            if (!IsShowingText && !BaseItem.GetIsPickedUp())
             {
-                if (EnteringCharacterController.GetIsPlayer())
+                //Debug.Log("enter" + EnteringCharacter);
+
+                CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+                if (EnteringCharacterController != null)
                 {
-                    EnableText();
+                    if (EnteringCharacterController.GetIsPlayer())
+                    {
+                        EnableText();
 
+                    }
                 }
-            }
 
+            }
+        }
+        else
+        {
+            //Debug.Log("tried to find base item");
+            BaseItem = this.gameObject.GetComponentInParent<ItemController>();
+            //Debug.Log("found new baseitem"+BaseItem);
         }
     }
 
