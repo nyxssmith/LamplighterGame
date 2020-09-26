@@ -606,7 +606,7 @@ public class ItemController : MonoBehaviour
                 // when item is dropped on ground
                 ItemTransform.position += new Vector3(0.0f, 0.2f, 0.0f);
                 rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-                rb.AddTorque(transform.up * 0.2f);
+                //rb.AddTorque(transform.up * 0.2f);
 
             }
 

@@ -87,7 +87,7 @@ public class NearbyText : MonoBehaviour
         text = Instantiate(SpeechBubblePreFab, SummonPositon, Quaternion.identity);
         text.GetComponent<SpeechBubble>().SetText(WhatToSay);
         text.GetComponent<SpeechBubble>().SetDoCountdown(false);
-        //text.gameObject.GetComponent<Transform>().parent = this.transform;
+        text.gameObject.GetComponent<Transform>().parent = this.transform;
 
     }
 

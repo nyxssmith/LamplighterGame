@@ -104,6 +104,12 @@ public class CharacterController : MonoBehaviour
     private ItemController HeldItemController;
 
 
+    // buildings relevant to character like home and shops
+
+    private List<BuildingController> Buildings = new List<BuildingController>();
+
+
+
 
 
     // schedule and task stuff
@@ -549,7 +555,7 @@ public class CharacterController : MonoBehaviour
             bool doneFollowing = FollowPlayer();
             if (doneFollowing)
             {
-                MakeSpeechBubble("Done following");
+                //MakeSpeechBubble("Done following");
                 IncrementTask();
 
             }
@@ -917,7 +923,7 @@ public class CharacterController : MonoBehaviour
             IsMoving = false;
             // if near player, do current task
             WanderPointCenter = CharacterTransform.position;// reset wander point to be set when needed
-            MakeSpeechBubble("doing task" + NextTask);
+            //MakeSpeechBubble("doing task" + NextTask);
             return true;
         }
         return false;

@@ -18,10 +18,22 @@ public class BuildingController : MonoBehaviour
 
     private bool RoofEnabled = true;
 
+    private string ownerUUID = "";
+    private string UUID = "";
+    public string Type = "";// HOME SHOP FARM
+
+    private Transform BuildintTransform;
+
 
     public void Start()
     {
+        BuildintTransform = gameObject.GetComponent<Transform>();
 
+        if (UUID == "")
+        {
+            UUID = Guid.NewGuid().ToString();
+        }
+        
 
     }
 
@@ -37,7 +49,7 @@ public class BuildingController : MonoBehaviour
         if (RoofEnabled)
         {
             //Debug.Log("enter" + EnteringCharacter);
-            
+
             CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
@@ -46,7 +58,7 @@ public class BuildingController : MonoBehaviour
                     DisableRoof();
                 }
             }
-            
+
         }
     }
 
@@ -55,7 +67,7 @@ public class BuildingController : MonoBehaviour
         if (!RoofEnabled)
         {
             //Debug.Log("exit" + EnteringCharacter);
-            
+
             CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
@@ -64,7 +76,7 @@ public class BuildingController : MonoBehaviour
                     EndableRoof();
                 }
             }
-            
+
         }
     }
 
@@ -82,6 +94,21 @@ public class BuildingController : MonoBehaviour
         RoofEnabled = true;
 
         //Roof.enabled = true;
+    }
+
+    public string GetType()
+    {
+        return Type;
+    }
+
+    public string GetOwner()
+    {
+        return ownerUUID;
+    }
+
+    public void SetOwner(string newOwnerUUID)
+    {
+        ownerUUID = newOwnerUUID;
     }
 
 
