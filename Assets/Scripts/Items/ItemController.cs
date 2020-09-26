@@ -602,7 +602,7 @@ public class ItemController : MonoBehaviour
             }
             if (!isPickedUp)
             {
-                Debug.Log("Collision without picked up");
+                //Debug.Log("Collision without picked up");
                 // when item is dropped on ground
                 ItemTransform.position += new Vector3(0.0f, 0.2f, 0.0f);
                 rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;

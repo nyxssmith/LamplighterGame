@@ -103,10 +103,13 @@ public class CharacterController : MonoBehaviour
 
     private ItemController HeldItemController;
 
+    private bool WentHomeToSleep = false;
+
 
     // buildings relevant to character like home and shops
 
     private List<BuildingController> Buildings = new List<BuildingController>();
+
 
 
 
@@ -523,7 +526,7 @@ public class CharacterController : MonoBehaviour
 
             bool ShouldOverrideStanding = false;
             // TODO make followers iverride standing
-            
+
             if (Character.IsFollowing && FollowTarget != null)
             {
 
@@ -533,7 +536,7 @@ public class CharacterController : MonoBehaviour
                 ShouldOverrideStanding = distance > 10.0f;
 
             }
-            
+
             if (ShouldOverrideStanding)
             {
                 // go to next task to try to get to following
@@ -550,7 +553,8 @@ public class CharacterController : MonoBehaviour
 
             }
 
-        }else if (CurrentTask == "FOLLOW")
+        }
+        else if (CurrentTask == "FOLLOW")
         {
             bool doneFollowing = FollowPlayer();
             if (doneFollowing)
@@ -651,6 +655,16 @@ public class CharacterController : MonoBehaviour
         else if (CurrentTask == "SLEEP")
         {
 
+            // if not home, try to find home, if cant, then do sleep here
+            if(!WentHomeToSleep){
+            
+                NextNextTask = "SLEEP";
+                NextTask = "HOME";
+                WentHomeToSleep = true;
+                IncrementTask();
+            }
+            //does nothing
+
         }
         else if (CurrentTask == "STAND")
         {
@@ -666,7 +680,14 @@ public class CharacterController : MonoBehaviour
         }
         else if (CurrentTask == "HOME")
         {
-            // either go home or find nearest
+
+            bool isHome = GoHome();
+            if (isHome)//} && !IsMoving)
+            {   
+                SetNavAgentDestination(CharacterTransform.position);
+                SetCharacterCanMove(false);
+                IncrementTask();
+            }
 
         }
         else if (CurrentTask == "FINDENEMY")
@@ -691,6 +712,116 @@ public class CharacterController : MonoBehaviour
             NextTask = "";
         }
 
+    }
+
+
+
+    private bool GoHome()
+    {
+        // goes to home and if there returns true
+
+        // either go home or find nearest
+        bool hasHome = (GetHouseUUID() != "");
+
+        // if selected home isnt owned by self, find again
+        if (hasHome)
+        {
+            if (GetUUID() != GetHouseController().GetOwner())
+            {
+                hasHome = false;
+            }
+        }
+
+        if (!hasHome)
+        {
+            // find house
+            bool foundHouse = FindHouse();
+
+            // if failed to find a house, return true to then sleep whereever
+            if (!foundHouse)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            // go to house transform.positin
+            //MakeSpeechBubble("going to house");
+            NPCGOTOTargetWithSprint(GetHouseTransform());
+
+        }
+
+        if (hasHome)
+        {
+            // check if arrived
+            float distance = Vector3.Distance(CharacterTransform.position, GetHouseTransform().position);
+            if (distance <= Character.Reach)
+            {
+                MakeSpeechBubble("im home!");
+                return true;
+            }
+
+
+        }
+        return false;
+    }
+
+
+    private bool FindHouse()
+    {
+
+        BuildingController backupHouse = null;
+        bool mustUseBackup = true;
+        float currentDistanceToHouse = -1;
+
+        // 50.0f is range to look for house
+        Collider[] hitColliders = Physics.OverlapSphere(CharacterTransform.position, 50.0f);
+        foreach (var hitCollider in hitColliders)
+        {
+            BuildingController controller = hitCollider.gameObject.GetComponent<BuildingController>();
+            if (controller != null)
+            {
+                if (controller.GetType() == "HOME")
+                {
+
+                    // if house is unclaimed
+                    if (controller.GetOwner() == "")
+                    {
+                        controller.AssignHousingAndOwnership(this);
+                        mustUseBackup = false;
+
+                        return true;
+                    }
+                    else
+                    {
+
+                        // compare distance and try to find closest
+                        float distanceToThisHouse = Vector3.Distance(CharacterTransform.position, controller.GetTransform().position);
+                        if (currentDistanceToHouse == -1)
+                        {
+                            backupHouse = controller;
+                            currentDistanceToHouse = distanceToThisHouse;
+                        }
+                        else if (currentDistanceToHouse > distanceToThisHouse)
+                        {
+                            backupHouse = controller;
+
+                            currentDistanceToHouse = distanceToThisHouse;
+                        }
+                    }
+                }
+            }
+        }
+
+        // pick a owned house as a backup if cant get own
+        if (mustUseBackup && backupHouse != null)
+        {
+            backupHouse.AssignHousingAndOwnership(this);
+            return true;
+        }
+
+
+        return false;
     }
 
     private void AttackTarget()
@@ -860,6 +991,8 @@ public class CharacterController : MonoBehaviour
 
     private void SetNavAgentDestination(Vector3 goal_position)
     {
+        //MakeSpeechBubble("Set destination to " + goal_position.ToString());
+
         if (NavAgent.enabled)
         {
             NavAgent.destination = goal_position;
@@ -1291,6 +1424,7 @@ public class CharacterController : MonoBehaviour
         SpeechBubbleObject.gameObject.GetComponent<Transform>().parent = CharacterTransform;
         SpeechBubbles.Add(SpeechBubbleObject);
     }
+    
 
 
 
@@ -1903,8 +2037,97 @@ public class CharacterController : MonoBehaviour
         rb.velocity = VelocityVector;
     }
 
+    public string GetHouseUUID()
+    {
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetType() == "HOME")
+            {
+                return building.GetUUID();
+            }
+        }
+        // retrun blank if no home
+        return "";
+    }
 
 
+    public Transform GetHouseTransform()
+    {
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetType() == "HOME")
+            {
+                return building.GetTransform();
+            }
+        }
+        // retrun blank if no home
+        return null;
+    }
+
+    public void AddBuildingToList(BuildingController buildingToAdd)
+    {
+        Buildings.Add(buildingToAdd);
+    }
+
+    private BuildingController GetHouseController()
+    {
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetType() == "HOME")
+            {
+                return building;
+            }
+        }
+        // retrun blank if no home
+        return null;
+    }
+
+    public void RemoveBuildingFromListByUUID(string UUIDToRemove)
+    {
+        List<BuildingController> tempList = new List<BuildingController>();
+        // move all bubbles up and remove null bubbles from list
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetUUID() != UUIDToRemove)
+            {
+                tempList.Add(building);
+            }
+        }
+        Buildings = tempList;
+    }
+
+
+    public string GetCurrentTask()
+    {
+        return CurrentTask;
+    }
+
+    public string GetDefaultTask()
+    {
+        return Character.DefaultTask;
+    }
+
+    public void SetNextNextTask(string taskToAdd){
+        NextNextTask = taskToAdd;
+    }
+
+    public bool GetIsFollowingPlayer(){
+        if(Character.IsFollowing && FollowTarget != null){
+            CharacterController followController = FollowTarget.gameObject.GetComponent<CharacterController>();
+            return followController.GetIsPlayer();
+        }
+        return false;
+    }
+
+    public void WakeUp(){
+        //Debug.Log("im waking up");
+        if(CurrentTask == "SLEEP"){
+            WentHomeToSleep = false;
+            NextTask = Character.DefaultTask;// wake up and do default stuff
+            IncrementTask();
+            LastTask = Character.DefaultTask;// remove sleep from last task
+        }
+    }
 
 }
 

@@ -12,28 +12,23 @@ using System.Linq;
 public class BuildingController : MonoBehaviour
 {
 
-    public GameObject Roof;
-    public GameObject FloorAndWalls;
-    //public GameObject DetectionBox;
-
-    private bool RoofEnabled = true;
 
     private string ownerUUID = "";
     private string UUID = "";
     public string Type = "";// HOME SHOP FARM
 
-    private Transform BuildintTransform;
+    private Transform BuildingTransform;
 
 
     public void Start()
     {
-        BuildintTransform = gameObject.GetComponent<Transform>();
+        BuildingTransform = gameObject.GetComponent<Transform>();
 
         if (UUID == "")
         {
             UUID = Guid.NewGuid().ToString();
         }
-        
+
 
     }
 
@@ -46,55 +41,50 @@ public class BuildingController : MonoBehaviour
 
     private void OnTriggerEnter(Collider EnteringCharacter)
     {
-        if (RoofEnabled)
+
+        //Debug.Log("enter" + EnteringCharacter);
+
+        CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+        if (EnteringCharacterController != null)
         {
-            //Debug.Log("enter" + EnteringCharacter);
-
-            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
-            if (EnteringCharacterController != null)
-            {
-                if (EnteringCharacterController.GetIsPlayer())
-                {
-                    DisableRoof();
-                }
-            }
-
+            AssignHousingAndOwnership(EnteringCharacterController);
         }
+
+
     }
 
     private void OnTriggerExit(Collider EnteringCharacter)
     {
-        if (!RoofEnabled)
+
+        //Debug.Log("exit" + EnteringCharacter);
+
+        CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+        if (EnteringCharacterController != null)
         {
-            //Debug.Log("exit" + EnteringCharacter);
+            AssignHousingAndOwnership(EnteringCharacterController);
+        }
 
-            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
-            if (EnteringCharacterController != null)
-            {
-                if (EnteringCharacterController.GetIsPlayer())
-                {
-                    EndableRoof();
-                }
-            }
 
+    }
+
+    public void AssignHousingAndOwnership(CharacterController EnteringCharacter)
+    {
+        bool hasOwner = (ownerUUID != "");
+        bool hasHouse = (EnteringCharacter.GetHouseUUID() != "");
+        // if unowned and chaacter has no house, claim both
+        if (!hasOwner && !hasHouse)
+        {
+            SetOwner(EnteringCharacter.GetUUID());
+            EnteringCharacter.AddBuildingToList(this);
+
+        }
+        // if has owner but charatcer doesnt, assign to the new owner
+        else if (!hasHouse)
+        {
+            EnteringCharacter.AddBuildingToList(this);
         }
     }
 
-    private void DisableRoof()
-    {
-        Debug.Log("disable roof");
-        Roof.SetActive(false);
-        RoofEnabled = false;
-        //Roof.enabled = false;
-    }
-    private void EndableRoof()
-    {
-        Debug.Log("enable roof");
-        Roof.SetActive(true);
-        RoofEnabled = true;
-
-        //Roof.enabled = true;
-    }
 
     public string GetType()
     {
@@ -111,5 +101,14 @@ public class BuildingController : MonoBehaviour
         ownerUUID = newOwnerUUID;
     }
 
+    public string GetUUID()
+    {
+        return UUID;
+    }
+
+    public Transform GetTransform()
+    {
+        return BuildingTransform;
+    }
 
 }

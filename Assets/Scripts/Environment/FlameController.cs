@@ -121,7 +121,7 @@ public class FlameController : MonoBehaviour
 
     public void SetTimeLeft(int newDurationLeft)
     {
-        Debug.Log("setting time left to " + newDurationLeft);
+        //Debug.Log("setting time left to " + newDurationLeft);
         //TODO set the time left from when lit
         if (newDurationLeft == 0)
         {
