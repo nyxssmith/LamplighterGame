@@ -105,6 +105,7 @@ public class CharacterController : MonoBehaviour
 
     private bool WentHomeToSleep = false;
 
+    private bool CanJoinDialog = true;
 
     // buildings relevant to character like home and shops
 
@@ -572,6 +573,10 @@ public class CharacterController : MonoBehaviour
             */
             //find farm sets the new wanderpoint
 
+
+
+
+
         }
         else if (CurrentTask == "BANDIT")
         {
@@ -715,6 +720,11 @@ public class CharacterController : MonoBehaviour
     }
 
 
+    private bool GoFarm(){
+        // goes to nearest farm and returns true when there
+
+        return false;
+    }
 
     private bool GoHome()
     {
@@ -1233,8 +1243,8 @@ public class CharacterController : MonoBehaviour
 
 
         CharacterController HitCharacterController;
-        Vector3 center = CharacterTransform.position + (CharacterTransform.forward * 0.5f);
-        Collider[] hitColliders = Physics.OverlapSphere(center, 0.5f);
+        Vector3 center = CharacterTransform.position + (CharacterTransform.forward * (0.5f*Character.Reach));
+        Collider[] hitColliders = Physics.OverlapSphere(center, (0.5f*Character.Reach));
         int j = 0;
         bool interacted = false;
         while (j < hitColliders.Length)
@@ -1242,23 +1252,33 @@ public class CharacterController : MonoBehaviour
             HitCharacterController = hitColliders[j].gameObject.GetComponent<CharacterController>();
             if (HitCharacterController != null)
             {
+                MakeSpeechBubble("i almost interacted with a person");
                 // if not targeting self or sqwuad
                 if (HitCharacterController.GetUUID() != GetUUID())
                 {
                     MakeSpeechBubble("Interacted with " + HitCharacterController.GetCharacter().Name);
                     // Do interaction with a character controller (talking)
+
+                    // start the dialog action TODO
+
+                    // creates a dialog controller
+                    // self joins dialog controller
+                    // tells other charatter to join dialog controller
+                    // getcandodialog will be the faction check etc TODO
+
                     HitCharacterController.DoInteractAction(this.gameObject);
 
                     interacted = true;
                     break;
                 }
             }
+            /*
             else
             {
                 if (hitColliders[j].gameObject.tag != "Ground")
                 {
                     // hitColliders[j].gameObject is what we interacted with
-                    MakeSpeechBubble("Interacted with world");
+                    MakeSpeechBubble("Interacted with world"+hitColliders[j].gameObject.ToString());
                     // TODO do interaction here
 
                     interacted = true;
@@ -1266,13 +1286,14 @@ public class CharacterController : MonoBehaviour
                 }
 
             }
+            */
             j += 1;
         }
 
         if (!interacted)
         {
             // pushed E and didnt get anything, do squad commands
-            MakeSpeechBubble("Squad cmd");
+            MakeSpeechBubble("Squad cmd / world interaction");
         }
 
         NeedsUIUpdate = true;
@@ -1358,6 +1379,9 @@ public class CharacterController : MonoBehaviour
         MakeSpeechBubble("I was interacted with by " + WhoInteracted + " my leader is" + Character.squadLeaderId);
         MakeSpeechBubble(Character.IsFollower.ToString());
 
+        // TODO do dialog stuff before this part
+        /*
+
         // If a follower, then make then interact toggles follow
         if (Character.IsFollower)
         {
@@ -1387,8 +1411,10 @@ public class CharacterController : MonoBehaviour
                 IsMoving = false;
                 CurrentAnimationState = Character.idle_animation;
             }
-            */
+            
         }
+
+        */
         NeedsUIUpdate = true;
 
     }
@@ -2127,6 +2153,29 @@ public class CharacterController : MonoBehaviour
             IncrementTask();
             LastTask = Character.DefaultTask;// remove sleep from last task
         }
+    }
+
+    // start a dialog if possible
+    public void StartDialog(){
+
+    }
+
+    // join a dialog
+    public void JoinDialog(){
+        
+    }
+
+    // leave a dialog
+    public void LeaveDialog(){
+
+    }
+
+    // if not fighting then return if can join
+    public bool GetCanJoinDialog(){
+        if(!IsFighting){
+            return CanJoinDialog;
+        }
+        return false;
     }
 
 }

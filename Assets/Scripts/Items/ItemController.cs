@@ -20,6 +20,7 @@ public class ItemController : MonoBehaviour
 
     public bool isPickedUp = false;
     private float CooldownTimer = 0f;
+    private float AnimationCooldownTimer = 0f;
 
     private float CurrentItemAction = 0.0f;
 
@@ -29,6 +30,9 @@ public class ItemController : MonoBehaviour
     // 2 for secondary
     // 3 for TODO
     public CharacterController ActionTargetCharacterController = null;
+
+    Vector3 StandardHoldingPos = new Vector3(0.0f, 0.0f, 0.0f);
+    float StandardHoldingRot = 0.0f;
 
 
     private GameObject HoldingCharacter;
@@ -155,6 +159,21 @@ public class ItemController : MonoBehaviour
         if (HoldingCharacter != null)
         {
 
+            if (AnimationCooldownTimer >= 0.0f)
+            {
+                AnimationCooldownTimer -= Time.deltaTime;
+
+                if (AnimationCooldownTimer <= 0.0f)
+                {
+                    //Debug.Log("setting rotations back");
+                    //Vector3 StandardHoldingPos = GetCurrentHoldingOffsetXYZ();
+                    SetHoldingOffsetXYZ(StandardHoldingPos);
+                    SetHoldingRotationOffset(StandardHoldingRot);
+                }
+            }
+
+
+
             if (ActionTargetCharacterController == null)
             {
                 SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
@@ -218,12 +237,14 @@ public class ItemController : MonoBehaviour
                     ItemTransform.parent = ActionTargetCharacterController.GetBackTransform();
                     //ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBackTransform();
                     Item.heldLocation = "Back";
+
                 }
                 else if (Item.heldLocation == "Back")
                 {
                     ItemTransform.parent = ActionTargetCharacterController.GetHandTransform();
                     //ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
                     Item.heldLocation = "Hand";
+
                 }
 
                 Status = "";
@@ -237,12 +258,14 @@ public class ItemController : MonoBehaviour
                     ItemTransform.parent = ActionTargetCharacterController.GetBeltTransform();
                     //ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetBeltTransform();
                     Item.heldLocation = "Belt";
+
                 }
                 else if (Item.heldLocation == "Belt")
                 {
                     ItemTransform.parent = ActionTargetCharacterController.GetHandTransform();
                     //ItemTransform.parent = HoldingCharacter.GetComponent<CharacterController>().GetHandTransform();
                     Item.heldLocation = "Hand";
+
                 }
 
                 Status = "";
@@ -251,29 +274,37 @@ public class ItemController : MonoBehaviour
             else
             {
                 //Keep the item above the player / at location
-                // TODO have it check which slot its held in
-                ItemTransform.localRotation = Quaternion.identity;
+                // temp toggle if item needs to be moved diferently or not
 
-                if (Item.heldLocation == "Hand")
+                if (AnimationCooldownTimer <= 0.0f)
                 {
-                    ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
-
-                    ItemTransform.localRotation = Quaternion.Euler(Item.HoldingRotationOffset, 0.0f, 0.0f);
+                    ItemTransform.localRotation = Quaternion.identity;
 
 
-                }
-                else
-                {
-                    ItemTransform.localPosition = new Vector3(0, 0, 0);
-                    ItemTransform.localRotation = Quaternion.Euler(0.0f, 0.0f, 0.0f);
-                }
+                    if (Item.heldLocation == "Hand")
+                    {
+                        //ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
 
-                //ItemTransform.localPosition = new Vector3(0, 1, 0);
+                        SetHoldingOffsetXYZ(new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ));
+                        SetHoldingRotationOffset(Item.HoldingRotationOffset);
 
-                //cooldown timer if needed
-                if (CooldownTimer > 0)
-                {
-                    CooldownTimer -= Time.deltaTime;
+                    }
+                    else
+                    {
+                        SetHoldingOffsetXYZ(new Vector3(0, 0, 0));
+                        SetHoldingRotationOffset(0.0f);
+                    }
+
+
+
+
+                    //ItemTransform.localPosition = new Vector3(0, 1, 0);
+
+                    //cooldown timer if needed
+                    if (CooldownTimer > 0)
+                    {
+                        CooldownTimer -= Time.deltaTime;
+                    }
                 }
 
                 if (Item.heldLocation == "Hand")
@@ -382,6 +413,18 @@ public class ItemController : MonoBehaviour
 
                 // do basic attack hit, if it hits then canDoAction is true
                 float animationDuration = 1.0f;
+
+                AnimationCooldownTimer = animationDuration;
+
+                // TODO find new spear animation etc
+
+                //Debug.Log("doing action as spears");
+                StandardHoldingPos = GetCurrentHoldingOffsetXYZ();
+                StandardHoldingRot = GetHoldingRotationOffset();
+
+                SetHoldingRotationOffset(50.0f);
+                SetHoldingOffsetXYZ(new Vector3(0.0f, 0.3f, 0.0f));
+
 
                 // TODO held format must change
                 AnimateHoldingCharacter("m_spear_stab2", animationDuration);
@@ -715,11 +758,14 @@ public class ItemController : MonoBehaviour
 
         if (Item.heldLocation == "Hand")
         {
-            ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
+            //ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
+            SetHoldingOffsetXYZ(new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ));
+            //ItemTransform.localPosition = new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
         }
         else
         {
             ItemTransform.localPosition = new Vector3(0, 0, 0);
+            SetHoldingOffsetXYZ(new Vector3(0, 0, 0));
         }
         //Debug.Log("held location updated postion:" + ItemTransform.position + Item.Name);
     }
@@ -797,6 +843,32 @@ public class ItemController : MonoBehaviour
     {
         return ItemTransform;
     }
+
+    public Vector3 GetCurrentHoldingOffsetXYZ()
+    {
+
+        return new Vector3(ItemTransform.localPosition.x, ItemTransform.localPosition.y, ItemTransform.localPosition.z);
+        //return new Vector3(Item.HoldingOffsetX, Item.HoldingOffsetY, Item.HoldingOffsetZ);
+    }
+
+    public void SetHoldingOffsetXYZ(Vector3 NewOffsetVector)
+    {
+        ItemTransform.localPosition = new Vector3(NewOffsetVector.x, NewOffsetVector.y, NewOffsetVector.z);
+        //Debug.Log("set rotation to "+NewOffsetVector);
+        //Debug.Log("set rotation to "+ItemTransform.localPosition);
+    }
+
+    public float GetHoldingRotationOffset()
+    {
+        return Item.HoldingRotationOffset;
+    }
+
+    public void SetHoldingRotationOffset(float NewRotationOffset)
+    {
+        ItemTransform.localRotation = Quaternion.Euler(NewRotationOffset, 0.0f, 0.0f);
+    }
+
+
 
 
 }

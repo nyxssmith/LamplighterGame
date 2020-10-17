@@ -42,12 +42,16 @@ public class BuildingController : MonoBehaviour
     private void OnTriggerEnter(Collider EnteringCharacter)
     {
 
-        //Debug.Log("enter" + EnteringCharacter);
-
-        CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
-        if (EnteringCharacterController != null)
+        if (Type == "HOME")
         {
-            AssignHousingAndOwnership(EnteringCharacterController);
+
+            //Debug.Log("enter" + EnteringCharacter);
+
+            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+            if (EnteringCharacterController != null)
+            {
+                AssignHousingAndOwnership(EnteringCharacterController);
+            }
         }
 
 
@@ -56,12 +60,15 @@ public class BuildingController : MonoBehaviour
     private void OnTriggerExit(Collider EnteringCharacter)
     {
 
-        //Debug.Log("exit" + EnteringCharacter);
-
-        CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
-        if (EnteringCharacterController != null)
+        if (Type == "HOME")
         {
-            AssignHousingAndOwnership(EnteringCharacterController);
+            //Debug.Log("exit" + EnteringCharacter);
+
+            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+            if (EnteringCharacterController != null)
+            {
+                AssignHousingAndOwnership(EnteringCharacterController);
+            }
         }
 
 
@@ -110,5 +117,9 @@ public class BuildingController : MonoBehaviour
     {
         return BuildingTransform;
     }
+
+
+
+
 
 }
