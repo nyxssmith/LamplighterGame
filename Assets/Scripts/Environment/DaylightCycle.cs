@@ -112,7 +112,7 @@ public class DaylightCycle : MonoBehaviour
 
             if(!isBusy){// tell to go to sleep
                 controller.MakeSpeechBubble("im going to bed");
-                controller.SetNextNextTask("SLEEP");
+                controller.OverrideNextTaskAndPushbackNextTask("SLEEP");
             }
         }
         

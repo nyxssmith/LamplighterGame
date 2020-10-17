@@ -50,7 +50,7 @@ public class BuildingController : MonoBehaviour
             CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
-                AssignHousingAndOwnership(EnteringCharacterController);
+                AssignHousingOwnership(EnteringCharacterController);
             }
         }
 
@@ -67,14 +67,14 @@ public class BuildingController : MonoBehaviour
             CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
-                AssignHousingAndOwnership(EnteringCharacterController);
+                AssignHousingOwnership(EnteringCharacterController);
             }
         }
 
 
     }
 
-    public void AssignHousingAndOwnership(CharacterController EnteringCharacter)
+    public void AssignHousingOwnership(CharacterController EnteringCharacter)
     {
         bool hasOwner = (ownerUUID != "");
         bool hasHouse = (EnteringCharacter.GetHouseUUID() != "");
@@ -87,6 +87,24 @@ public class BuildingController : MonoBehaviour
         }
         // if has owner but charatcer doesnt, assign to the new owner
         else if (!hasHouse)
+        {
+            EnteringCharacter.AddBuildingToList(this);
+        }
+    }
+
+    public void AssignFarmingOwnership(CharacterController EnteringCharacter)
+    {
+        bool hasOwner = (ownerUUID != "");
+        bool hasFarm = (EnteringCharacter.GetFarmUUID() != "");
+        // if unowned and chaacter has no house, claim both
+        if (!hasOwner && !hasFarm)
+        {
+            SetOwner(EnteringCharacter.GetUUID());
+            EnteringCharacter.AddBuildingToList(this);
+
+        }
+        // if has owner but charatcer doesnt, assign to the new owner
+        else if (!hasFarm)
         {
             EnteringCharacter.AddBuildingToList(this);
         }
@@ -118,6 +136,21 @@ public class BuildingController : MonoBehaviour
         return BuildingTransform;
     }
 
+    public float GetFarmWanderRange()
+    {
+
+        // get sphere radius and set that to the wander range
+        SphereCollider myCollider;
+        myCollider = GetComponent<SphereCollider>();
+
+        if (myCollider != null)
+        {
+            return myCollider.radius;
+        }
+
+
+        return 1.0f;
+    }
 
 
 

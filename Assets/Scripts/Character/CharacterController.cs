@@ -99,6 +99,11 @@ public class CharacterController : MonoBehaviour
     private Vector3 WanderPointCenter = new Vector3(0.0f, -1.0f, 0.0f);
     private Vector3 WanderPointGoal = new Vector3(0.0f, -1.0f, 0.0f);
 
+    // default wandering range radius
+    float wanderRange = 3.0f;
+
+
+
     private float StandingStillTimer = 0.0f;
 
     private ItemController HeldItemController;
@@ -512,14 +517,20 @@ public class CharacterController : MonoBehaviour
 
         if (CurrentTask == "" || CurrentTask == null)
         {
-            CurrentTask = Character.DefaultTask;
+            // if there is a chance to have a task, do that insetad
+            if (NextNextTask != "")
+            {
+                CurrentTask = Character.DefaultTask;
+            }
+            else
+            {
+                IncrementTask();
+            }
         }
 
 
+        // debug super helpful
         //MakeSpeechBubble("CURRENT " + CurrentTask + " next " + NextTask + " last " + LastTask + " nextnext " + NextNextTask);
-
-        // default wandering range radius
-        float wanderRange = 3.0f;
 
 
         if (StandingStillTimer > 0.0f)
@@ -565,7 +576,7 @@ public class CharacterController : MonoBehaviour
 
             }
         }
-        else if (CurrentTask == "FARM")
+        else if (CurrentTask == "BEFARMER")
         {
             /*
             set to go to nearest farm then wanderpoint, next task is more farm
@@ -573,6 +584,38 @@ public class CharacterController : MonoBehaviour
             */
             //find farm sets the new wanderpoint
 
+
+
+
+            if (LastTask == "WANDERPOINT")
+            {
+                NextTask = "FARM";
+            }
+            else if (LastTask == "FARM")
+            {
+                CurrentTask = "WANDERPOINT";
+            }
+            else
+            {
+                NextTask = "FARM";
+                NextNextTask = "BEFARMER";
+                IncrementTask();
+            }
+
+
+
+
+        }
+        else if (CurrentTask == "FARM")
+        {
+            // go to farm and get wander range
+            float atFarm = GoFarm();
+            if (atFarm != 0.0f)
+            {
+                wanderRange = atFarm;
+                //pick a point
+                IncrementTask();
+            }
 
 
 
@@ -661,8 +704,9 @@ public class CharacterController : MonoBehaviour
         {
 
             // if not home, try to find home, if cant, then do sleep here
-            if(!WentHomeToSleep){
-            
+            if (!WentHomeToSleep)
+            {
+
                 NextNextTask = "SLEEP";
                 NextTask = "HOME";
                 WentHomeToSleep = true;
@@ -688,7 +732,7 @@ public class CharacterController : MonoBehaviour
 
             bool isHome = GoHome();
             if (isHome)//} && !IsMoving)
-            {   
+            {
                 SetNavAgentDestination(CharacterTransform.position);
                 SetCharacterCanMove(false);
                 IncrementTask();
@@ -720,11 +764,123 @@ public class CharacterController : MonoBehaviour
     }
 
 
-    private bool GoFarm(){
-        // goes to nearest farm and returns true when there
+    private float GoFarm()
+    {
+        // goes to nearest farm and returns the farms wander range when there
+
+
+        // either go home or find nearest
+        bool hasFarm = (GetFarmUUID() != "");
+
+        // if selected home isnt owned by self, find again
+        if (hasFarm)
+        {
+            if (GetUUID() != GetFarmController().GetOwner())
+            {
+                hasFarm = false;
+            }
+        }
+
+        if (!hasFarm)
+        {
+            // find house
+            bool foundFarm = FindFarm();
+
+            //MakeSpeechBubble("found farm "+foundFarm.ToString());
+            // if failed to find a house, return true to then sleep whereever
+            if (!foundFarm)
+            {
+                return 1.0f;
+            }
+        }
+        else
+        {
+            // go to house transform.positin
+            //MakeSpeechBubble("going to farm");
+            NPCGOTOTargetWithSprint(GetFarmTransform());
+
+        }
+
+        if (hasFarm)
+        {
+            // check if arrived
+            float distance = Vector3.Distance(CharacterTransform.position, GetFarmTransform().position);
+            if (distance <= Character.Reach)
+            {
+                MakeSpeechBubble("im at farm!");
+                return GetFarmController().GetFarmWanderRange();
+                //return 0.0f;
+            }
+
+
+        }
+
+
+
+
+        return 0.0f;
+    }
+
+    private bool FindFarm()
+    {
+
+
+        BuildingController backupFarm = null;
+        bool mustUseBackup = true;
+        float currentDistanceToFarm = -1;
+
+        // 50.0f is range to look for farm
+        Collider[] hitColliders = Physics.OverlapSphere(CharacterTransform.position, 500.0f);
+        foreach (var hitCollider in hitColliders)
+        {
+            BuildingController controller = hitCollider.gameObject.GetComponent<BuildingController>();
+            if (controller != null)
+            {
+                if (controller.GetType() == "FARM")
+                {
+
+                    // if farm is unclaimed
+                    if (controller.GetOwner() == "")
+                    {
+                        //MakeSpeechBubble("claiming this farm");
+                        controller.AssignFarmingOwnership(this);
+                        mustUseBackup = false;
+
+                        return true;
+                    }
+                    else
+                    {
+
+                        // compare distance and try to find closest
+                        float distanceToThisFarm = Vector3.Distance(CharacterTransform.position, controller.GetTransform().position);
+                        if (currentDistanceToFarm == -1)
+                        {
+                            backupFarm = controller;
+                            currentDistanceToFarm = distanceToThisFarm;
+                        }
+                        else if (currentDistanceToFarm > distanceToThisFarm)
+                        {
+                            backupFarm = controller;
+
+                            currentDistanceToFarm = distanceToThisFarm;
+                        }
+                    }
+                }
+            }
+        }
+
+        // pick a owned house as a backup if cant get own
+        if (mustUseBackup && backupFarm != null)
+        {
+            backupFarm.AssignHousingOwnership(this);
+            return true;
+        }
+
 
         return false;
     }
+
+
 
     private bool GoHome()
     {
@@ -797,7 +953,7 @@ public class CharacterController : MonoBehaviour
                     // if house is unclaimed
                     if (controller.GetOwner() == "")
                     {
-                        controller.AssignHousingAndOwnership(this);
+                        controller.AssignHousingOwnership(this);
                         mustUseBackup = false;
 
                         return true;
@@ -826,7 +982,7 @@ public class CharacterController : MonoBehaviour
         // pick a owned house as a backup if cant get own
         if (mustUseBackup && backupHouse != null)
         {
-            backupHouse.AssignHousingAndOwnership(this);
+            backupHouse.AssignHousingOwnership(this);
             return true;
         }
 
@@ -1243,8 +1399,8 @@ public class CharacterController : MonoBehaviour
 
 
         CharacterController HitCharacterController;
-        Vector3 center = CharacterTransform.position + (CharacterTransform.forward * (0.5f*Character.Reach));
-        Collider[] hitColliders = Physics.OverlapSphere(center, (0.5f*Character.Reach));
+        Vector3 center = CharacterTransform.position + (CharacterTransform.forward * (0.5f * Character.Reach));
+        Collider[] hitColliders = Physics.OverlapSphere(center, (0.5f * Character.Reach));
         int j = 0;
         bool interacted = false;
         while (j < hitColliders.Length)
@@ -1450,7 +1606,7 @@ public class CharacterController : MonoBehaviour
         SpeechBubbleObject.gameObject.GetComponent<Transform>().parent = CharacterTransform;
         SpeechBubbles.Add(SpeechBubbleObject);
     }
-    
+
 
 
 
@@ -2076,12 +2232,38 @@ public class CharacterController : MonoBehaviour
         return "";
     }
 
+    public string GetFarmUUID()
+    {
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetType() == "FARM")
+            {
+                return building.GetUUID();
+            }
+        }
+        // retrun blank if no home
+        return "";
+    }
 
     public Transform GetHouseTransform()
     {
         foreach (BuildingController building in Buildings)
         {
             if (building.GetType() == "HOME")
+            {
+                return building.GetTransform();
+            }
+        }
+        // retrun blank if no home
+        return null;
+    }
+
+
+    public Transform GetFarmTransform()
+    {
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetType() == "FARM")
             {
                 return building.GetTransform();
             }
@@ -2100,6 +2282,19 @@ public class CharacterController : MonoBehaviour
         foreach (BuildingController building in Buildings)
         {
             if (building.GetType() == "HOME")
+            {
+                return building;
+            }
+        }
+        // retrun blank if no home
+        return null;
+    }
+
+    private BuildingController GetFarmController()
+    {
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetType() == "FARM")
             {
                 return building;
             }
@@ -2133,21 +2328,33 @@ public class CharacterController : MonoBehaviour
         return Character.DefaultTask;
     }
 
-    public void SetNextNextTask(string taskToAdd){
+    public void SetNextNextTask(string taskToAdd)
+    {
         NextNextTask = taskToAdd;
     }
 
-    public bool GetIsFollowingPlayer(){
-        if(Character.IsFollowing && FollowTarget != null){
+    public void OverrideNextTaskAndPushbackNextTask(string taskToAdd)
+    {
+        NextNextTask = NextTask;
+        NextTask = taskToAdd;
+    }
+
+
+    public bool GetIsFollowingPlayer()
+    {
+        if (Character.IsFollowing && FollowTarget != null)
+        {
             CharacterController followController = FollowTarget.gameObject.GetComponent<CharacterController>();
             return followController.GetIsPlayer();
         }
         return false;
     }
 
-    public void WakeUp(){
+    public void WakeUp()
+    {
         //Debug.Log("im waking up");
-        if(CurrentTask == "SLEEP"){
+        if (CurrentTask == "SLEEP")
+        {
             WentHomeToSleep = false;
             NextTask = Character.DefaultTask;// wake up and do default stuff
             IncrementTask();
@@ -2156,27 +2363,33 @@ public class CharacterController : MonoBehaviour
     }
 
     // start a dialog if possible
-    public void StartDialog(){
+    public void StartDialog()
+    {
 
     }
 
     // join a dialog
-    public void JoinDialog(){
-        
+    public void JoinDialog()
+    {
+
     }
 
     // leave a dialog
-    public void LeaveDialog(){
+    public void LeaveDialog()
+    {
 
     }
 
     // if not fighting then return if can join
-    public bool GetCanJoinDialog(){
-        if(!IsFighting){
+    public bool GetCanJoinDialog()
+    {
+        if (!IsFighting)
+        {
             return CanJoinDialog;
         }
         return false;
     }
+
 
 }
 
