@@ -12,7 +12,7 @@ public class CharacterController : MonoBehaviour
     private Transform CharacterTransform;
     public GameObject CameraTarget;
     private Camera cam;
-    private Rigidbody rb;
+    public Rigidbody rb;
     private Physics physics;
 
 
@@ -114,7 +114,7 @@ public class CharacterController : MonoBehaviour
 
     // buildings relevant to character like home and shops
 
-    private List<BuildingController> Buildings = new List<BuildingController>();
+    public List<BuildingController> Buildings = new List<BuildingController>();
 
 
 
@@ -722,11 +722,64 @@ public class CharacterController : MonoBehaviour
         else if (CurrentTask == "BEMERCHANT")
         {
 
+            // go to work, then check when can go home
+
+            if (LastTask == "CHECKIFDONEWITHWORK")
+            {
+                NextTask = "MANSHOP";
+            }
+            else if (LastTask == "MANSHOP")
+            {
+                CurrentTask = "CHECKIFDONEWITHWORK";
+            }
+            else
+            {
+                NextTask = "MANSHOP";
+                NextNextTask = "BEMERCHANT";
+                IncrementTask();
+            }
+
+        }
+
+        else if (CurrentTask == "CHECKIFDONEWITHWORK")
+        {
+            // if time is > end of day then go home, else incremtn anyway
+            if (false)
+            {
+
+            }
+            else
+            {
+                IncrementTask();
+            }
+
+        }
+        else if (CurrentTask == "MANSHOP")
+        {
             // man the owned store
+
+            // claim and own a store
+
+            bool isAtStore = GoShop();
+            if (isAtStore)//} && !IsMoving)
+            {
+
+                SetNavAgentDestination(CharacterTransform.position);
+                SetCharacterCanMove(false);
+                IncrementTask();
+            }
+
         }
         else if (CurrentTask == "SHOP")
         {
             // go to nearest store
+
+            // do go shop
+
+
+            // find item and buy somethig
+
+            // ask shop for merhcant
 
         }
         else if (CurrentTask == "HOME")
@@ -747,7 +800,8 @@ public class CharacterController : MonoBehaviour
 
             IncrementTask();
 
-        }else if (CurrentTask == "QUEST")
+        }
+        else if (CurrentTask == "QUEST")
         {
             // TODO read from quest object and do steps, only if step of quest is "DONE" then do incremnt task
 
@@ -781,13 +835,13 @@ public class CharacterController : MonoBehaviour
         bool hasFarm = (GetFarmUUID() != "");
 
         // if selected home isnt owned by self, find again
-        if (hasFarm)
-        {
-            if (GetUUID() != GetFarmController().GetOwner())
-            {
-                hasFarm = false;
-            }
-        }
+        //if (hasFarm)
+        //{
+        //    if (GetUUID() != GetFarmController().GetOwner())
+        //    {
+        //        hasFarm = false;
+        //    }
+        //}
 
         if (!hasFarm)
         {
@@ -834,7 +888,8 @@ public class CharacterController : MonoBehaviour
 
 
         BuildingController backupFarm = null;
-        bool mustUseBackup = true;
+        BuildingController foundFarm = null;
+        bool mustUseBackup = false;
         float currentDistanceToFarm = -1;
 
         // 50.0f is range to look for farm
@@ -848,39 +903,55 @@ public class CharacterController : MonoBehaviour
                 {
 
                     // if farm is unclaimed
-                    if (controller.GetOwner() == "")
+                    //if (controller.GetOwner() == "")
+                    //{
+                    //    //MakeSpeechBubble("claiming this farm");
+                    //    controller.AssignFarmingOwnership(this);
+                    //    mustUseBackup = false;
+
+                    //    return true;
+                    //}
+                    //else
+                    //{
+
+                    // compare distance and try to find closest
+                    float distanceToThisFarm = Vector3.Distance(CharacterTransform.position, controller.GetTransform().position);
+                    if (currentDistanceToFarm == -1)
                     {
-                        //MakeSpeechBubble("claiming this farm");
-                        controller.AssignFarmingOwnership(this);
-                        mustUseBackup = false;
-
-                        return true;
+                        backupFarm = controller;
+                        foundFarm = controller;
+                        currentDistanceToFarm = distanceToThisFarm;
                     }
-                    else
+                    else if (currentDistanceToFarm > distanceToThisFarm)
                     {
-
-                        // compare distance and try to find closest
-                        float distanceToThisFarm = Vector3.Distance(CharacterTransform.position, controller.GetTransform().position);
-                        if (currentDistanceToFarm == -1)
-                        {
-                            backupFarm = controller;
-                            currentDistanceToFarm = distanceToThisFarm;
-                        }
-                        else if (currentDistanceToFarm > distanceToThisFarm)
-                        {
-                            backupFarm = controller;
-
-                            currentDistanceToFarm = distanceToThisFarm;
-                        }
+                        backupFarm = foundFarm;
+                        //backupFarm = controller;
+                        foundFarm = controller;
+                        currentDistanceToFarm = distanceToThisFarm;
                     }
+                    //}
                 }
             }
+        }
+
+        // if farm is unclaimed
+        if (foundFarm.GetOwner() == "")
+        {
+            //MakeSpeechBubble("claiming this farm");
+            foundFarm.AssignFarmingOwnership(this);
+            mustUseBackup = false;
+
+            return true;
+        }
+        else
+        {
+            mustUseBackup = true;
         }
 
         // pick a owned house as a backup if cant get own
         if (mustUseBackup && backupFarm != null)
         {
-            backupFarm.AssignHousingOwnership(this);
+            backupFarm.AssignFarmingOwnership(this);
             return true;
         }
 
@@ -888,6 +959,154 @@ public class CharacterController : MonoBehaviour
         return false;
     }
 
+
+
+    private bool GoShop()
+    {
+        // goes to home and if there returns true
+
+        // either go home or find nearest
+        bool hasShop = (GetShopUUID() != "");
+
+        // if selected home isnt owned by self, find again
+        if (hasShop)
+        {
+            if (CurrentTask == "BEMERCHANT")
+            {
+                // if merchant is told to go to shop, then they will only go to their own
+
+                if (GetUUID() != GetShopController().GetOwner())
+                {
+                    hasShop = false;
+                }
+            }
+        }
+
+
+        if (!hasShop)
+        {
+            // find house
+            bool foundShop = FindShop();
+
+            // if failed to find a house, return true to then ???
+            if (!foundShop)
+            {
+                return true;
+            }
+        }
+        else
+        {
+            // go to house transform.positin
+            //MakeSpeechBubble("going to house");
+            NPCGOTOTargetWithSprint(GetShopTransform());
+
+        }
+
+        if (hasShop)
+        {
+            // check if arrived
+            float distance = Vector3.Distance(CharacterTransform.position, GetShopTransform().position);
+            if (distance <= Character.Reach)
+            {
+                MakeSpeechBubble("im at the store!");
+                return true;
+            }
+
+
+        }
+        return false;
+    }
+
+
+    private bool FindShop()
+    {
+
+        BuildingController backupShop = null;
+        BuildingController foundShop = null;
+        bool mustUseBackup = true;
+        float currentDistanceToShop = -1;
+
+        // 50.0f is range to look for house
+        Collider[] hitColliders = Physics.OverlapSphere(CharacterTransform.position, 50.0f);
+        foreach (var hitCollider in hitColliders)
+        {
+            BuildingController controller = hitCollider.gameObject.GetComponent<BuildingController>();
+            if (controller != null)
+            {
+                if (controller.GetType() == "SHOP")
+                {
+
+                    // if shop is unclaimed and is a merchant, claim it
+                    //if (CurrentTask == "BEMERCHANT")
+                    //{
+                    //    if (controller.GetOwner() == "")
+                    //    {
+                    //        controller.AssignShopOwnership(this);
+                    //        mustUseBackup = false;
+                    //
+                    //        return true;
+                    //    }
+                    //}
+                    //else
+                    //{
+
+                    // compare distance and try to find closest
+                    float distanceToThisShop = Vector3.Distance(CharacterTransform.position, controller.GetTransform().position);
+                    if (currentDistanceToShop == -1)
+                    {
+                        backupShop = controller;
+                        foundShop = controller;
+                        currentDistanceToShop = distanceToThisShop;
+                    }
+                    else if (currentDistanceToShop > distanceToThisShop)
+                    {
+                        backupShop = foundShop;
+                        foundShop = controller;
+
+                        currentDistanceToShop = distanceToThisShop;
+                    }
+                    //}
+                }
+            }
+        }
+
+        if (CurrentTask == "MANSHOP")
+        {
+            // if shop is unclaimed
+            if (foundShop.GetOwner() == "")
+            {
+                //MakeSpeechBubble("claiming this farm");
+                foundShop.AssignShopOwnership(this);
+                mustUseBackup = false;
+
+                return true;
+
+            }else{
+                // TODO fix this if the mercahtn cant fins a shop
+                mustUseBackup = true;
+            }
+        }
+        else
+        {
+            MakeSpeechBubble(CurrentTask);
+            foundShop.AssignShopAllocation(this);
+            mustUseBackup = false;
+
+            return true;
+
+        }
+
+
+        // pick a owned house as a backup if cant get own
+        //if (mustUseBackup && backupShop != null)
+        //{
+        //    backupShop.AssignShopAllocation(this);
+        //    return true;
+        //}
+
+
+        return false;
+    }
 
 
     private bool GoHome()
@@ -945,6 +1164,7 @@ public class CharacterController : MonoBehaviour
     {
 
         BuildingController backupHouse = null;
+        BuildingController foundHouse = null;
         bool mustUseBackup = true;
         float currentDistanceToHouse = -1;
 
@@ -958,33 +1178,50 @@ public class CharacterController : MonoBehaviour
                 if (controller.GetType() == "HOME")
                 {
 
-                    // if house is unclaimed
-                    if (controller.GetOwner() == "")
-                    {
-                        controller.AssignHousingOwnership(this);
-                        mustUseBackup = false;
-
-                        return true;
-                    }
-                    else
-                    {
+                    //// if house is unclaimed
+                    //if (controller.GetOwner() == "")
+                    //{
+                    //    controller.AssignHousingOwnership(this);
+                    //    mustUseBackup = false;
+//
+                    //    return true;
+                    //}
+                    //else
+                    //{
 
                         // compare distance and try to find closest
                         float distanceToThisHouse = Vector3.Distance(CharacterTransform.position, controller.GetTransform().position);
                         if (currentDistanceToHouse == -1)
                         {
                             backupHouse = controller;
+                            foundHouse = controller;
                             currentDistanceToHouse = distanceToThisHouse;
                         }
                         else if (currentDistanceToHouse > distanceToThisHouse)
                         {
-                            backupHouse = controller;
+                            backupHouse = foundHouse;
+                            foundHouse = controller;
 
                             currentDistanceToHouse = distanceToThisHouse;
                         }
-                    }
+                    //}
                 }
             }
+        }
+
+
+        // if farm is unclaimed
+        if (foundHouse.GetOwner() == "")
+        {
+            //MakeSpeechBubble("claiming this farm");
+            foundHouse.AssignHousingOwnership(this);
+            mustUseBackup = false;
+
+            return true;
+        }
+        else
+        {
+            mustUseBackup = true;
         }
 
         // pick a owned house as a backup if cant get own
@@ -2240,6 +2477,19 @@ public class CharacterController : MonoBehaviour
         return "";
     }
 
+    public string GetShopUUID()
+    {
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetType() == "SHOP")
+            {
+                return building.GetUUID();
+            }
+        }
+        // retrun blank if no home
+        return "";
+    }
+
     public string GetFarmUUID()
     {
         foreach (BuildingController building in Buildings)
@@ -2258,6 +2508,18 @@ public class CharacterController : MonoBehaviour
         foreach (BuildingController building in Buildings)
         {
             if (building.GetType() == "HOME")
+            {
+                return building.GetTransform();
+            }
+        }
+        // retrun blank if no home
+        return null;
+    }
+    public Transform GetShopTransform()
+    {
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetType() == "SHOP")
             {
                 return building.GetTransform();
             }
@@ -2290,6 +2552,18 @@ public class CharacterController : MonoBehaviour
         foreach (BuildingController building in Buildings)
         {
             if (building.GetType() == "HOME")
+            {
+                return building;
+            }
+        }
+        // retrun blank if no home
+        return null;
+    }
+    private BuildingController GetShopController()
+    {
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetType() == "SHOP")
             {
                 return building;
             }

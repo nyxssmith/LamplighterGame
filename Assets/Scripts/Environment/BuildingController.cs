@@ -111,6 +111,44 @@ public class BuildingController : MonoBehaviour
     }
 
 
+    public void AssignShopOwnership(CharacterController EnteringCharacter)
+    {
+        bool hasOwner = (ownerUUID != "");
+        bool hasFarm = (EnteringCharacter.GetFarmUUID() != "");
+        // if unowned and chaacter has no house, claim both
+        if (!hasOwner && !hasFarm)
+        {
+            SetOwner(EnteringCharacter.GetUUID());
+            EnteringCharacter.AddBuildingToList(this);
+
+        }
+        // if has owner but charatcer doesnt, assign to the new owner
+        else if (!hasFarm)
+        {
+            EnteringCharacter.AddBuildingToList(this);
+        }
+    }
+
+    public void AssignShopAllocation(CharacterController EnteringCharacter)
+    {
+        bool hasOwner = (ownerUUID != "");
+        bool hasFarm = (EnteringCharacter.GetFarmUUID() != "");
+        // if unowned and chaacter has no house, claim both
+        if (!hasOwner && !hasFarm)
+        {
+            SetOwner(EnteringCharacter.GetUUID());
+            EnteringCharacter.AddBuildingToList(this);
+
+        }
+        // if has owner but charatcer doesnt, assign to the new owner
+        else if (!hasFarm)
+        {
+            EnteringCharacter.AddBuildingToList(this);
+        }
+    }
+
+
+
     public string GetType()
     {
         return Type;
