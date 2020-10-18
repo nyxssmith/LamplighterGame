@@ -537,7 +537,7 @@ public class CharacterController : MonoBehaviour
         {
 
             bool ShouldOverrideStanding = false;
-            // TODO make followers iverride standing
+            // make followers iverride standing if target goes farther away
 
             if (Character.IsFollowing && FollowTarget != null)
             {
@@ -722,9 +722,11 @@ public class CharacterController : MonoBehaviour
         else if (CurrentTask == "BEMERCHANT")
         {
 
+            // man the owned store
         }
         else if (CurrentTask == "SHOP")
         {
+            // go to nearest store
 
         }
         else if (CurrentTask == "HOME")
@@ -744,6 +746,12 @@ public class CharacterController : MonoBehaviour
             CheckForOtherFactionsToFight();
 
             IncrementTask();
+
+        }else if (CurrentTask == "QUEST")
+        {
+            // TODO read from quest object and do steps, only if step of quest is "DONE" then do incremnt task
+
+            // if is follower, set to ignore this task until not has follow target
 
         }
         else if (CurrentTask == "")
@@ -830,7 +838,7 @@ public class CharacterController : MonoBehaviour
         float currentDistanceToFarm = -1;
 
         // 50.0f is range to look for farm
-        Collider[] hitColliders = Physics.OverlapSphere(CharacterTransform.position, 500.0f);
+        Collider[] hitColliders = Physics.OverlapSphere(CharacterTransform.position, 250.0f);
         foreach (var hitCollider in hitColliders)
         {
             BuildingController controller = hitCollider.gameObject.GetComponent<BuildingController>();

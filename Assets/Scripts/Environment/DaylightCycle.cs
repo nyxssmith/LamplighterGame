@@ -10,12 +10,20 @@ public class DaylightCycle : MonoBehaviour
     public float RotationDegree = 0.0f;
 
     private bool UpdatedFlamesToday = true;
-    private bool WasBedtime = true;
+    private bool WasBedtime = false;
+
+    private float SecondsItTakesForTwentyFourHoursToGoBy = 600.0f;
+    private float DegreesPerTimeIncrement = 0.1f;
+    private float SecondsBetweenTimeIncrements = 0.166666f;
+
+
+    private float SecondsSinceLastTimeIncrement = 0.0f;
 
     void Start()
     {
         CenterOfRotation = gameObject.GetComponent<Transform>();
-        RotationDegree += 77.0f;
+        RotationDegree += 90.0f;// start at noon
+
 
     }
 
@@ -61,6 +69,8 @@ public class DaylightCycle : MonoBehaviour
             TellAllCharactersToSleep();
         }
 
+        // do the standard passage of time
+        DoPassageOfTime();
 
 
     }
@@ -70,6 +80,34 @@ public class DaylightCycle : MonoBehaviour
         return RotationDegree;
     }
 
+    private void DoPassageOfTime()
+    {
+
+        if (SecondsSinceLastTimeIncrement > SecondsBetweenTimeIncrements)
+        {
+            RotationDegree += DegreesPerTimeIncrement;
+
+            if (RotationDegree >= 360.0f)
+            {
+                RotationDegree = 0.0f;
+                UpdatedFlamesToday = false;
+                WasBedtime = false;
+
+            }
+            else if (RotationDegree <= 0.0f)
+            {
+                RotationDegree = 360.0f;
+            }
+
+            SecondsSinceLastTimeIncrement = 0.0f;
+        }
+        else
+        {
+            SecondsSinceLastTimeIncrement += Time.deltaTime;
+        }
+
+
+    }
 
 
     private void UpdateAllFlames()
@@ -99,7 +137,7 @@ public class DaylightCycle : MonoBehaviour
     private void TellAllCharactersToSleep()
     {
         //Debug.Log("go to sleep");
-        
+
         // set all current task to sleep
 
         var CharacterControllerList = FindObjectsOfType<CharacterController>();
@@ -110,12 +148,13 @@ public class DaylightCycle : MonoBehaviour
             // lamplighters and those followng the player are busy at night
             bool isBusy = (DefaultTask == "LAMPLIGHT" || controller.GetIsFollowingPlayer() || controller.GetIsPlayer());
 
-            if(!isBusy){// tell to go to sleep
+            if (!isBusy)
+            {// tell to go to sleep
                 controller.MakeSpeechBubble("im going to bed");
                 controller.OverrideNextTaskAndPushbackNextTask("SLEEP");
             }
         }
-        
+
         WasBedtime = true;
     }
 
