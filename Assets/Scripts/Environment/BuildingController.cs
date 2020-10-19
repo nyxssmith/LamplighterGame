@@ -18,6 +18,7 @@ public class BuildingController : MonoBehaviour
     public string Type = "";// HOME SHOP FARM
 
     private Transform BuildingTransform;
+    //private Transform MerchantSpot = null;
 
 
     public void Start()
@@ -28,6 +29,11 @@ public class BuildingController : MonoBehaviour
         {
             UUID = Guid.NewGuid().ToString();
         }
+
+        //if(Type=="SHOP"){
+        //    MerchantSpot = BuildingTransform.transform.Find("MerchantSpot");
+        //    Debug.Log("found merchant spot"+MerchantSpot);
+        //}
 
 
     }
@@ -51,6 +57,20 @@ public class BuildingController : MonoBehaviour
             if (EnteringCharacterController != null)
             {
                 AssignHousingOwnership(EnteringCharacterController);
+            }
+        }
+        else if (Type == "SHOP")
+        {
+            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+            if (EnteringCharacterController != null)
+            {
+                if(!EnteringCharacterController.GetIsPlayer()){
+                string EnteringCharactersTask = EnteringCharacterController.GetCurrentTask();
+
+                    if(EnteringCharactersTask == "SHOP"){
+                        EnteringCharacterController.MakeSpeechBubble("im shopping");
+                    }// maybe else for items
+                }
             }
         }
 
@@ -190,6 +210,9 @@ public class BuildingController : MonoBehaviour
         return 1.0f;
     }
 
+    //public Transform GetMerchantSpot(){
+    //    return MerchantSpot;
+    //}
 
 
 

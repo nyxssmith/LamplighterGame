@@ -1006,9 +1006,15 @@ public class CharacterController : MonoBehaviour
         {
             // check if arrived
             float distance = Vector3.Distance(CharacterTransform.position, GetShopTransform().position);
-            if (distance <= Character.Reach)
+            if (distance <= 0.5f)//Character.Reach)
             {
                 MakeSpeechBubble("im at the store!");
+
+                //if vendor get shop special standing place
+                //if(CurrentTask == "BEMERCHANT"){
+
+                //}
+
                 return true;
             }
 
@@ -2521,6 +2527,7 @@ public class CharacterController : MonoBehaviour
         {
             if (building.GetType() == "SHOP")
             {
+                // get postion to go to, if buyer or seller
                 return building.GetTransform();
             }
         }
