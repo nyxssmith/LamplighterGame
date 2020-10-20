@@ -20,6 +20,7 @@ public class BuildingController : MonoBehaviour
     private Transform BuildingTransform;
     //private Transform MerchantSpot = null;
 
+    private CharacterController OwnerControllerIfPresent = null;
 
     public void Start()
     {
@@ -64,6 +65,13 @@ public class BuildingController : MonoBehaviour
             CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
+
+                EnteringCharacterController.SetIsInShop(true,this);
+
+                if(EnteringCharacterController.GetUUID() == GetOwner()){
+                    OwnerControllerIfPresent = EnteringCharacterController;
+                }
+
                 if(!EnteringCharacterController.GetIsPlayer()){
                 string EnteringCharactersTask = EnteringCharacterController.GetCurrentTask();
 
@@ -89,7 +97,19 @@ public class BuildingController : MonoBehaviour
             {
                 AssignHousingOwnership(EnteringCharacterController);
             }
+        }else if (Type == "SHOP")
+        {
+            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+            if (EnteringCharacterController != null)
+            {
+                if(EnteringCharacterController.GetUUID() == GetOwner()){
+                    OwnerControllerIfPresent = null;
+                }
+
+                EnteringCharacterController.SetIsInShop(false,null);
+            }
         }
+
 
 
     }
@@ -208,6 +228,10 @@ public class BuildingController : MonoBehaviour
 
 
         return 1.0f;
+    }
+
+    public CharacterController GetOwnerControllerIfPresent(){
+        return OwnerControllerIfPresent;
     }
 
     //public Transform GetMerchantSpot(){

@@ -27,6 +27,7 @@ public class CharacterController : MonoBehaviour
 
     public SpriteRenderer Circle;
     public GameObject SpeechBubblePreFab;
+    public GameObject DialogManagerPreFab;
 
     private Color UIColor;
 
@@ -102,21 +103,30 @@ public class CharacterController : MonoBehaviour
     // default wandering range radius
     float wanderRange = 3.0f;
 
-
-
     private float StandingStillTimer = 0.0f;
 
     private ItemController HeldItemController;
 
     private bool WentHomeToSleep = false;
 
+
+    // dialog stuff
+
     private bool CanJoinDialog = true;
+    public bool IsInDialog = false;
+
+    private DialogManager CurrentDialogManager = null;
+    private GameObject DialogManagerObject = null;
+
+
 
     // buildings relevant to character like home and shops
 
     public List<BuildingController> Buildings = new List<BuildingController>();
 
+    private bool isInShop;
 
+    private BuildingController CurrentShopController;
 
 
 
@@ -208,85 +218,105 @@ public class CharacterController : MonoBehaviour
         // for all characters look for hand item
         CheckIfItemInHand();
 
-
         if (Character.IsPlayer)
         {
             PlayerMove();
 
-            // dont do ui on player, is now on camera
-            //DoUI();
-
-            //controls
-            // actions for attach and use "r"
-            if (Input.GetMouseButtonDown(0))
+            if (!IsInDialog)
             {
-                Action = 1.0f;
-            }
-            if (Input.GetMouseButtonDown(1))
-            {
-                Action = 2.0f;
-            }
-            if (Input.GetKeyDown("r"))
-            {
-                Action = 3.0f;
-            }
 
+                // dont do ui on player, is now on camera
+                //DoUI();
 
-
-
-
-
-
-            //Debug save and load functions
-
-
-            if (Input.GetKeyDown("e"))
-            {
-                Interact();
-            }
-            if (Input.GetKeyDown("tab"))
-            {
-                Target();
-            }
-
-
-            // TODO coordinate this and the above drop system to work for npcs too
-
-            // Item drop controll
-            if (Input.GetKey("q"))
-            {
-                ItemStatus = "Dropping";//applies to habd item
-            }
-            else if (Input.GetKeyDown("f"))
-            {
-                ItemStatus = "SwapHandBack";
-            }
-            else if (Input.GetKeyDown("g"))
-            {
-                // check that hand item can go to belt
-                bool CanDoSwap = HeldItemController.GetCanGoOnBelt();
-
-                if (CanDoSwap || !HasItemInHand)
+                //controls
+                // actions for attach and use "r"
+                if (Input.GetMouseButtonDown(0))
                 {
-                    ItemStatus = "SwapHandBelt";
+                    Action = 1.0f;
+                }
+                if (Input.GetMouseButtonDown(1))
+                {
+                    Action = 2.0f;
+                }
+                if (Input.GetKeyDown("r"))
+                {
+                    Action = 3.0f;
                 }
 
+
+
+
+
+
+
+                //Debug save and load functions
+
+
+                if (Input.GetKeyDown("e"))
+                {
+                    Interact();
+                }
+                if (Input.GetKeyDown("tab"))
+                {
+                    Target();
+                }
+
+
+                // TODO coordinate this and the above drop system to work for npcs too
+
+                // Item drop controll
+                if (Input.GetKey("q"))
+                {
+                    ItemStatus = "Dropping";//applies to habd item
+                }
+                else if (Input.GetKeyDown("f"))
+                {
+                    ItemStatus = "SwapHandBack";
+                }
+                else if (Input.GetKeyDown("g"))
+                {
+                    // check that hand item can go to belt
+                    bool CanDoSwap = HeldItemController.GetCanGoOnBelt();
+
+                    if (CanDoSwap || !HasItemInHand)
+                    {
+                        ItemStatus = "SwapHandBelt";
+                    }
+
+                }
+                else
+                {
+                    ItemStatus = "";
+                }
+
+                /*
+                if (Input.GetKeyDown("g")) {
+
+                }*/
             }
             else
             {
-                ItemStatus = "";
+                DoDialog();
             }
-
-            /*
-            if (Input.GetKeyDown("g")) {
-
-            }*/
 
         }
         else
         {
-            NPCMove();
+            if (!IsInDialog)
+            {
+                NPCMove();
+
+            }
+            else
+            {
+                DoDialog();
+            }
+
         }
+
+
+
+
     }
 
     // things do to at frame time
@@ -1087,7 +1117,9 @@ public class CharacterController : MonoBehaviour
 
                 return true;
 
-            }else{
+            }
+            else
+            {
                 // TODO fix this if the mercahtn cant fins a shop
                 mustUseBackup = true;
             }
@@ -1189,27 +1221,27 @@ public class CharacterController : MonoBehaviour
                     //{
                     //    controller.AssignHousingOwnership(this);
                     //    mustUseBackup = false;
-//
+                    //
                     //    return true;
                     //}
                     //else
                     //{
 
-                        // compare distance and try to find closest
-                        float distanceToThisHouse = Vector3.Distance(CharacterTransform.position, controller.GetTransform().position);
-                        if (currentDistanceToHouse == -1)
-                        {
-                            backupHouse = controller;
-                            foundHouse = controller;
-                            currentDistanceToHouse = distanceToThisHouse;
-                        }
-                        else if (currentDistanceToHouse > distanceToThisHouse)
-                        {
-                            backupHouse = foundHouse;
-                            foundHouse = controller;
+                    // compare distance and try to find closest
+                    float distanceToThisHouse = Vector3.Distance(CharacterTransform.position, controller.GetTransform().position);
+                    if (currentDistanceToHouse == -1)
+                    {
+                        backupHouse = controller;
+                        foundHouse = controller;
+                        currentDistanceToHouse = distanceToThisHouse;
+                    }
+                    else if (currentDistanceToHouse > distanceToThisHouse)
+                    {
+                        backupHouse = foundHouse;
+                        foundHouse = controller;
 
-                            currentDistanceToHouse = distanceToThisHouse;
-                        }
+                        currentDistanceToHouse = distanceToThisHouse;
+                    }
                     //}
                 }
             }
@@ -1649,58 +1681,79 @@ public class CharacterController : MonoBehaviour
 
 
 
-        CharacterController HitCharacterController;
-        Vector3 center = CharacterTransform.position + (CharacterTransform.forward * (0.5f * Character.Reach));
-        Collider[] hitColliders = Physics.OverlapSphere(center, (0.5f * Character.Reach));
-        int j = 0;
+
+        CharacterController HitCharacterController = null;
         bool interacted = false;
-        while (j < hitColliders.Length)
+
+        // if in shop, get hit character controller from shop owner
+        if (isInShop)
         {
-            HitCharacterController = hitColliders[j].gameObject.GetComponent<CharacterController>();
+
+            HitCharacterController = CurrentShopController.GetOwnerControllerIfPresent();
             if (HitCharacterController != null)
             {
-                MakeSpeechBubble("i almost interacted with a person");
-                // if not targeting self or sqwuad
-                if (HitCharacterController.GetUUID() != GetUUID())
-                {
-                    MakeSpeechBubble("Interacted with " + HitCharacterController.GetCharacter().Name);
-                    // Do interaction with a character controller (talking)
-
-                    // start the dialog action TODO
-
-                    // creates a dialog controller
-                    // self joins dialog controller
-                    // tells other charatter to join dialog controller
-                    // getcandodialog will be the faction check etc TODO
-
-                    HitCharacterController.DoInteractAction(this.gameObject);
-
-                    interacted = true;
-                    break;
-                }
+                interacted = true;
             }
-            /*
-            else
+        }
+        else
+        {
+
+            Vector3 center = CharacterTransform.position + (CharacterTransform.forward * (0.5f * Character.Reach));
+            Collider[] hitColliders = Physics.OverlapSphere(center, (0.5f * Character.Reach));
+            int j = 0;
+            while (j < hitColliders.Length)
             {
-                if (hitColliders[j].gameObject.tag != "Ground")
+                HitCharacterController = hitColliders[j].gameObject.GetComponent<CharacterController>();
+                if (HitCharacterController != null)
                 {
-                    // hitColliders[j].gameObject is what we interacted with
-                    MakeSpeechBubble("Interacted with world"+hitColliders[j].gameObject.ToString());
-                    // TODO do interaction here
+                    MakeSpeechBubble("i almost interacted with a person");
+                    // if not targeting self or sqwuad
+                    if (HitCharacterController.GetUUID() != GetUUID())
+                    {
+                        MakeSpeechBubble("Interacted with " + HitCharacterController.GetCharacter().Name);
+                        // Do interaction with a character controller (talking)
 
-                    interacted = true;
-                    break;
+                        // start the dialog action TODO
+
+                        // creates a dialog controller
+                        // self joins dialog controller
+                        // tells other charatter to join dialog controller
+                        // getcandodialog will be the faction check etc TODO
+
+
+                        interacted = true;
+                        break;
+                    }
                 }
+                /*
+                else
+                {
+                    if (hitColliders[j].gameObject.tag != "Ground")
+                    {
+                        // hitColliders[j].gameObject is what we interacted with
+                        MakeSpeechBubble("Interacted with world"+hitColliders[j].gameObject.ToString());
+                        // TODO do interaction here
 
+                        interacted = true;
+                        break;
+                    }
+
+                }
+                */
+                j += 1;
             }
-            */
-            j += 1;
         }
 
         if (!interacted)
         {
             // pushed E and didnt get anything, do squad commands
             MakeSpeechBubble("Squad cmd / world interaction");
+        }
+        else
+        {
+            // do interaction here
+            HitCharacterController.DoInteractAction(this.gameObject);
+
         }
 
         NeedsUIUpdate = true;
@@ -1786,6 +1839,22 @@ public class CharacterController : MonoBehaviour
         MakeSpeechBubble("I was interacted with by " + WhoInteracted + " my leader is" + Character.squadLeaderId);
         MakeSpeechBubble(Character.IsFollower.ToString());
 
+        // summon dialog manager
+        CharacterController WhoInteractedController = WhoInteracted.GetComponent<CharacterController>();
+        // if they can join a dialog do so
+        if (CanJoinDialog && WhoInteractedController.GetCanJoinDialog())
+        {
+            // join dialog as 2nd person
+            Vector3 SummonPositon = CharacterTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
+            DialogManagerObject = Instantiate(DialogManagerPreFab, SummonPositon, Quaternion.identity);
+            CurrentDialogManager = DialogManagerObject.GetComponent<DialogManager>();
+            CurrentDialogManager.StartDialog(WhoInteractedController, this);
+
+
+
+        }
+
+
         // TODO do dialog stuff before this part
         /*
 
@@ -1854,7 +1923,11 @@ public class CharacterController : MonoBehaviour
         Vector3 SummonPositon = CharacterTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
         SpeechBubbleObject = Instantiate(SpeechBubblePreFab, SummonPositon, Quaternion.identity);
         SpeechBubbleObject.GetComponent<SpeechBubble>().SetText(WhatToSay);
-        SpeechBubbleObject.gameObject.GetComponent<Transform>().parent = CharacterTransform;
+
+        //SpeechBubbleObject.gameObject.GetComponent<Transform>().parent = CharacterTransform;
+        SpeechBubbleObject.gameObject.GetComponent<Transform>().SetParent(CharacterTransform, true);
+
+
         SpeechBubbles.Add(SpeechBubbleObject);
     }
 
@@ -1978,6 +2051,11 @@ public class CharacterController : MonoBehaviour
 
     public void AddValueToHealth(float value)
     {
+        if (value < 0.0f && CurrentDialogManager != null)
+        {
+            CurrentDialogManager.NotifyOfLeaving();
+        }
+
         if (!(HealthDamageCoolDown >= 0.0f) && (value < 0))
         {
             Character.CurrentHealth += value;
@@ -2651,23 +2729,7 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    // start a dialog if possible
-    public void StartDialog()
-    {
 
-    }
-
-    // join a dialog
-    public void JoinDialog()
-    {
-
-    }
-
-    // leave a dialog
-    public void LeaveDialog()
-    {
-
-    }
 
     // if not fighting then return if can join
     public bool GetCanJoinDialog()
@@ -2679,6 +2741,45 @@ public class CharacterController : MonoBehaviour
         return false;
     }
 
+    public void JoinDialog(DialogManager newDialogManager)
+    {
+        CurrentDialogManager = newDialogManager;
+        CanJoinDialog = false;
+        IsInDialog = true;
+        SetCharacterCanMove(false);
+    }
+
+    public void LeaveDialog()
+    {
+        CurrentDialogManager = null;
+        CanJoinDialog = true;
+        IsInDialog = false;
+        SetCharacterCanMove(true);
+        MakeSpeechBubble("bye!");
+
+    }
+
+    public void DoDialog()
+    {
+
+        // if is player then they can still move but not attack etc
+
+        // is meant to all be controlled from dialog manager
+
+        // if isplayer, then get update from ui
+        NeedsUIUpdate = true;
+
+        MakeSpeechBubble("im in a dialog, managed by a dialog manager");
+
+    }
+
+
+
+    public void SetIsInShop(bool newStatus, BuildingController newCurrentShopController)
+    {
+        isInShop = newStatus;
+        CurrentShopController = newCurrentShopController;
+    }
 
 }
 
