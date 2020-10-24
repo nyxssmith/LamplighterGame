@@ -2322,41 +2322,6 @@ public class CharacterController : MonoBehaviour
     }
 
 
-    /*
-    TODO maybe fix this
-    private CharacterController CheckIsFarEnoughAwayFromSquadMate(Vector3 center, float radius)
-    {
-        // if too close to squadmate return their controller
-        Collider[] hitColliders = Physics.OverlapSphere(center, radius);
-        foreach (var hitCollider in hitColliders)
-        {
-            CharacterController controller = hitCollider.gameObject.GetComponent<CharacterController>();
-            if (controller != null)
-            {
-                if (controller.GetSquadLeaderUUID() == Character.squadLeaderId && controller.GetSquadLeaderUUID() != controller.GetUUID())
-                {
-                    return controller;
-                }
-            }
-        }
-
-        return null;
-    }
-
-    private Vector3 PickNewPositionAwayFromSquadMate(Vector3 CurrentPos, CharacterController SquadMateController)
-    {
-
-        // move away from other charater when nead
-        Vector3 SquadMatePos = SquadMateController.GetCharacterTransform().position;
-
-        Vector3 heading = SquadMatePos - CurrentPos;
-
-        return CurrentPos + heading;
-
-
-    }
-    */
-
     private void CheckForOtherFactionsToFight()
     {
         Collider[] hitColliders = Physics.OverlapSphere(CharacterTransform.position, Character.TargetRange);
@@ -2745,7 +2710,9 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-
+    public bool GetIsInDialog(){
+        return IsInDialog;
+    }
 
     // if not fighting then return if can join
     public bool GetCanJoinDialog()
@@ -2763,6 +2730,7 @@ public class CharacterController : MonoBehaviour
         CanJoinDialog = false;
         IsInDialog = true;
         SetCharacterCanMove(false);
+        NeedsUIUpdate = true;
     }
 
     public void LeaveDialog()
@@ -2772,6 +2740,7 @@ public class CharacterController : MonoBehaviour
         IsInDialog = false;
         SetCharacterCanMove(true);
         MakeSpeechBubble("bye!");
+        NeedsUIUpdate = true;
 
     }
 
@@ -2786,6 +2755,12 @@ public class CharacterController : MonoBehaviour
         NeedsUIUpdate = true;
 
         MakeSpeechBubble("im in a dialog, managed by a dialog manager");
+
+
+        if(GetIsPlayer()){
+
+        }
+
 
     }
 

@@ -40,8 +40,11 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] GameObject TargetUI;//healthbar for target
     [SerializeField] GameObject TargetName;//name of target
     [SerializeField] GameObject SquadList;//name of target
+    [SerializeField] GameObject DialogBox;
+    [SerializeField] GameObject InfoBox;
 
     private bool hasTarget = false;
+    private bool inDialog = false;
     private string BaseSquadListText = "[Squad List]";
     private string SquadListText = "[Squad List]";
 
@@ -102,6 +105,7 @@ public class CameraFollow : MonoBehaviour
             GetPlayerCharacter();
             SquadListText = GenerateSquadList();
             Player.SetNeedsUIUpdate(false);
+            inDialog = Player.GetIsInDialog();
         }
 
         GetPlayersTargetCharacter();
@@ -114,43 +118,54 @@ public class CameraFollow : MonoBehaviour
             Player.SetNeedsUIUpdate(true);
         }
 
+        // if not in dialog mode
+        if (inDialog)
+        {
+            if (Input.GetKeyDown("1"))
+            {
+                Player.MakeSpeechBubble("pushed a key");
+            }
+        }
+        else
+        {
 
-        // get numbers 1-9 and swap to squad member
-        if (Input.GetKeyDown("1"))
-        {
-            SafeSwithctoTarget(0);
-        }
-        if (Input.GetKeyDown("2"))
-        {
-            SafeSwithctoTarget(1);
-        }
-        if (Input.GetKeyDown("3"))
-        {
-            SafeSwithctoTarget(2);
-        }
-        if (Input.GetKeyDown("4"))
-        {
-            SafeSwithctoTarget(3);
-        }
-        if (Input.GetKeyDown("5"))
-        {
-            SafeSwithctoTarget(4);
-        }
-        if (Input.GetKeyDown("6"))
-        {
-            SafeSwithctoTarget(5);
-        }
-        if (Input.GetKeyDown("7"))
-        {
-            SafeSwithctoTarget(6);
-        }
-        if (Input.GetKeyDown("8"))
-        {
-            SafeSwithctoTarget(7);
-        }
-        if (Input.GetKeyDown("9"))
-        {
-            SafeSwithctoTarget(8);
+            // get numbers 1-9 and swap to squad member
+            if (Input.GetKeyDown("1"))
+            {
+                SafeSwithctoTarget(0);
+            }
+            if (Input.GetKeyDown("2"))
+            {
+                SafeSwithctoTarget(1);
+            }
+            if (Input.GetKeyDown("3"))
+            {
+                SafeSwithctoTarget(2);
+            }
+            if (Input.GetKeyDown("4"))
+            {
+                SafeSwithctoTarget(3);
+            }
+            if (Input.GetKeyDown("5"))
+            {
+                SafeSwithctoTarget(4);
+            }
+            if (Input.GetKeyDown("6"))
+            {
+                SafeSwithctoTarget(5);
+            }
+            if (Input.GetKeyDown("7"))
+            {
+                SafeSwithctoTarget(6);
+            }
+            if (Input.GetKeyDown("8"))
+            {
+                SafeSwithctoTarget(7);
+            }
+            if (Input.GetKeyDown("9"))
+            {
+                SafeSwithctoTarget(8);
+            }
         }
 
 
@@ -191,7 +206,7 @@ public class CameraFollow : MonoBehaviour
     {
         if (Player.SwapIntoTarget(SwitchTargetCharacterController))
         {
-            
+
             // set that new character is player to its loadcontroller
             //Player.SetLoadedControllerIsPlayer(false);
             //SwitchTargetCharacterController.SetLoadedControllerIsPlayer(true);
@@ -231,6 +246,9 @@ public class CameraFollow : MonoBehaviour
         DoManaUI();
         DoTargetHealtBarUI();
         DoSquadUI();
+
+
+
     }
 
     private void DoHealthUI()
@@ -301,7 +319,7 @@ public class CameraFollow : MonoBehaviour
             }
 
         }
-        Debug.Log("list of new squad" + SquadCharacterControllers.Count);
+        //Debug.Log("list of new squad" + SquadCharacterControllers.Count);
 
         return BaseSquadListText + ListString;
     }
@@ -319,7 +337,19 @@ public class CameraFollow : MonoBehaviour
 
     private string AddCharatcerNameToList(CharacterController targetCharacterController, int ListCounter, bool isMe)
     {
-        string lineString = ListCounter.ToString() + " : " + targetCharacterController.GetCharacter().Name;
+        string lineString;
+        // only show nums outsied of dialog
+        if (inDialog)
+        {
+            lineString = targetCharacterController.GetCharacter().Name;
+
+        }
+        else
+        {
+            lineString = ListCounter.ToString() + " : " + targetCharacterController.GetCharacter().Name;
+
+        }
+        //lineString = ListCounter.ToString() + " : " + targetCharacterController.GetCharacter().Name;
         if (isMe)
         {
             lineString = "* <color=green>" + lineString + "</color>";

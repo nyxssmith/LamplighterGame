@@ -73,7 +73,7 @@ public class DialogManager : MonoBehaviour
         // load what dialog to load from file
 
         // do dialog
-
+        DoDialog();
         //
 
 
