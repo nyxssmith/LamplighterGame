@@ -785,6 +785,8 @@ public class CharacterController : MonoBehaviour
             }
             else
             {
+                StandStillForTime(10.0f);
+
                 IncrementTask();
             }
 
@@ -798,9 +800,10 @@ public class CharacterController : MonoBehaviour
             bool isAtStore = GoShop();
             if (isAtStore)//} && !IsMoving)
             {
-
+                MakeSpeechBubble("manning shop");
                 SetNavAgentDestination(CharacterTransform.position);
                 SetCharacterCanMove(false);
+                IsMoving = false;
                 IncrementTask();
             }
 
@@ -1283,7 +1286,8 @@ public class CharacterController : MonoBehaviour
     private void AttackTarget()
     {
 
-        if(CombatTarget == null){
+        if (CombatTarget == null)
+        {
             Target();
             return;
         }
