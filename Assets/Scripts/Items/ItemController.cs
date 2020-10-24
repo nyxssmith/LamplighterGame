@@ -650,9 +650,16 @@ public class ItemController : MonoBehaviour
             {
                 //Debug.Log("Collision without picked up");
                 // when item is dropped on ground
-                ItemTransform.position += new Vector3(0.0f, 0.2f, 0.0f);
-                rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
-                //rb.AddTorque(transform.up * 0.2f);
+                if (collision.gameObject.tag == "Ground")
+                {
+                    ItemTransform.position += new Vector3(0.0f, 0.2f, 0.0f);
+                    rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+                    //rb.AddTorque(transform.up * 0.2f);
+                }
+                //else
+                //{
+                //    Debug.Log("Collision not on ground");
+                //}
 
             }
 

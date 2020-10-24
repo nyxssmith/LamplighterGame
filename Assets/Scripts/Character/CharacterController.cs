@@ -304,6 +304,7 @@ public class CharacterController : MonoBehaviour
         {
             if (!IsInDialog)
             {
+
                 NPCMove();
 
             }
@@ -323,8 +324,12 @@ public class CharacterController : MonoBehaviour
     private void Update()
     {
 
+        // TODO only update if not currently moving to be less laggy
+        // and fix items dropping
+
         if (selfDestuctStarted)
         {
+            SelfDestruct();
             SelfDestruct();
         }
 
@@ -1247,26 +1252,28 @@ public class CharacterController : MonoBehaviour
             }
         }
 
-
-        // if farm is unclaimed
-        if (foundHouse.GetOwner() == "")
+        if (foundHouse != null && backupHouse != null)
         {
-            //MakeSpeechBubble("claiming this farm");
-            foundHouse.AssignHousingOwnership(this);
-            mustUseBackup = false;
+            // if farm is unclaimed
+            if (foundHouse.GetOwner() == "")
+            {
+                //MakeSpeechBubble("claiming this farm");
+                foundHouse.AssignHousingOwnership(this);
+                mustUseBackup = false;
 
-            return true;
-        }
-        else
-        {
-            mustUseBackup = true;
-        }
+                return true;
+            }
+            else
+            {
+                mustUseBackup = true;
+            }
 
-        // pick a owned house as a backup if cant get own
-        if (mustUseBackup && backupHouse != null)
-        {
-            backupHouse.AssignHousingOwnership(this);
-            return true;
+            // pick a owned house as a backup if cant get own
+            if (mustUseBackup && backupHouse != null)
+            {
+                backupHouse.AssignHousingOwnership(this);
+                return true;
+            }
         }
 
 
@@ -1275,6 +1282,11 @@ public class CharacterController : MonoBehaviour
 
     private void AttackTarget()
     {
+
+        if(CombatTarget == null){
+            Target();
+            return;
+        }
 
         if (CheckIfTargetIsDead())
         {
