@@ -17,6 +17,9 @@ public class BuildingController : MonoBehaviour
     private string UUID = "";
     public string Type = "";// HOME SHOP FARM
 
+    private bool HasDoneWork = false;
+    
+
     private Transform BuildingTransform;
     //private Transform MerchantSpot = null;
 
@@ -238,6 +241,20 @@ public class BuildingController : MonoBehaviour
     //    return MerchantSpot;
     //}
 
+    // TODO implenment resources
+    public void GetResources(){
+        // todo return what resources to produce based on type
+    }
 
+    public void SetHasDoneWork(bool newStatus){
+        HasDoneWork = newStatus;
+    }
+
+    public bool GetHasDoneWork(){
+        return HasDoneWork;
+    }
+
+
+    // TODO a destroy function to tell all ascociated that its gone
 
 }

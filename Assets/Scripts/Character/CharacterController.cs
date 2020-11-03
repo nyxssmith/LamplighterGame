@@ -230,17 +230,20 @@ public class CharacterController : MonoBehaviour
 
                 //controls
                 // actions for attach and use "r"
-                if (Input.GetMouseButtonDown(0))
+                if (HasItemInHand)
                 {
-                    Action = 1.0f;
-                }
-                if (Input.GetMouseButtonDown(1))
-                {
-                    Action = 2.0f;
-                }
-                if (Input.GetKeyDown("r"))
-                {
-                    Action = 3.0f;
+                    if (Input.GetMouseButtonDown(0))
+                    {
+                        Action = 1.0f;
+                    }
+                    if (Input.GetMouseButtonDown(1))
+                    {
+                        Action = 2.0f;
+                    }
+                    if (Input.GetKeyDown("r"))
+                    {
+                        Action = 3.0f;
+                    }
                 }
 
 
@@ -647,6 +650,8 @@ public class CharacterController : MonoBehaviour
             float atFarm = GoFarm();
             if (atFarm != 0.0f)
             {
+                SetBuildingHasDoneWork("FARM");
+
                 wanderRange = atFarm;
                 //pick a point
                 IncrementTask();
@@ -801,6 +806,7 @@ public class CharacterController : MonoBehaviour
             if (isAtStore)//} && !IsMoving)
             {
                 MakeSpeechBubble("manning shop");
+                SetBuildingHasDoneWork("SHOP");
                 SetNavAgentDestination(CharacterTransform.position);
                 SetCharacterCanMove(false);
                 IsMoving = false;
@@ -863,6 +869,18 @@ public class CharacterController : MonoBehaviour
 
     }
 
+
+    private void SetBuildingHasDoneWork(string buildingType)
+    {
+
+        foreach (BuildingController building in Buildings)
+        {
+            if (building.GetType() == buildingType)
+            {
+                building.SetHasDoneWork(true);
+            }
+        }
+    }
 
     private float GoFarm()
     {
@@ -2710,7 +2728,8 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    public bool GetIsInDialog(){
+    public bool GetIsInDialog()
+    {
         return IsInDialog;
     }
 
@@ -2757,7 +2776,8 @@ public class CharacterController : MonoBehaviour
         MakeSpeechBubble("im in a dialog, managed by a dialog manager");
 
 
-        if(GetIsPlayer()){
+        if (GetIsPlayer())
+        {
 
         }
 

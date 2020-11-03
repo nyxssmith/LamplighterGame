@@ -875,6 +875,9 @@ public class ItemController : MonoBehaviour
         ItemTransform.localRotation = Quaternion.Euler(NewRotationOffset, 0.0f, 0.0f);
     }
 
+    public ItemData GetItem(){
+        return Item;
+    }
 
 
 
