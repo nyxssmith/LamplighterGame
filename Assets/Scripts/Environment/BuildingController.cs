@@ -18,12 +18,15 @@ public class BuildingController : MonoBehaviour
     public string Type = "";// HOME SHOP FARM
 
     private bool HasDoneWork = false;
-    
+
 
     private Transform BuildingTransform;
     //private Transform MerchantSpot = null;
 
     private CharacterController OwnerControllerIfPresent = null;
+
+    private List<CharacterController> CharactersWhoInteract = new List<CharacterController>();
+
 
     public void Start()
     {
@@ -60,7 +63,8 @@ public class BuildingController : MonoBehaviour
             CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
-                AssignHousingOwnership(EnteringCharacterController);
+                AssignOwnership(EnteringCharacterController);
+                //AssignHousingOwnership(EnteringCharacterController);
             }
         }
         else if (Type == "SHOP")
@@ -69,16 +73,19 @@ public class BuildingController : MonoBehaviour
             if (EnteringCharacterController != null)
             {
 
-                EnteringCharacterController.SetIsInShop(true,this);
+                EnteringCharacterController.SetIsInShop(true, this);
 
-                if(EnteringCharacterController.GetUUID() == GetOwner()){
+                if (EnteringCharacterController.GetUUID() == GetOwner())
+                {
                     OwnerControllerIfPresent = EnteringCharacterController;
                 }
 
-                if(!EnteringCharacterController.GetIsPlayer()){
-                string EnteringCharactersTask = EnteringCharacterController.GetCurrentTask();
+                if (!EnteringCharacterController.GetIsPlayer())
+                {
+                    string EnteringCharactersTask = EnteringCharacterController.GetCurrentTask();
 
-                    if(EnteringCharactersTask == "SHOP"){
+                    if (EnteringCharactersTask == "SHOP")
+                    {
                         EnteringCharacterController.MakeSpeechBubble("im shopping");
                     }// maybe else for items
                 }
@@ -98,18 +105,21 @@ public class BuildingController : MonoBehaviour
             CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
-                AssignHousingOwnership(EnteringCharacterController);
+                AssignOwnership(EnteringCharacterController);
+                //AssignHousingOwnership(EnteringCharacterController);
             }
-        }else if (Type == "SHOP")
+        }
+        else if (Type == "SHOP")
         {
             CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
-                if(EnteringCharacterController.GetUUID() == GetOwner()){
+                if (EnteringCharacterController.GetUUID() == GetOwner())
+                {
                     OwnerControllerIfPresent = null;
                 }
 
-                EnteringCharacterController.SetIsInShop(false,null);
+                EnteringCharacterController.SetIsInShop(false, null);
             }
         }
 
@@ -117,79 +127,28 @@ public class BuildingController : MonoBehaviour
 
     }
 
-    public void AssignHousingOwnership(CharacterController EnteringCharacter)
+
+    public void AssignOwnership(CharacterController EnteringCharacter)
     {
+        // assign ownership, if already has owner, and is allowed shared types, assign allocation
+
         bool hasOwner = (ownerUUID != "");
-        bool hasHouse = (EnteringCharacter.GetHouseUUID() != "");
+        //bool hasHouse = (EnteringCharacter.GetHouseUUID() != "");
+        bool hasOne = (EnteringCharacter.GetBuildingUUIDOfType(this.Type) != "");
         // if unowned and chaacter has no house, claim both
-        if (!hasOwner && !hasHouse)
+        if (!hasOwner && !hasOne)
         {
             SetOwner(EnteringCharacter.GetUUID());
-            EnteringCharacter.AddBuildingToList(this);
+            AssociateCharacterAndBuilding(EnteringCharacter);
 
         }
         // if has owner but charatcer doesnt, assign to the new owner
-        else if (!hasHouse)
+        else if (!hasOne)
         {
-            EnteringCharacter.AddBuildingToList(this);
+            AssociateCharacterAndBuilding(EnteringCharacter);
+
         }
     }
-
-    public void AssignFarmingOwnership(CharacterController EnteringCharacter)
-    {
-        bool hasOwner = (ownerUUID != "");
-        bool hasFarm = (EnteringCharacter.GetFarmUUID() != "");
-        // if unowned and chaacter has no house, claim both
-        if (!hasOwner && !hasFarm)
-        {
-            SetOwner(EnteringCharacter.GetUUID());
-            EnteringCharacter.AddBuildingToList(this);
-
-        }
-        // if has owner but charatcer doesnt, assign to the new owner
-        else if (!hasFarm)
-        {
-            EnteringCharacter.AddBuildingToList(this);
-        }
-    }
-
-
-    public void AssignShopOwnership(CharacterController EnteringCharacter)
-    {
-        bool hasOwner = (ownerUUID != "");
-        bool hasFarm = (EnteringCharacter.GetFarmUUID() != "");
-        // if unowned and chaacter has no house, claim both
-        if (!hasOwner && !hasFarm)
-        {
-            SetOwner(EnteringCharacter.GetUUID());
-            EnteringCharacter.AddBuildingToList(this);
-
-        }
-        // if has owner but charatcer doesnt, assign to the new owner
-        else if (!hasFarm)
-        {
-            EnteringCharacter.AddBuildingToList(this);
-        }
-    }
-
-    public void AssignShopAllocation(CharacterController EnteringCharacter)
-    {
-        bool hasOwner = (ownerUUID != "");
-        bool hasFarm = (EnteringCharacter.GetFarmUUID() != "");
-        // if unowned and chaacter has no house, claim both
-        if (!hasOwner && !hasFarm)
-        {
-            SetOwner(EnteringCharacter.GetUUID());
-            EnteringCharacter.AddBuildingToList(this);
-
-        }
-        // if has owner but charatcer doesnt, assign to the new owner
-        else if (!hasFarm)
-        {
-            EnteringCharacter.AddBuildingToList(this);
-        }
-    }
-
 
 
     public string GetType()
@@ -217,23 +176,29 @@ public class BuildingController : MonoBehaviour
         return BuildingTransform;
     }
 
-    public float GetFarmWanderRange()
+    public float GetWanderRange()
     {
 
-        // get sphere radius and set that to the wander range
-        SphereCollider myCollider;
-        myCollider = GetComponent<SphereCollider>();
-
-        if (myCollider != null)
+        if (Type == "FARM")
         {
-            return myCollider.radius;
+
+            // get sphere radius and set that to the wander range
+            SphereCollider myCollider;
+            myCollider = GetComponent<SphereCollider>();
+
+            if (myCollider != null)
+            {
+                return myCollider.radius;
+            }
         }
 
 
         return 1.0f;
     }
 
-    public CharacterController GetOwnerControllerIfPresent(){
+
+    public CharacterController GetOwnerControllerIfPresent()
+    {
         return OwnerControllerIfPresent;
     }
 
@@ -242,18 +207,40 @@ public class BuildingController : MonoBehaviour
     //}
 
     // TODO implenment resources
-    public void GetResources(){
+    public void GetResources()
+    {
         // todo return what resources to produce based on type
     }
 
-    public void SetHasDoneWork(bool newStatus){
+    public void SetHasDoneWork(bool newStatus)
+    {
         HasDoneWork = newStatus;
     }
 
-    public bool GetHasDoneWork(){
+    public bool GetHasDoneWork()
+    {
         return HasDoneWork;
     }
 
+    public void SelfDestruct()
+    {
+        // for all in people to notify, rm building by uuid
+        foreach (CharacterController character in CharactersWhoInteract)
+        {
+            character.RemoveBuildingFromListByUUID(UUID);
+        }
+        
+        Destroy(this.gameObject);
+
+
+    }
+
+
+    private void AssociateCharacterAndBuilding(CharacterController CharatcerToAssociate)
+    {
+        CharactersWhoInteract.Add(CharatcerToAssociate);
+        CharatcerToAssociate.AddBuildingToList(this);
+    }
 
     // TODO a destroy function to tell all ascociated that its gone
 

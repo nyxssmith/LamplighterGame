@@ -44,6 +44,8 @@ public class DeleteBuilding : MonoBehaviour
 
     private GameObject FindNearestBuilding(){
 
+        // TODO change range and have it also look for ambient controllers (todo attach to fences etc)
+
         // 50.0f is range to look for house
         Collider[] hitColliders = Physics.OverlapSphere(Character.GetCharacterTransform().position, 10.0f);
         foreach (var hitCollider in hitColliders)
@@ -64,7 +66,13 @@ public class DeleteBuilding : MonoBehaviour
     private void DeleteObject(GameObject toDelete){
 
         Debug.Log("deleteing");
-        Destroy(toDelete);
+        BuildingController controller = toDelete.GetComponent<BuildingController>();
+        if(controller != null){
+            controller.SelfDestruct();
+        }else{// if not destroying buildng but a fence or something
+            Destroy(toDelete);
+        }
+        
     }
 
 }

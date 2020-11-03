@@ -62,8 +62,8 @@ public class TownController : MonoBehaviour
     public void Update()
     {
 
-        Debug.Log("im town " + UUID + " cp " + current_population.ToString() + " sp " + supported_population.ToString() + " range " + range.ToString());
-        Debug.Log(Buildings.Count);
+        //Debug.Log("im town " + UUID + " cp " + current_population.ToString() + " sp " + supported_population.ToString() + " range " + range.ToString());
+        //Debug.Log(Buildings.Count);
 
 
         DoBuildingRecount();
