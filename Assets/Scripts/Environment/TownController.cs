@@ -66,9 +66,11 @@ public class TownController : MonoBehaviour
         //Debug.Log(Buildings.Count);
 
 
-        DoBuildingRecount();
+        // TODO move triggering these to the daylight cycle, trigger a few times a day
 
-        DoResourcesUpdate();
+        //DoBuildingRecount();
+
+        //DoResourcesUpdate();
 
 
 
