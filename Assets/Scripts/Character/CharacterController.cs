@@ -2374,6 +2374,8 @@ public class CharacterController : MonoBehaviour
         //Debug.Log("im waking up");
         if (CurrentTask == "SLEEP")
         {
+            // heal on sleeping
+            Character.CurrentHealth = Character.MaxHealth;
             WentHomeToSleep = false;
             NextTask = Character.DefaultTask;// wake up and do default stuff
             IncrementTask();
