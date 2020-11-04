@@ -39,6 +39,12 @@ public class ShortLifetimeController : MonoBehaviour
         // if duration left < .1, then start asking daylight for time every update to tell when to go out
     }
 
+    // manual override on time
+    public void SetDurationLeft(float newTime){
+        Duration = newTime;
+        DurationLeft = newTime;
+
+    }
     
 
 

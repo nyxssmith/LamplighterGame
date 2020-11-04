@@ -7,6 +7,10 @@ public class Torch : MonoBehaviour
 {
 
     //Parent of the potion
+
+    public GameObject BeOnFirePrefab;
+    private GameObject BeOnFireObject;
+
     private CharacterController Character;
     private ItemController BaseItem;
     public GameObject TorchFlame;
@@ -43,9 +47,13 @@ public class Torch : MonoBehaviour
     }
     public void DoHit(float Damage)
     {
-        Character.AddValueToHealth(-1.0f*Damage);
+        Character.AddValueToHealth(-1.0f * Damage);
 
-        
+        BeOnFireObject = Instantiate(BeOnFirePrefab, Character.GetCharacterTransform().position, Quaternion.identity);
+        BeOnFireObject.transform.parent = Character.GetCharacterTransform();
+        TempFlame flameController = BeOnFireObject.GetComponent<TempFlame>();
+        flameController.SetTargetController(Character);
+
     }
 
 

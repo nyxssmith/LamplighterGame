@@ -438,11 +438,21 @@ public class ItemController : MonoBehaviour
             }
             else if (ItemClass == "SPELL")
             {
-                //SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
-                SetCanDoAction(1.0f);
-                CooldownTimer += Item.Cooldown;
 
-                // do nothing if class si none
+                if (ActionTargetCharacterController.GetCurrentMana() > 0.0f)
+                {
+                    //SetActionTargetCharacterController(HoldingCharacter.GetComponent<CharacterController>());
+                    //SetCanDoAction(1.0f);
+                    CooldownTimer += Item.Cooldown;
+
+                    float animationDuration = 2.4f;
+                    AnimateHoldingCharacter("m_two_handed_cast2", animationDuration);
+                    ActionTargetCharacterController.AddValueToMana(-1.0f*(Item.Damage / 2.0f));
+                    
+                    // spells cost dmg/2 of mana base, and per spell can have added costs
+
+                    // do nothing if class si none
+                }
             }
             else if (ItemClass == "NONE")
             {
@@ -875,7 +885,8 @@ public class ItemController : MonoBehaviour
         ItemTransform.localRotation = Quaternion.Euler(NewRotationOffset, 0.0f, 0.0f);
     }
 
-    public ItemData GetItem(){
+    public ItemData GetItem()
+    {
         return Item;
     }
 

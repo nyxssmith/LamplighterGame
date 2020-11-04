@@ -395,6 +395,15 @@ public class CharacterController : MonoBehaviour
             //Debug.Log("should be getting state from item");
             AnimationOverrideTimer -= Time.deltaTime;
             // set contraints on character transform
+            if (AnimationOverrideTimer <= 0.0f)
+            {
+                //MakeSpeechBubble("finshed animation from item");
+                if (HeldItemController.GetItem().PrimaryActionClass == "SPELL")
+                {
+                    HeldItemController.SetCanDoAction(1.0f);
+                }
+
+            }
         }
         /*
         else if (!IsGrounded && Character.IsPlayer && (JumpCoolDown > 0.0f))
@@ -1047,21 +1056,34 @@ public class CharacterController : MonoBehaviour
         //NavMeshAgent agent = GetComponent<NavMeshAgent>();
         float rotationSpeed = 30f; //speed of turning
 
-        float range = 25f;
+        float range = 50f;// pursute range
         float range2 = 25f;
         float stop = Character.Reach; // this is range to player
+
+        // if holding weapon, then use its range instead
+        if (HeldItemController != null)
+        {
+            float weaponRange = HeldItemController.GetItem().Range;
+            stop = weaponRange;
+
+        }
 
 
         //rotate to look at the player
         var distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
+        MakeSpeechBubble("stop " + stop.ToString() + " dist " + distance.ToString() + " range " + range.ToString());
+        /*
         if (distance <= range2 && distance >= range)
         {
+            MakeSpeechBubble("IM HERE");
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
             Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
         }
-        else if (distance <= range && distance > stop)
+        else 
+        */
+        if (distance <= range && distance > stop)
         {
             //NavAgent.destination = TargetTransform.position;
             //IsMoving = true;
@@ -1069,10 +1091,11 @@ public class CharacterController : MonoBehaviour
 
 
         }
-        else if ((distance <= stop) && (NavAgent.enabled))
+        else if (distance <= stop)
+        // && (NavAgent.enabled))
         {
 
-
+            MakeSpeechBubble("im at firest one");
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
@@ -1088,8 +1111,10 @@ public class CharacterController : MonoBehaviour
             }
 
         }
+        /*
         else
         {
+            MakeSpeechBubble(" im here>?");
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
             CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
@@ -1105,6 +1130,7 @@ public class CharacterController : MonoBehaviour
             }
 
         }
+        */
     }
 
     private bool CheckIfTargetIsDead()
@@ -1761,6 +1787,20 @@ public class CharacterController : MonoBehaviour
         Character.CurrentStamina += value;
     }
 
+    public void AddValueToMana(float value)
+    {
+
+
+        Character.CurrentMana += value;
+
+        if (Character.CurrentMana <= 0.0f)
+        {
+            Character.CurrentMana = 0.0f;
+            AddValueToHealth(value * 0.25f);
+        }
+
+    }
+
 
     public void AddValueToHealth(float value)
     {
@@ -1785,6 +1825,10 @@ public class CharacterController : MonoBehaviour
     public float GetCurrentHealth()
     {
         return this.Character.CurrentHealth;
+    }
+    public float GetCurrentMana()
+    {
+        return this.Character.CurrentMana;
     }
 
     public bool GetCanFight()
@@ -2166,7 +2210,13 @@ public class CharacterController : MonoBehaviour
             if (hasTarget && CombatTarget != null)
             {
                 float distance = Vector3.Distance(CharacterTransform.position, CombatTarget.gameObject.transform.position);
-                if (distance <= Character.Reach)
+                float lockOnRange = Character.Reach;
+                if (HeldItemController != null)
+                {
+                    float weaponRange = HeldItemController.GetItem().Range;
+                    lockOnRange = weaponRange;
+                }
+                if (distance <= lockOnRange)
                 {
                     CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation, Quaternion.LookRotation(CombatTarget.gameObject.transform.position - CharacterTransform.position), 90.0f * Time.deltaTime);
                 }
@@ -2251,7 +2301,7 @@ public class CharacterController : MonoBehaviour
         return null;
     }
 
-    
+
 
     public void AddBuildingToList(BuildingController buildingToAdd)
     {
@@ -2271,7 +2321,7 @@ public class CharacterController : MonoBehaviour
         return null;
     }
 
-    
+
     public void RemoveBuildingFromListByUUID(string UUIDToRemove)
     {
         List<BuildingController> tempList = new List<BuildingController>();

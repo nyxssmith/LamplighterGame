@@ -1,0 +1,22 @@
+{
+    "Name": "Fireball Spell",
+    "Damage": 50.0,
+    "Range": 10.0,
+    "IsPickup": true,
+    "PrimaryActionClass": "SPELL",
+    "SecondartActionClass": "NONE",
+    "Cooldown": 2.5,
+    "HoldingOffsetX": 0.0,
+    "HoldingOffsetY": 0.0,
+    "HoldingOffsetZ": 0.0,
+    "HoldingRotationOffset": 0.0,
+    "CanBePutOnBelt": true,
+    "heldLocation": "Hand",
+    "holderUUID": "",
+    "ownerUUID": "",
+    "x_pos": 5.2576212882995609,
+    "y_pos": 0.6910681128501892,
+    "z_pos": 20.761838912963868,
+    "Description": "casts a fireball at an angle unless moving or targeted, does damage then burns target for 10 HP after",
+    "Value":100
+}
