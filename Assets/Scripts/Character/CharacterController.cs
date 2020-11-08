@@ -128,6 +128,8 @@ public class CharacterController : MonoBehaviour
 
     private BuildingController CurrentShopController;
 
+    private string TownUUID;
+
 
 
 
@@ -142,6 +144,7 @@ public class CharacterController : MonoBehaviour
 
 
     // TODO current quest stuff
+    private Quest CurrentQuest= null;
 
 
     // Targeting and interacting with enemy and squad
@@ -658,7 +661,7 @@ public class CharacterController : MonoBehaviour
             // go to farm and get wander range
             //float atFarm = GoFarm();
             float atFarm = GoToBuildingOfType("FARM");
-            MakeSpeechBubble("at farm " + atFarm.ToString());
+            //MakeSpeechBubble("at farm " + atFarm.ToString());
             if (atFarm != 0.0f)
             {
                 SetBuildingHasDoneWork("FARM");
@@ -2439,12 +2442,17 @@ public class CharacterController : MonoBehaviour
 
     }
 
-
-
     public void SetIsInShop(bool newStatus, BuildingController newCurrentShopController)
     {
         isInShop = newStatus;
         CurrentShopController = newCurrentShopController;
+    }
+
+    public void GetTownUUID(){
+        retrun TownUUID;
+    }
+    public string SetTownUUID(string newUUID){
+        TownUUID = newUUID;
     }
 
 }
