@@ -100,6 +100,8 @@ public class CharacterController : MonoBehaviour
     private Vector3 WanderPointCenter = new Vector3(0.0f, -1.0f, 0.0f);
     private Vector3 WanderPointGoal = new Vector3(0.0f, -1.0f, 0.0f);
 
+    private bool inBuildMode = false;
+
     // default wandering range radius
     float wanderRange = 3.0f;
 
@@ -262,7 +264,7 @@ public class CharacterController : MonoBehaviour
                 {
                     Interact();
                 }
-                if (Input.GetKeyDown("tab"))
+                if (Input.GetKeyDown("tab") && !inBuildMode)
                 {
                     Target();
                 }
@@ -996,9 +998,7 @@ public class CharacterController : MonoBehaviour
 
     private float GoToBuildingOfType(string buildingType)
     {
-        // goes to home and if there returns true
-
-        // either go home or find nearest
+        // goes to home and if there return
         //bool hasHome = (GetHouseUUID() != "");
         bool hasOne = (GetBuildingUUIDOfType(buildingType) != "");
 
@@ -2448,12 +2448,19 @@ public class CharacterController : MonoBehaviour
         CurrentShopController = newCurrentShopController;
     }
 
-    public void GetTownUUID(){
-        retrun TownUUID;
+    public string GetTownUUID(){
+        return TownUUID;
     }
-    public string SetTownUUID(string newUUID){
+    public void SetTownUUID(string newUUID){
         TownUUID = newUUID;
     }
 
+    public void SetInBuildMode(bool newStatus){
+        inBuildMode = newStatus;
+    }
+
+    public ItemController GetHeldItemController(){
+        return HeldItemController;
+    }
 }
 

@@ -1,56 +1,96 @@
-﻿
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.AI;
+using UnityEngine.UI;
 
 public class CameraFollow : MonoBehaviour
 {
-
     public float CameraMoveSpeed = 120.0f;
-    public GameObject CameraFollowObj;
-    Vector3 FollowPOS;
-    public float clampAngle = 80.0f;
-    public float inputSensitivity = 150.0f;
-    public GameObject CameraObj;
-    public GameObject PlayerObj;
-    public float camDistanceXToPlayer;
-    public float camDistanceYToPlayer;
-    public float camDistanceZToPlayer;
-    public float mouseX;
-    public float mouseY;
-    public float finalInputX;
-    public float finalInputZ;
-    public float smoothX;
-    public float smoothY;
-    private float rotY = 0.0f;
-    private float rotX = 0.0f;
 
+    public GameObject CameraFollowObj;
+
+    Vector3 FollowPOS;
+
+    public float clampAngle = 80.0f;
+
+    public float inputSensitivity = 150.0f;
+
+    public GameObject CameraObj;
+
+    public GameObject PlayerObj;
+
+    public GameObject BuildToolPrefab;
+
+    public float camDistanceXToPlayer;
+
+    public float camDistanceYToPlayer;
+
+    public float camDistanceZToPlayer;
+
+    public float mouseX;
+
+    public float mouseY;
+
+    public float finalInputX;
+
+    public float finalInputZ;
+
+    public float smoothX;
+
+    public float smoothY;
+
+    private float rotY = 0.0f;
+
+    private float rotX = 0.0f;
 
     private CharacterController Player = null;
 
     private CharacterData Character = null;
+
     private CharacterData TargetCharacter = null;
 
     // ui stuff
-    [SerializeField] GameObject ManaUI;
-    [SerializeField] GameObject HealthUI;
-    [SerializeField] GameObject StaminaUI;
-    [SerializeField] GameObject TargetUI;//healthbar for target
-    [SerializeField] GameObject TargetName;//name of target
-    [SerializeField] GameObject SquadList;//name of target
-    [SerializeField] GameObject DialogBox;
-    [SerializeField] GameObject InfoBox;
+    [SerializeField]
+    GameObject ManaUI;
+
+    [SerializeField]
+    GameObject HealthUI;
+
+    [SerializeField]
+    GameObject StaminaUI;
+
+    [SerializeField]
+    GameObject TargetUI; //healthbar for target
+
+    [SerializeField]
+    GameObject TargetName; //name of target
+
+    [SerializeField]
+    GameObject SquadList; //name of target
+
+    [SerializeField]
+    GameObject DialogBox;
+
+    [SerializeField]
+    GameObject InfoBox;
 
     private bool hasTarget = false;
+
     private bool inDialog = false;
+
+    private bool inBuildMode = false;
+
     private string BaseSquadListText = "[Squad List]";
+
     private string SquadListText = "[Squad List]";
 
     private List<CharacterController> SquadCharacterControllers = null;
 
+    private GameObject PlayersHeldItem;
 
+    private GameObject BuildToolObject;
 
     // Use this for initialization
     void Start()
@@ -65,13 +105,11 @@ public class CameraFollow : MonoBehaviour
         GetPlayer();
         GetPlayerCharacter();
         SquadListText = GenerateSquadList();
-
     }
 
     // Update is called once per frame
     void Update()
     {
-
         CheckIfCurrentCharacterDied();
 
         // We setup the rotation of the sticks here
@@ -91,16 +129,14 @@ public class CameraFollow : MonoBehaviour
         transform.rotation = localRotation;
 
         // get stuff from current player and do ui
-
         if (Player == null)
         {
             GetPlayer();
         }
 
-
         if (GetIfPlayerRequestedUIUpdate())
         {
-            Debug.Log("player requested ui update");
+            UnityEngine.Debug.Log("player requested ui update");
             GetPlayer();
             GetPlayerCharacter();
             SquadListText = GenerateSquadList();
@@ -111,10 +147,9 @@ public class CameraFollow : MonoBehaviour
         GetPlayersTargetCharacter();
         DoUI();
 
-
         if (Input.GetKeyDown("j"))
         {
-            Debug.Log("setting player to ask for ui update");
+            UnityEngine.Debug.Log("setting player to ask for ui update");
             Player.SetNeedsUIUpdate(true);
         }
 
@@ -126,9 +161,12 @@ public class CameraFollow : MonoBehaviour
                 Player.MakeSpeechBubble("pushed a key");
             }
         }
+        else if (inBuildMode)
+        {
+            // dont swap in build mode
+        }
         else
         {
-
             // get numbers 1-9 and swap to squad member
             if (Input.GetKeyDown("1"))
             {
@@ -168,8 +206,62 @@ public class CameraFollow : MonoBehaviour
             }
         }
 
+        if (Input.GetKeyDown("b"))
+        {
+            UnityEngine.Debug.Log("switching to build mode");
 
+            if (!inBuildMode)
+            {
+                // to swap to build mode
+                //get current item in hand and disable it
+                ItemController heldItemController =
+                    Player.GetHeldItemController();
+                if (heldItemController != null)
+                {
+                    PlayersHeldItem = heldItemController.gameObject;
 
+                    PlayersHeldItem.SetActive(false);
+                }
+
+                Transform hand = Player.GetHandTransform();
+                BuildToolObject =
+                    Instantiate(BuildToolPrefab,
+                    hand.position,
+                    Quaternion.identity);
+
+                //make the target beacon a child of its taret
+                BuildToolObject.gameObject.GetComponent<Transform>().parent =
+                    hand;
+                
+                BuildToolObject.gameObject.GetComponent<BuildTool>().SetCharacter(Player);
+
+                BuildToolObject.gameObject.GetComponent<ItemController>().GetPickedUpBy(Player);
+                
+
+                // give the build tool as hand item
+                inBuildMode = true;
+
+                //Player.Setinbu
+                Player.SetInBuildMode(true);
+            }
+            else
+            {
+                // to swap out
+                // enable hand item
+                // delete build tool object
+                if (PlayersHeldItem != null)
+                {
+                    PlayersHeldItem.SetActive(true);
+                }
+                BuildToolObject.gameObject.GetComponent<BuildTool>().DeTarget();
+                BuildToolObject.gameObject.GetComponent<BuildTool>().HideGhostImage();
+
+                Destroy (BuildToolObject);
+
+                inBuildMode = false;
+                Player.SetInBuildMode(false);
+            }
+        }
     }
 
     void LateUpdate()
@@ -184,33 +276,31 @@ public class CameraFollow : MonoBehaviour
 
         //move towards the game object that is the target
         float step = CameraMoveSpeed * Time.deltaTime;
-        transform.position = Vector3.MoveTowards(transform.position, target.position, step);
+        transform.position =
+            Vector3.MoveTowards(transform.position, target.position, step);
     }
 
     private void SafeSwithctoTarget(int SquadMemberIndexFromZero)
     {
-
         if (SquadCharacterControllers.Count >= SquadMemberIndexFromZero + 1)
         {
             SwitchToTarget(SquadCharacterControllers[SquadMemberIndexFromZero]);
         }
         else
         {
-            Debug.Log("index is out of range");
+            UnityEngine.Debug.Log("index is out of range");
         }
-
-
     }
 
-    private void SwitchToTarget(CharacterController SwitchTargetCharacterController)
+    private void SwitchToTarget(
+        CharacterController SwitchTargetCharacterController
+    )
     {
         if (Player.SwapIntoTarget(SwitchTargetCharacterController))
         {
-
             // set that new character is player to its loadcontroller
             //Player.SetLoadedControllerIsPlayer(false);
             //SwitchTargetCharacterController.SetLoadedControllerIsPlayer(true);
-
             // set the new player for the isloadedcontroller
             CameraFollowObj = SwitchTargetCharacterController.GetCameraTarget();
 
@@ -220,10 +310,12 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-
     private void GetPlayer()
     {
-        Player = CameraFollowObj.gameObject.GetComponentInParent<CharacterController>();
+        Player =
+            CameraFollowObj
+                .gameObject
+                .GetComponentInParent<CharacterController>();
     }
 
     private void GetPlayerCharacter()
@@ -231,13 +323,11 @@ public class CameraFollow : MonoBehaviour
         Character = Player.GetCharacter();
     }
 
-
     private void GetPlayersTargetCharacter()
     {
         hasTarget = Player.GetHasTarget();
         TargetCharacter = Player.GetTargetCharacter();
     }
-
 
     private void DoUI()
     {
@@ -246,25 +336,27 @@ public class CameraFollow : MonoBehaviour
         DoManaUI();
         DoTargetHealtBarUI();
         DoSquadUI();
-
-
-
     }
 
     private void DoHealthUI()
     {
-        HealthUI.GetComponent<FillUI>().SetTo(Character.CurrentHealth / Character.MaxHealth);
-
+        HealthUI
+            .GetComponent<FillUI>()
+            .SetTo(Character.CurrentHealth / Character.MaxHealth);
     }
+
     private void DoStaminaUI()
     {
-        StaminaUI.GetComponent<FillUI>().SetTo(Character.CurrentStamina / Character.MaxStamina);
+        StaminaUI
+            .GetComponent<FillUI>()
+            .SetTo(Character.CurrentStamina / Character.MaxStamina);
     }
 
     private void DoManaUI()
     {
-        ManaUI.GetComponent<FillUI>().SetTo(Character.CurrentMana / Character.MaxMana);
-
+        ManaUI
+            .GetComponent<FillUI>()
+            .SetTo(Character.CurrentMana / Character.MaxMana);
     }
 
     private void DoTargetHealtBarUI()
@@ -277,24 +369,22 @@ public class CameraFollow : MonoBehaviour
             {
                 //TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth);
                 //float targetsHealth = CombatTarget.GetComponent<CharacterController>().GetCurrentHealth();
-                TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth / TargetCharacter.MaxHealth);
+                TargetUI
+                    .GetComponent<FillUI>()
+                    .SetTo(TargetCharacter.CurrentHealth /
+                    TargetCharacter.MaxHealth);
             }
-
-        }
-        else// if no target, hide UI
+        } // if no target, hide UI
+        else
         {
             TargetUI.GetComponent<FillUI>().SetTo(0.0f);
             TargetName.GetComponent<Text>().text = "";
         }
     }
 
-
     private void DoSquadUI()
     {
-
-
         SquadList.GetComponent<Text>().text = SquadListText;
-
     }
 
     private string GenerateSquadList()
@@ -305,6 +395,7 @@ public class CameraFollow : MonoBehaviour
         string ListString = "\n";
         int counter = 1;
         string myId = Player.GetUUID();
+
         // get all characters who have same squad leader
         var characterControllersList = FindObjectsOfType<CharacterController>();
         string id;
@@ -313,21 +404,24 @@ public class CameraFollow : MonoBehaviour
             id = controller.GetUUID();
             if (IsCharacterInMySquad(controller))
             {
-                ListString = ListString + AddCharatcerNameToList(controller, counter, (id == myId));
-                SquadCharacterControllers.Add(controller);
+                ListString =
+                    ListString +
+                    AddCharatcerNameToList(controller, counter, (id == myId));
+                SquadCharacterControllers.Add (controller);
                 counter = counter + 1;
             }
-
         }
-        //Debug.Log("list of new squad" + SquadCharacterControllers.Count);
 
+        //Debug.Log("list of new squad" + SquadCharacterControllers.Count);
         return BaseSquadListText + ListString;
     }
 
-    private bool IsCharacterInMySquad(CharacterController targetCharacterController)
+    private bool
+    IsCharacterInMySquad(CharacterController targetCharacterController)
     {
         string mySquadLeader = Player.GetSquadLeaderUUID();
-        string theirSquadLeader = targetCharacterController.GetSquadLeaderUUID();
+        string theirSquadLeader =
+            targetCharacterController.GetSquadLeaderUUID();
         if (mySquadLeader == theirSquadLeader)
         {
             return true;
@@ -335,30 +429,38 @@ public class CameraFollow : MonoBehaviour
         return false;
     }
 
-    private string AddCharatcerNameToList(CharacterController targetCharacterController, int ListCounter, bool isMe)
+    private string
+    AddCharatcerNameToList(
+        CharacterController targetCharacterController,
+        int ListCounter,
+        bool isMe
+    )
     {
         string lineString;
+
         // only show nums outsied of dialog
         if (inDialog)
         {
             lineString = targetCharacterController.GetCharacter().Name;
-
         }
         else
         {
-            lineString = ListCounter.ToString() + " : " + targetCharacterController.GetCharacter().Name;
-
+            lineString =
+                ListCounter.ToString() +
+                " : " +
+                targetCharacterController.GetCharacter().Name;
         }
+
         //lineString = ListCounter.ToString() + " : " + targetCharacterController.GetCharacter().Name;
         if (isMe)
         {
             lineString = "* <color=green>" + lineString + "</color>";
-
-
         }
-        if (targetCharacterController.GetSquadLeaderUUID() == targetCharacterController.GetUUID())
+        if (
+            targetCharacterController.GetSquadLeaderUUID() ==
+            targetCharacterController.GetUUID()
+        )
         {
-
             lineString = "#" + lineString;
         }
         return lineString + "\n";
@@ -374,7 +476,6 @@ public class CameraFollow : MonoBehaviour
         CameraFollowObj = newFollowObj;
     }
 
-
     private void CheckIfCurrentCharacterDied()
     {
         if (Player.GetCurrentHealth() <= 0.0f)
@@ -383,7 +484,8 @@ public class CameraFollow : MonoBehaviour
             int count = 0;
             int squadMemberToRemove = -1;
             int squadMemberToSwapTo = -1;
-            foreach (CharacterController controller in SquadCharacterControllers)
+            foreach (CharacterController controller in SquadCharacterControllers
+            )
             {
                 id = controller.GetUUID();
                 if (id != Player.GetUUID())
@@ -405,9 +507,11 @@ public class CameraFollow : MonoBehaviour
             // destroy old player
             Player.StartSelfDestruct();
             Player.SetSquadLeaderUUID("");
+
             // swap to new one
-            SafeSwithctoTarget(squadMemberToSwapTo);
-            SquadCharacterControllers.RemoveAt(squadMemberToRemove);
+            SafeSwithctoTarget (squadMemberToSwapTo);
+            SquadCharacterControllers.RemoveAt (squadMemberToRemove);
+
             // reset ui etc
             GetPlayer();
             GetPlayerCharacter();
@@ -415,7 +519,4 @@ public class CameraFollow : MonoBehaviour
             Player.SetNeedsUIUpdate(true);
         }
     }
-
-
-
 }
