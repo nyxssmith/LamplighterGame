@@ -92,6 +92,18 @@ public class CameraFollow : MonoBehaviour
 
     private GameObject BuildToolObject;
 
+    private BuildTool BuildToolController;
+
+    private string InfoText = ""; // text for info box
+
+    private string DialogText = "";
+
+    private bool needsUIUpdate = true;
+
+    private int buildToolIndex = 0;
+
+    private float ConstUpdateTimer = 0f;
+
     // Use this for initialization
     void Start()
     {
@@ -111,6 +123,12 @@ public class CameraFollow : MonoBehaviour
     void Update()
     {
         CheckIfCurrentCharacterDied();
+
+        if (ConstUpdateTimer > 0)
+        {
+            ConstUpdateTimer -= Time.deltaTime;
+            needsUIUpdate = true;
+        }
 
         // We setup the rotation of the sticks here
         float inputX = Input.GetAxis("RightStickHorizontal");
@@ -134,7 +152,7 @@ public class CameraFollow : MonoBehaviour
             GetPlayer();
         }
 
-        if (GetIfPlayerRequestedUIUpdate())
+        if (GetIfPlayerRequestedUIUpdate() || needsUIUpdate)
         {
             UnityEngine.Debug.Log("player requested ui update");
             GetPlayer();
@@ -142,6 +160,10 @@ public class CameraFollow : MonoBehaviour
             SquadListText = GenerateSquadList();
             Player.SetNeedsUIUpdate(false);
             inDialog = Player.GetIsInDialog();
+
+            // when needs update update info text
+            UpdateInfoUIForItem();
+            needsUIUpdate = false;
         }
 
         GetPlayersTargetCharacter();
@@ -164,6 +186,9 @@ public class CameraFollow : MonoBehaviour
         else if (inBuildMode)
         {
             // dont swap in build mode
+            // update buildmode text here
+            //InfoText = "build mode";
+            UpdateInfoUIForBuildMode();
         }
         else
         {
@@ -209,6 +234,7 @@ public class CameraFollow : MonoBehaviour
         if (Input.GetKeyDown("b"))
         {
             UnityEngine.Debug.Log("switching to build mode");
+            Player.SetNeedsUIUpdate(true);
 
             if (!inBuildMode)
             {
@@ -232,11 +258,19 @@ public class CameraFollow : MonoBehaviour
                 //make the target beacon a child of its taret
                 BuildToolObject.gameObject.GetComponent<Transform>().parent =
                     hand;
-                
-                BuildToolObject.gameObject.GetComponent<BuildTool>().SetCharacter(Player);
 
-                BuildToolObject.gameObject.GetComponent<ItemController>().GetPickedUpBy(Player);
-                
+                BuildToolObject
+                    .gameObject
+                    .GetComponent<BuildTool>()
+                    .SetCharacter(Player);
+
+                BuildToolObject
+                    .gameObject
+                    .GetComponent<ItemController>()
+                    .GetPickedUpBy(Player);
+
+                BuildToolController =
+                    BuildToolObject.gameObject.GetComponent<BuildTool>();
 
                 // give the build tool as hand item
                 inBuildMode = true;
@@ -254,12 +288,16 @@ public class CameraFollow : MonoBehaviour
                     PlayersHeldItem.SetActive(true);
                 }
                 BuildToolObject.gameObject.GetComponent<BuildTool>().DeTarget();
-                BuildToolObject.gameObject.GetComponent<BuildTool>().HideGhostImage();
+                BuildToolObject
+                    .gameObject
+                    .GetComponent<BuildTool>()
+                    .HideGhostImage();
 
                 Destroy (BuildToolObject);
 
                 inBuildMode = false;
                 Player.SetInBuildMode(false);
+                needsUIUpdate = true; // update ui after exit build mode
             }
         }
     }
@@ -290,6 +328,7 @@ public class CameraFollow : MonoBehaviour
         {
             UnityEngine.Debug.Log("index is out of range");
         }
+        needsUIUpdate = true;
     }
 
     private void SwitchToTarget(
@@ -336,6 +375,14 @@ public class CameraFollow : MonoBehaviour
         DoManaUI();
         DoTargetHealtBarUI();
         DoSquadUI();
+
+        // if in dialog mode, then do dialog
+        if (inDialog)
+        {
+            DoDialogUI();
+        }
+
+        DoInfoUI();
     }
 
     private void DoHealthUI()
@@ -385,6 +432,63 @@ public class CameraFollow : MonoBehaviour
     private void DoSquadUI()
     {
         SquadList.GetComponent<Text>().text = SquadListText;
+    }
+
+    private void DoInfoUI()
+    {
+        InfoBox.GetComponent<Text>().text = InfoText;
+    }
+
+    private void UpdateInfoUIForItem()
+    {
+        ItemController heldItemController = Player.GetHeldItemController();
+        if (heldItemController != null)
+        {
+            //Player.MakeSpeechBubble("i am holding"+heldItemController.ToString());
+            InfoText = heldItemController.GetSummaryString();
+        }
+        else
+        {
+            // if not holding anything then show nothing
+            InfoText = "";
+        }
+    }
+
+    private void UpdateInfoUIForBuildMode()
+    {
+        string buildString = "[Build Mode]\n";
+
+        buildString =
+            buildString +
+            "Push [TAB] to cycle through buildable objects and delete tool\n";
+
+        if (BuildToolController.Index == 0)
+        {
+            buildString = buildString + "[Mode: Deconstruction]\n";
+            buildString =
+                buildString +
+                "The closest building that can be deleted will be selected automatically\n";
+        }
+        else
+        {
+            buildString = buildString + "[Mode: Construction]\n";
+
+            if (!BuildToolController.GetCanPlace())
+            {
+                buildString = buildString + "Can only build in town\n";
+            }
+
+            // add resoruce costs
+            buildString =
+                buildString + BuildToolController.GetResourcesCostString();
+        }
+
+        InfoText = buildString;
+    }
+
+    private void DoDialogUI()
+    {
+        //DialogBox.GetComponent<Text>().text = SquadListText;
     }
 
     private string GenerateSquadList()
@@ -468,7 +572,12 @@ public class CameraFollow : MonoBehaviour
 
     private bool GetIfPlayerRequestedUIUpdate()
     {
-        return Player.GetNeedsUIUpdate();
+        bool status = Player.GetNeedsUIUpdate();
+        if (status)
+        {
+            ConstUpdateTimer += 0.5f;
+        }
+        return status;
     }
 
     private void SetFollowObject(GameObject newFollowObj)

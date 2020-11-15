@@ -765,6 +765,8 @@ public class ItemController : MonoBehaviour
         {
             Item.ownerUUID = Item.holderUUID;
         }
+        ActionTargetCharacterController.SetNeedsUIUpdate(true);
+
     }
 
     public void SetHeldLocation(

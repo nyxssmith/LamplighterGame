@@ -1,74 +1,91 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEngine.AI;
-
+using UnityEngine.UI;
 
 public class CharacterController : MonoBehaviour
 {
-
     //Parts of the character
     private Transform CharacterTransform;
+
     public GameObject CameraTarget;
+
     private Camera cam;
+
     public Rigidbody rb;
+
     private Physics physics;
 
-
-
     // UI
+    [SerializeField]
+    GameObject ManaUI;
 
-    [SerializeField] GameObject ManaUI;
-    [SerializeField] GameObject HealthUI;
-    [SerializeField] GameObject StaminaUI;
-    [SerializeField] GameObject TargetUI;//healthbar for target
-    [SerializeField] GameObject TargetName;//name of target
+    [SerializeField]
+    GameObject HealthUI;
+
+    [SerializeField]
+    GameObject StaminaUI;
+
+    [SerializeField]
+    GameObject TargetUI; //healthbar for target
+
+    [SerializeField]
+    GameObject TargetName; //name of target
 
     public SpriteRenderer Circle;
+
     public GameObject SpeechBubblePreFab;
+
     public GameObject DialogManagerPreFab;
 
     private Color UIColor;
 
-
     //Character save manager
     public string CharacterSaveFileFolder = "Assets/CharacterJson";
+
     public string CharacterSaveFile = "Player1.json";
+
     private CharacterDataManager CDM = new CharacterDataManager();
 
     public CharacterData Character = new CharacterData();
 
     private GameObject TargetBeaconObject = null; // the actual instance of the target beacon
 
-
     // animation parts and locations
-    public GameObject AnimationTarget;// TODO point this at self / this.
+    public GameObject AnimationTarget; // TODO point this at self / this.
+
     private Animator CharacterAnimator;
 
     public GameObject Hand;
 
     public GameObject Back;
+
     public GameObject Belt;
 
     private NavMeshAgent NavAgent;
 
-
     private IsLoadedController LoadedController;
 
     // variables that are used for interacting with world but dont matter for save
-    private string ItemStatus = "";//action items status, for swapping and dropping
+    private string ItemStatus = ""; //action items status, for swapping and dropping
+
     private bool HasItemInHand = false;
+
     private bool IsMoving = false;
+
     private bool IsGrounded = true;
 
     private bool IsFighting = false;
-    private float Action = 0.0f;// actions, 0 is none, 1 is left click, 2 is right click, 3 is belt action
-    private float ActionCooldown = 0.0f;// Attack cooldown for npcs = item cooldown*n
+
+    private float Action = 0.0f; // actions, 0 is none, 1 is left click, 2 is right click, 3 is belt action
+
+    private float ActionCooldown = 0.0f; // Attack cooldown for npcs = item cooldown*n
 
     public GameObject TargetBeacon; // prefab of the target beacon
 
     private bool hasTarget = false; //toggle if a target exists
+
     public float TargetCoolDown = 0.0f; //cooldown on targeting
 
     private int rand; //random number used to isolate targets
@@ -76,12 +93,15 @@ public class CharacterController : MonoBehaviour
     public float HealthDamageCoolDown = 0.0f;
 
     private float JumpCoolDown = 0.0f;
+
     private string CurrentAnimationState = "";
+
     private string LastAnimationState = "";
 
     private float AnimationOverrideTimer = 0.0f;
 
     private bool isSprinting = false;
+
     private bool isSprintingCooldown = false;
 
     private float StaminaLevelBeforeSprintAgain;
@@ -95,9 +115,11 @@ public class CharacterController : MonoBehaviour
     private bool selfDestuctStarted = false;
 
     private GameObject SpeechBubbleObject = null;
+
     private List<GameObject> SpeechBubbles = new List<GameObject>();
 
     private Vector3 WanderPointCenter = new Vector3(0.0f, -1.0f, 0.0f);
+
     private Vector3 WanderPointGoal = new Vector3(0.0f, -1.0f, 0.0f);
 
     private bool inBuildMode = false;
@@ -111,19 +133,16 @@ public class CharacterController : MonoBehaviour
 
     private bool WentHomeToSleep = false;
 
-
     // dialog stuff
-
     private bool CanJoinDialog = true;
+
     public bool IsInDialog = false;
 
     private DialogManager CurrentDialogManager = null;
+
     private GameObject DialogManagerObject = null;
 
-
-
     // buildings relevant to character like home and shops
-
     public List<BuildingController> Buildings = new List<BuildingController>();
 
     private bool isInShop;
@@ -132,54 +151,48 @@ public class CharacterController : MonoBehaviour
 
     private string TownUUID;
 
-
-
-
     // schedule and task stuff
-
-
     // will do current task, when done, if no next task will do last task, current task can set next task
     private string CurrentTask = "";
+
     private string NextTask = "";
+
     private string LastTask = "";
+
     private string NextNextTask = "";
 
-
     // TODO current quest stuff
-    private Quest CurrentQuest= null;
-
+    private Quest CurrentQuest = null;
 
     // Targeting and interacting with enemy and squad
     private GameObject FollowTarget = null;
+
+    //TODO private this
     private GameObject CombatTarget = null;
-    private CharacterData TargetCharacter = null;//save info on target character
-    private CharacterController TargetCharacterController = null;//save info on target character
 
+    private CharacterData TargetCharacter = null; //save info on target character
 
-
-
+    // TODO private this
+    private CharacterController TargetCharacterController = null; //save info on target character
 
     //When character comes online, set vars needed for init
     private void Awake()
     {
-
         //parts of the character
         rb = gameObject.GetComponent<Rigidbody>();
         CharacterTransform = gameObject.GetComponent<Transform>();
         NavAgent = this.gameObject.GetComponent<NavMeshAgent>();
 
         //load chracter save into character
-        CDM.Init(CharacterSaveFileFolder, CharacterSaveFile);
+        CDM.Init (CharacterSaveFileFolder, CharacterSaveFile);
 
         Load();
         CharacterAnimator = AnimationTarget.GetComponent<Animator>();
-
 
         if (Character.IsPlayer)
         {
             cam = Camera.main;
             this.tag = "player";
-
         }
         GetFollowTargetFromSquadLeaderId();
 
@@ -189,8 +202,6 @@ public class CharacterController : MonoBehaviour
         StaminaLevelBeforeSprintAgain = Character.MaxStamina * 0.85f;
 
         DetermineMyFaction();
-
-
 
         // get the load controller and update if is player
         LoadedController = gameObject.GetComponent<IsLoadedController>();
@@ -202,24 +213,19 @@ public class CharacterController : MonoBehaviour
         MakeSpeechBubble("set cirice color" + Circle.color);
 
         CurrentTask = Character.DefaultTask;
-
     }
-
 
     private void FixedUpdate()
     {
-
         // save and load for all chars
         //if (Input.GetKeyDown("i"))
         //{
-
         //    Load();
         //}
         //if (Input.GetKeyDown("o"))
         //{
         //    Save();
         //}
-
         // for all characters look for hand item
         CheckIfItemInHand();
 
@@ -229,10 +235,8 @@ public class CharacterController : MonoBehaviour
 
             if (!IsInDialog)
             {
-
                 // dont do ui on player, is now on camera
                 //DoUI();
-
                 //controls
                 // actions for attach and use "r"
                 if (HasItemInHand)
@@ -251,15 +255,7 @@ public class CharacterController : MonoBehaviour
                     }
                 }
 
-
-
-
-
-
-
                 //Debug save and load functions
-
-
                 if (Input.GetKeyDown("e"))
                 {
                     Interact();
@@ -269,28 +265,35 @@ public class CharacterController : MonoBehaviour
                     Target();
                 }
 
-
                 // TODO coordinate this and the above drop system to work for npcs too
-
                 // Item drop controll
                 if (Input.GetKey("q"))
                 {
-                    ItemStatus = "Dropping";//applies to habd item
+                    ItemStatus = "Dropping"; //applies to habd item
+                    SetNeedsUIUpdate(true);
                 }
                 else if (Input.GetKeyDown("f"))
                 {
+                    SetNeedsUIUpdate(true);
                     ItemStatus = "SwapHandBack";
                 }
                 else if (Input.GetKeyDown("g"))
                 {
                     // check that hand item can go to belt
-                    bool CanDoSwap = HeldItemController.GetCanGoOnBelt();
-
+                    bool CanDoSwap;
+                    if (HeldItemController != null)
+                    {
+                        CanDoSwap = HeldItemController.GetCanGoOnBelt();
+                    }
+                    else
+                    {
+                        CanDoSwap = true;
+                    }
                     if (CanDoSwap || !HasItemInHand)
                     {
+                        SetNeedsUIUpdate(true);
                         ItemStatus = "SwapHandBelt";
                     }
-
                 }
                 else
                 {
@@ -306,35 +309,25 @@ public class CharacterController : MonoBehaviour
             {
                 DoDialog();
             }
-
         }
         else
         {
             if (!IsInDialog)
             {
-
                 NPCMove();
-
             }
             else
             {
                 DoDialog();
             }
-
         }
-
-
-
-
     }
 
     // things do to at frame time
     private void Update()
     {
-
         // TODO only update if not currently moving to be less laggy
         // and fix items dropping
-
         if (selfDestuctStarted)
         {
             SelfDestruct();
@@ -350,10 +343,7 @@ public class CharacterController : MonoBehaviour
             SetCharacterCanMove(true);
         }
 
-
-
         // TODO check not fall from world
-
         SetNavAgentStateFromIsMoving();
 
         if (Character.IsPlayer)
@@ -381,24 +371,24 @@ public class CharacterController : MonoBehaviour
         if (Character.CurrentHealth <= 0.0f)
         {
             // drop all items and swap to diff squadmate
-            Action = -1.0f;//drop all items on death
+            Action = -1.0f; //drop all items on death
+
             //Destroy(this.gameObject);
             StartSelfDestruct();
         }
-        //}
 
+        //}
         DoTargetCircle();
     }
-
 
     private void DoAnimationState()
     {
         //TODO redo this all to be based on current status / moving not keys
-
         if (AnimationOverrideTimer > 0.0f)
         {
             //Debug.Log("should be getting state from item");
             AnimationOverrideTimer -= Time.deltaTime;
+
             // set contraints on character transform
             if (AnimationOverrideTimer <= 0.0f)
             {
@@ -407,10 +397,9 @@ public class CharacterController : MonoBehaviour
                 {
                     HeldItemController.SetCanDoAction(1.0f);
                 }
-
             }
         }
-        /*
+        else /*
         else if (!IsGrounded && Character.IsPlayer && (JumpCoolDown > 0.0f))
         {
             CurrentAnimationState = Character.midair_animation;
@@ -418,9 +407,8 @@ public class CharacterController : MonoBehaviour
         }
         */
         // sprinting for player
-        else if (isSprinting && Character.CurrentStamina > 10)
+        if (isSprinting && Character.CurrentStamina > 10)
         {
-
             if (Character.IsPlayer)
             {
                 //TODO check state of character
@@ -430,17 +418,16 @@ public class CharacterController : MonoBehaviour
                 }
                 else if (Input.GetKey("s"))
                 {
-                    CurrentAnimationState = Character.running_backward_animation;
-
+                    CurrentAnimationState =
+                        Character.running_backward_animation;
                 }
             }
             else
             {
                 //TODO
             }
-
-        }
-        else// not sprinting
+        } // not sprinting
+        else
         {
             if (IsMoving)
             {
@@ -449,40 +436,36 @@ public class CharacterController : MonoBehaviour
                 {
                     if (Input.GetKey("w"))
                     {
-                        CurrentAnimationState = Character.walking_forward_animation;
+                        CurrentAnimationState =
+                            Character.walking_forward_animation;
                     }
                     else if (Input.GetKey("s"))
                     {
-                        CurrentAnimationState = Character.walking_backward_animation;
-
+                        CurrentAnimationState =
+                            Character.walking_backward_animation;
                     }
                     else
-                    {//TODO do a walking rightleft etc
-                        CurrentAnimationState = Character.walking_forward_animation;
-
+                    {
+                        //TODO do a walking rightleft etc
+                        CurrentAnimationState =
+                            Character.walking_forward_animation;
                     }
-                }
-                else// npc based on state
+                } // npc based on state
+                else
                 {
                     CurrentAnimationState = Character.walking_forward_animation;
-
                 }
             }
             else
             {
                 CurrentAnimationState = Character.idle_animation;
             }
-
-
         }
     }
 
     // Movement and npc
-
     private void NPCMove()
     {
-
-
         // stamina recharge for npc
         if (!isSprinting)
         {
@@ -494,11 +477,14 @@ public class CharacterController : MonoBehaviour
                 }
                 else
                 {
-                    Character.CurrentStamina = Character.CurrentStamina + Character.CurrentStamina * Character.StaminaRechargeRate;
+                    Character.CurrentStamina =
+                        Character.CurrentStamina +
+                        Character.CurrentStamina *
+                        Character.StaminaRechargeRate;
                 }
             }
         }
-
+        //MakeSpeechBubble("im fighitng"+IsFighting.ToString());
 
         // fighting takes priority
         if (IsFighting)
@@ -507,26 +493,25 @@ public class CharacterController : MonoBehaviour
         }
         else
         {
-
-
-
             SetCharacterCanMove(true);
+
             // if they are following player or in a squad
             if (Character.IsFollower && Character.squadLeaderId != "")
             {
                 // add follow to the queqe of tasks if can
-                if (Character.IsFollowing && CurrentTask != "FOLLOW" && NextNextTask == "")
+                if (
+                    Character.IsFollowing &&
+                    CurrentTask != "FOLLOW" &&
+                    NextNextTask == ""
+                )
                 {
                     NextNextTask = "FOLLOW";
                 }
-
             }
 
             // do task specified
             DoTask();
-
         }
-
     }
 
     private void IncrementTask()
@@ -542,8 +527,6 @@ public class CharacterController : MonoBehaviour
         {
             NextTask = LastTask;
         }
-
-
     }
 
     // schedule etc
@@ -566,7 +549,6 @@ public class CharacterController : MonoBehaviour
 
         */
         //Debug.Log("current task is" + CurrentTask + Character.Name);
-
         if (CurrentTask == "" || CurrentTask == null)
         {
             // if there is a chance to have a task, do that insetad
@@ -580,25 +562,25 @@ public class CharacterController : MonoBehaviour
             }
         }
 
-
         // debug super helpful
-        //MakeSpeechBubble("CURRENT " + CurrentTask + " next " + NextTask + " last " + LastTask + " nextnext " + NextNextTask);
-
-
+        MakeSpeechBubble("CURRENT " + CurrentTask + " next " + NextTask + " last " + LastTask + " nextnext " + NextNextTask);
+        
+        
         if (StandingStillTimer > 0.0f)
         {
-
             bool ShouldOverrideStanding = false;
-            // make followers iverride standing if target goes farther away
 
+            // make followers iverride standing if target goes farther away
             if (Character.IsFollowing && FollowTarget != null)
             {
-
-                Transform TargetTransform = FollowTarget.GetComponent<Transform>();
-                float distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
+                Transform TargetTransform =
+                    FollowTarget.GetComponent<Transform>();
+                float distance =
+                    Vector3
+                        .Distance(CharacterTransform.position,
+                        TargetTransform.position);
 
                 ShouldOverrideStanding = distance > 10.0f;
-
             }
 
             if (ShouldOverrideStanding)
@@ -607,16 +589,12 @@ public class CharacterController : MonoBehaviour
                 StandingStillTimer = 0.0f;
                 SetCharacterCanMove(true);
                 //IncrementTask();
-
             }
             else
             {
-
                 StandingStillTimer -= Time.deltaTime;
                 SetCharacterCanMove(false);
-
             }
-
         }
         else if (CurrentTask == "FOLLOW")
         {
@@ -625,7 +603,6 @@ public class CharacterController : MonoBehaviour
             {
                 //MakeSpeechBubble("Done following");
                 IncrementTask();
-
             }
         }
         else if (CurrentTask == "BEFARMER")
@@ -635,10 +612,6 @@ public class CharacterController : MonoBehaviour
             if already in farm field, then wanderpoint again until time done then set to sleep
             */
             //find farm sets the new wanderpoint
-
-
-
-
             if (LastTask == "WANDERPOINT")
             {
                 NextTask = "FARM";
@@ -653,29 +626,23 @@ public class CharacterController : MonoBehaviour
                 NextNextTask = "BEFARMER";
                 IncrementTask();
             }
-
-
-
-
         }
         else if (CurrentTask == "FARM")
         {
             // go to farm and get wander range
             //float atFarm = GoFarm();
             float atFarm = GoToBuildingOfType("FARM");
+
             //MakeSpeechBubble("at farm " + atFarm.ToString());
             if (atFarm != 0.0f)
             {
                 SetBuildingHasDoneWork("FARM");
 
                 wanderRange = atFarm;
+
                 //pick a point
                 IncrementTask();
             }
-
-
-
-
         }
         else if (CurrentTask == "BANDIT")
         {
@@ -683,8 +650,6 @@ public class CharacterController : MonoBehaviour
             wander around a point and check for factions to fight
             set ucrrent task to wander, next to bandit
             */
-
-
             if (LastTask == "WANDERPOINT")
             {
                 NextTask = "FINDENEMY";
@@ -699,12 +664,9 @@ public class CharacterController : MonoBehaviour
                 NextNextTask = "BANDIT";
                 IncrementTask();
             }
-
         }
         else if (CurrentTask == "LAMPLIGHT")
         {
-
-
             if (LastTask == "WANDERPOINT")
             {
                 NextTask = "FINDENEMY";
@@ -726,16 +688,14 @@ public class CharacterController : MonoBehaviour
             Wander around a point to a new point, then do next task
             */
             //Debug.Log("wandering point");
-
             // bandits will wander farther
             if (LastTask == "BANDIT")
             {
                 wanderRange = 10.0f;
             }
+
             // TODO based on lasttask get role and set wnader range
-
             // todo also set this for time to stand still
-
             bool arrived = WanderAroundPoint(wanderRange);
             if (arrived && !IsMoving)
             {
@@ -750,26 +710,21 @@ public class CharacterController : MonoBehaviour
                 }
             }
             */
-
         }
         else if (CurrentTask == "WANDER")
         {
-
         }
         else if (CurrentTask == "SLEEP")
         {
-
             // if not home, try to find home, if cant, then do sleep here
             if (!WentHomeToSleep)
             {
-
                 NextNextTask = "SLEEP";
                 NextTask = "HOME";
                 WentHomeToSleep = true;
                 IncrementTask();
             }
             //does nothing
-
         }
         else if (CurrentTask == "STAND")
         {
@@ -777,9 +732,7 @@ public class CharacterController : MonoBehaviour
         }
         else if (CurrentTask == "BEMERCHANT")
         {
-
             // go to work, then check when can go home
-
             if (LastTask == "CHECKIFDONEWITHWORK")
             {
                 NextTask = "MANSHOP";
@@ -794,15 +747,12 @@ public class CharacterController : MonoBehaviour
                 NextNextTask = "BEMERCHANT";
                 IncrementTask();
             }
-
         }
-
         else if (CurrentTask == "CHECKIFDONEWITHWORK")
         {
             // if time is > end of day then go home, else incremtn anyway
             if (false)
             {
-
             }
             else
             {
@@ -810,17 +760,16 @@ public class CharacterController : MonoBehaviour
 
                 IncrementTask();
             }
-
         }
         else if (CurrentTask == "MANSHOP")
         {
             // man the owned store
-
             // claim and own a store
-
             //bool isAtStore = GoShop();
             bool isAtStore = GoToBuildingOfType("SHOP") != 0.0f;
-            if (isAtStore)//} && !IsMoving)
+            if (
+                isAtStore //} && !IsMoving)
+            )
             {
                 MakeSpeechBubble("manning shop");
                 SetBuildingHasDoneWork("SHOP");
@@ -829,46 +778,37 @@ public class CharacterController : MonoBehaviour
                 IsMoving = false;
                 IncrementTask();
             }
-
         }
         else if (CurrentTask == "SHOP")
         {
             // go to nearest store
-
             // do go shop
-
-
             // find item and buy somethig
-
             // ask shop for merhcant
-
         }
         else if (CurrentTask == "HOME")
         {
-
             //bool isHome = GoHome();
             bool isHome = GoToBuildingOfType("HOME") != 0.0f;
-            if (isHome)//} && !IsMoving)
+            if (
+                isHome //} && !IsMoving)
+            )
             {
                 SetNavAgentDestination(CharacterTransform.position);
                 SetCharacterCanMove(false);
                 IncrementTask();
             }
-
         }
         else if (CurrentTask == "FINDENEMY")
         {
             CheckForOtherFactionsToFight();
 
             IncrementTask();
-
         }
         else if (CurrentTask == "QUEST")
         {
             // TODO read from quest object and do steps, only if step of quest is "DONE" then do incremnt task
-
             // if is follower, set to ignore this task until not has follow target
-
         }
         else if (CurrentTask == "")
         {
@@ -884,13 +824,10 @@ public class CharacterController : MonoBehaviour
         {
             NextTask = "";
         }
-
     }
-
 
     private void SetBuildingHasDoneWork(string buildingType)
     {
-
         foreach (BuildingController building in Buildings)
         {
             if (building.GetType() == buildingType)
@@ -900,26 +837,29 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-
     private bool FindBuildingOfType(string buildingType)
     {
-
         BuildingController backupBuilding = null;
         BuildingController foundbuilding = null;
         bool mustUseBackup = true;
         float currentDistanceToBuilding = -1;
 
         // 100.0f is range to look for house
-        Collider[] hitColliders = Physics.OverlapSphere(CharacterTransform.position, 100.0f);
+        Collider[] hitColliders =
+            Physics.OverlapSphere(CharacterTransform.position, 100.0f);
         foreach (var hitCollider in hitColliders)
         {
-            BuildingController controller = hitCollider.gameObject.GetComponent<BuildingController>();
+            BuildingController controller =
+                hitCollider.gameObject.GetComponent<BuildingController>();
             if (controller != null)
             {
                 if (controller.GetType() == buildingType)
                 {
                     // compare distance and try to find closest
-                    float distanceToThisBuilding = Vector3.Distance(CharacterTransform.position, controller.GetTransform().position);
+                    float distanceToThisBuilding =
+                        Vector3
+                            .Distance(CharacterTransform.position,
+                            controller.GetTransform().position);
                     if (currentDistanceToBuilding == -1)
                     {
                         backupBuilding = controller;
@@ -929,7 +869,8 @@ public class CharacterController : MonoBehaviour
                     else
                     {
                         //now comparing vs backup
-                        bool isCloser = currentDistanceToBuilding > distanceToThisBuilding;
+                        bool isCloser =
+                            currentDistanceToBuilding > distanceToThisBuilding;
                         bool currentIsOwned = foundbuilding.GetOwner() != "";
                         bool newIsOwned = controller.GetOwner() != "";
                         bool backupIsOwned = backupBuilding.GetOwner() != "";
@@ -943,10 +884,12 @@ public class CharacterController : MonoBehaviour
                                 backupBuilding = foundbuilding;
                                 foundbuilding = controller;
 
-                                currentDistanceToBuilding = distanceToThisBuilding;
+                                currentDistanceToBuilding =
+                                    distanceToThisBuilding;
                             }
                             else if (backupIsOwned && newIsOwned)
-                            {// if backup is owned, but this is too, use as backup, since closer
+                            {
+                                // if backup is owned, but this is too, use as backup, since closer
                                 backupBuilding = foundbuilding;
                             }
                         }
@@ -958,7 +901,8 @@ public class CharacterController : MonoBehaviour
                                 backupBuilding = foundbuilding;
                                 foundbuilding = controller;
 
-                                currentDistanceToBuilding = distanceToThisBuilding;
+                                currentDistanceToBuilding =
+                                    distanceToThisBuilding;
                             }
                         }
                     }
@@ -992,7 +936,6 @@ public class CharacterController : MonoBehaviour
             }
         }
 
-
         return false;
     }
 
@@ -1001,7 +944,6 @@ public class CharacterController : MonoBehaviour
         // goes to home and if there return
         //bool hasHome = (GetHouseUUID() != "");
         bool hasOne = (GetBuildingUUIDOfType(buildingType) != "");
-
 
         if (!hasOne)
         {
@@ -1018,28 +960,35 @@ public class CharacterController : MonoBehaviour
             // go to house transform.positin
             //MakeSpeechBubble("going to house");
             NPCGOTOTargetWithSprint(GetBuildingTransformOfType(buildingType));
-
         }
 
         if (hasOne)
         {
             // check if arrived
-            float distance = Vector3.Distance(CharacterTransform.position, GetBuildingTransformOfType(buildingType).position);
+            float distance =
+                Vector3
+                    .Distance(CharacterTransform.position,
+                    GetBuildingTransformOfType(buildingType).position);
             if (distance <= Character.Reach)
             {
                 MakeSpeechBubble("im @" + buildingType);
-                return GetBuildingControllerOfType(buildingType).GetWanderRange();
-                ;
+                return GetBuildingControllerOfType(buildingType)
+                    .GetWanderRange();
+
             }
-
-
         }
         return 0.0f;
     }
 
-
     private void AttackTarget()
     {
+        if (CheckIfTargetIsDead())
+        {
+            MakeSpeechBubble("i win!");
+            IsFighting = false;
+            DeTarget();
+            return;
+        }
 
         if (CombatTarget == null)
         {
@@ -1047,19 +996,14 @@ public class CharacterController : MonoBehaviour
             return;
         }
 
-        if (CheckIfTargetIsDead())
-        {
-            IsFighting = false;
-            DeTarget();
-            return;
-        }
-        //Debug.Log("Attacking", CombatTarget);
 
+        //Debug.Log("Attacking", CombatTarget);
         Transform TargetTransform = CombatTarget.GetComponent<Transform>();
+
         //NavMeshAgent agent = GetComponent<NavMeshAgent>();
         float rotationSpeed = 30f; //speed of turning
 
-        float range = 50f;// pursute range
+        float range = 50f; // pursute range
         float range2 = 25f;
         float stop = Character.Reach; // this is range to player
 
@@ -1068,13 +1012,22 @@ public class CharacterController : MonoBehaviour
         {
             float weaponRange = HeldItemController.GetItem().Range;
             stop = weaponRange;
-
         }
 
-
         //rotate to look at the player
-        var distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
-        MakeSpeechBubble("stop " + stop.ToString() + " dist " + distance.ToString() + " range " + range.ToString());
+        var distance =
+            Vector3
+                .Distance(CharacterTransform.position,
+                TargetTransform.position);
+        /*
+        MakeSpeechBubble("stop " +
+        stop.ToString() +
+        " dist " +
+        distance.ToString() +
+        " range " +
+        range.ToString());
+        */
+
         /*
         if (distance <= range2 && distance >= range)
         {
@@ -1090,19 +1043,21 @@ public class CharacterController : MonoBehaviour
         {
             //NavAgent.destination = TargetTransform.position;
             //IsMoving = true;
-            NPCGOTOTargetWithSprint(TargetTransform);
-
-
+            NPCGOTOTargetWithSprint (TargetTransform);
         }
         else if (distance <= stop)
         // && (NavAgent.enabled))
         {
-
-            MakeSpeechBubble("im at firest one");
+            //MakeSpeechBubble("im at firest one");
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
-            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
-                Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+            CharacterTransform.rotation =
+                Quaternion
+                    .Slerp(CharacterTransform.rotation,
+                    Quaternion
+                        .LookRotation(TargetTransform.position -
+                        CharacterTransform.position),
+                    rotationSpeed * Time.deltaTime);
 
             if (ActionCooldown > 0.0f)
             {
@@ -1112,7 +1067,6 @@ public class CharacterController : MonoBehaviour
             {
                 Attack();
             }
-
         }
         /*
         else
@@ -1138,6 +1092,26 @@ public class CharacterController : MonoBehaviour
 
     private bool CheckIfTargetIsDead()
     {
+
+        //MakeSpeechBubble("did he die?");
+        if(CombatTarget.gameObject.Equals(null)){
+            return true;
+        }
+
+        if(TargetCharacterController.gameObject.Equals(null)){
+            return true;
+        }
+
+        CharacterController CombatTargetCharacterController = CombatTarget.gameObject.GetComponent<CharacterController>();
+        if(CombatTargetCharacterController.Equals(null)){
+            return true;
+        
+        }else{
+            if(CombatTargetCharacterController.GetCurrentHealth() <= 0.0f){
+                return true;
+            }
+        }
+
         if (TargetCharacterController.GetCurrentHealth() <= 0.0f)
         {
             return true;
@@ -1149,7 +1123,6 @@ public class CharacterController : MonoBehaviour
     // pick and do an attack option
     private void Attack()
     {
-
         if (HasItemInHand)
         {
             Action = 1.0f;
@@ -1163,7 +1136,6 @@ public class CharacterController : MonoBehaviour
         }
         // set attack cooldown
         //ActionCooldown = 2.5f;
-
     }
 
     public void StandStillForTime(float newTime)
@@ -1173,11 +1145,8 @@ public class CharacterController : MonoBehaviour
 
     private bool WanderAroundPoint(float wanderRange)
     {
-
         //float wanderRange = 3.0f;
-
         //MakeSpeechBubble("Wandering around point: " + WanderPointCenter.ToString() + " to " + WanderPointGoal.ToString());
-
         if (WanderPointGoal.y <= -1)
         {
             // get a new wanderpoint
@@ -1186,23 +1155,34 @@ public class CharacterController : MonoBehaviour
                 WanderPointCenter = CharacterTransform.position;
             }
 
-            float newX = Random.Range(-1.0f * wanderRange, wanderRange);// + WanderPointCenter.x;
-            float newZ = Random.Range(-1.0f * wanderRange, wanderRange);// + WanderPointCenter.z;
+            float newX = Random.Range(-1.0f * wanderRange, wanderRange); // + WanderPointCenter.x;
+            float newZ = Random.Range(-1.0f * wanderRange, wanderRange); // + WanderPointCenter.z;
 
-
-            WanderPointGoal = new Vector3(WanderPointCenter.x + newX, WanderPointCenter.y, WanderPointCenter.z + newZ);
-            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation, Quaternion.LookRotation(WanderPointGoal - CharacterTransform.position), 90.0f * Time.deltaTime);
+            WanderPointGoal =
+                new Vector3(WanderPointCenter.x + newX,
+                    WanderPointCenter.y,
+                    WanderPointCenter.z + newZ);
+            CharacterTransform.rotation =
+                Quaternion
+                    .Slerp(CharacterTransform.rotation,
+                    Quaternion
+                        .LookRotation(WanderPointGoal -
+                        CharacterTransform.position),
+                    90.0f * Time.deltaTime);
 
             IsMoving = true;
-            SetNavAgentDestination(WanderPointGoal);
+            SetNavAgentDestination (WanderPointGoal);
 
             return false;
         }
         else
         {
-
-            Vector3 CharXZpos = new Vector3(CharacterTransform.position.x, 0.0f, CharacterTransform.position.z);
-            Vector3 GoalXZpos = new Vector3(WanderPointGoal.x, 0.0f, WanderPointGoal.z);
+            Vector3 CharXZpos =
+                new Vector3(CharacterTransform.position.x,
+                    0.0f,
+                    CharacterTransform.position.z);
+            Vector3 GoalXZpos =
+                new Vector3(WanderPointGoal.x, 0.0f, WanderPointGoal.z);
 
             float distance = Vector3.Distance(CharXZpos, GoalXZpos);
             if (distance < Character.Reach)
@@ -1214,22 +1194,18 @@ public class CharacterController : MonoBehaviour
                 return true;
             }
 
-
             IsMoving = true;
 
-            SetNavAgentDestination(WanderPointGoal);
+            SetNavAgentDestination (WanderPointGoal);
 
             // check that have reached destination
-
             return false;
         }
-
     }
 
     private void SetNavAgentDestination(Vector3 goal_position)
     {
         //MakeSpeechBubble("Set destination to " + goal_position.ToString());
-
         if (NavAgent.enabled)
         {
             NavAgent.destination = goal_position;
@@ -1244,37 +1220,49 @@ public class CharacterController : MonoBehaviour
         }
 
         Transform TargetTransform = FollowTarget.GetComponent<Transform>();
+
         //NavMeshAgent agent = GetComponent<NavMeshAgent>();
         float rotationSpeed = 30f; //speed of turning
-        float range = 250f;// follow range
+        float range = 250f; // follow range
         float range2 = 250f;
         float stop = 3.8f; // this is range to player
 
         //rotate to look at the player
-        var distance = Vector3.Distance(CharacterTransform.position, TargetTransform.position);
+        var distance =
+            Vector3
+                .Distance(CharacterTransform.position,
+                TargetTransform.position);
         if (distance <= range2 && distance >= range)
         {
             Debug.Log("following is here why???");
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
-            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
-            Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+            CharacterTransform.rotation =
+                Quaternion
+                    .Slerp(CharacterTransform.rotation,
+                    Quaternion
+                        .LookRotation(TargetTransform.position -
+                        CharacterTransform.position),
+                    rotationSpeed * Time.deltaTime);
         }
         else if (distance <= range && distance > stop)
         {
             // go to target if within follow range and then stop
             //NavAgent.destination = TargetTransform.position;
             //IsMoving = true;
-            NPCGOTOTargetWithSprint(TargetTransform);
-
-
+            NPCGOTOTargetWithSprint (TargetTransform);
         }
         else if ((distance <= stop) && (NavAgent.enabled))
         {
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
-            CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation,
-                Quaternion.LookRotation(TargetTransform.position - CharacterTransform.position), rotationSpeed * Time.deltaTime);
+            CharacterTransform.rotation =
+                Quaternion
+                    .Slerp(CharacterTransform.rotation,
+                    Quaternion
+                        .LookRotation(TargetTransform.position -
+                        CharacterTransform.position),
+                    rotationSpeed * Time.deltaTime);
 
             /*
             // check not too close to squadmate
@@ -1285,20 +1273,20 @@ public class CharacterController : MonoBehaviour
                 SetNavAgentDestination(newPos);
             }
             */
-
         }
         else
         {
             SetNavAgentDestination(CharacterTransform.position);
             IsMoving = false;
+
             // if near player, do current task
-            WanderPointCenter = CharacterTransform.position;// reset wander point to be set when needed
+            WanderPointCenter = CharacterTransform.position; // reset wander point to be set when needed
+
             //MakeSpeechBubble("doing task" + NextTask);
             return true;
         }
         return false;
     }
-
 
     private void NPCGOTOTargetWithSprint(Transform TargetPosition)
     {
@@ -1307,8 +1295,7 @@ public class CharacterController : MonoBehaviour
         Vector3 Start = CharacterTransform.position;
         Vector3 End = TargetPosition.position;
 
-
-        SetNavAgentDestination(End);
+        SetNavAgentDestination (End);
         float distance_to_go = (Start - End).magnitude;
 
         // sprinting cooldown for npcs
@@ -1320,10 +1307,20 @@ public class CharacterController : MonoBehaviour
             }
         }
 
-        if ((distance_to_go > 20.0f) && (Character.CurrentStamina > 1) && (!isSprintingCooldown))
+        if (
+            (distance_to_go > 20.0f) &&
+            (Character.CurrentStamina > 1) &&
+            (!isSprintingCooldown)
+        )
         {
-            Character.CurrentStamina = Character.CurrentStamina - Character.StaminaUseRate;
-            Character.CurrentSpeed = Character.BaseMovementSpeed + (Character.StaminaBonusSpeed * (Character.CurrentStamina / Character.MaxStamina * 0.7f));
+            Character.CurrentStamina =
+                Character.CurrentStamina - Character.StaminaUseRate;
+            Character.CurrentSpeed =
+                Character.BaseMovementSpeed +
+                (
+                Character.StaminaBonusSpeed *
+                (Character.CurrentStamina / Character.MaxStamina * 0.7f)
+                );
             isSprinting = true;
         }
         else
@@ -1339,25 +1336,23 @@ public class CharacterController : MonoBehaviour
 
         NavAgent.speed = Character.CurrentSpeed;
         //Debug.Log("im " + Character.Name + " and my current speed is" + NavAgent.speed+" im sprinting"+isSprinting+" stamina"+Character.CurrentStamina);
-
-
     }
 
     private void RandomMove()
     {
         float maxForce = 50f;
-        Vector3 position = new Vector3(Random.Range(-1f * maxForce, maxForce), Random.Range(-1f * maxForce, maxForce), Random.Range(-1f * maxForce, maxForce));
-        //Debug.Log(position);
-        rb.AddForce(position);
+        Vector3 position =
+            new Vector3(Random.Range(-1f * maxForce, maxForce),
+                Random.Range(-1f * maxForce, maxForce),
+                Random.Range(-1f * maxForce, maxForce));
 
+        //Debug.Log(position);
+        rb.AddForce (position);
     }
 
     // Player movement
-
     private void PlayerMove()
     {
-
-
         // Getting the direction to move through player input
         float hMove = Input.GetAxis("Horizontal");
         float vMove = Input.GetAxis("Vertical");
@@ -1371,8 +1366,14 @@ public class CharacterController : MonoBehaviour
         //sprinting
         if (Input.GetKey(KeyCode.LeftShift) && Character.CurrentStamina > 1)
         {
-            Character.CurrentStamina = Character.CurrentStamina - Character.StaminaUseRate;
-            Character.CurrentSpeed = Character.BaseMovementSpeed + (Character.StaminaBonusSpeed * (Character.CurrentStamina / Character.MaxStamina * 0.7f));
+            Character.CurrentStamina =
+                Character.CurrentStamina - Character.StaminaUseRate;
+            Character.CurrentSpeed =
+                Character.BaseMovementSpeed +
+                (
+                Character.StaminaBonusSpeed *
+                (Character.CurrentStamina / Character.MaxStamina * 0.7f)
+                );
             isSprinting = true;
         }
         else
@@ -1386,14 +1387,16 @@ public class CharacterController : MonoBehaviour
                 }
                 else
                 {
-                    Character.CurrentStamina = Character.CurrentStamina + Character.CurrentStamina * Character.StaminaRechargeRate;
+                    Character.CurrentStamina =
+                        Character.CurrentStamina +
+                        Character.CurrentStamina *
+                        Character.StaminaRechargeRate;
                 }
             }
             Character.CurrentSpeed = Character.BaseMovementSpeed;
         }
 
         //Actual movemment
-
         // Get directions relative to camera
         Vector3 forward = cam.transform.forward;
         Vector3 right = cam.transform.right;
@@ -1413,19 +1416,20 @@ public class CharacterController : MonoBehaviour
         // Set the direction's magnitude to 1 so that it does not interfere with the movement speed
         dir.Normalize();
 
-        // Move the player by the direction multiplied by speed and delta time 
+        // Move the player by the direction multiplied by speed and delta time
+
         transform.position += dir * Character.CurrentSpeed * Time.deltaTime;
 
         // Set rotation to direction of movement if moving
         if (dir != Vector3.zero)
         {
-            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(forward), 0.2f);
+            transform.rotation =
+                Quaternion
+                    .Slerp(transform.rotation,
+                    Quaternion.LookRotation(forward),
+                    0.2f);
         }
-
-
     }
-
-
 
     void OnCollisionExit(Collision hit)
     {
@@ -1434,7 +1438,6 @@ public class CharacterController : MonoBehaviour
             IsGrounded = false;
         }
     }
-
 
     void OnCollisionEnter(Collision hit)
     {
@@ -1445,18 +1448,16 @@ public class CharacterController : MonoBehaviour
     }
 
     // Targeting and interacting
-
     private void Interact()
     {
-
         CharacterController HitCharacterController = null;
         bool interacted = false;
 
         // if in shop, get hit character controller from shop owner
         if (isInShop)
         {
-
-            HitCharacterController = CurrentShopController.GetOwnerControllerIfPresent();
+            HitCharacterController =
+                CurrentShopController.GetOwnerControllerIfPresent();
             if (HitCharacterController != null)
             {
                 interacted = true;
@@ -1464,34 +1465,39 @@ public class CharacterController : MonoBehaviour
         }
         else
         {
-
-            Vector3 center = CharacterTransform.position + (CharacterTransform.forward * (0.5f * Character.Reach));
-            Collider[] hitColliders = Physics.OverlapSphere(center, (0.5f * Character.Reach));
+            Vector3 center =
+                CharacterTransform.position +
+                (CharacterTransform.forward * (0.5f * Character.Reach));
+            Collider[] hitColliders =
+                Physics.OverlapSphere(center, (0.5f * Character.Reach));
             int j = 0;
             while (j < hitColliders.Length)
             {
-                HitCharacterController = hitColliders[j].gameObject.GetComponent<CharacterController>();
+                HitCharacterController =
+                    hitColliders[j]
+                        .gameObject
+                        .GetComponent<CharacterController>();
                 if (HitCharacterController != null)
                 {
                     MakeSpeechBubble("i almost interacted with a person");
+
                     // if not targeting self or sqwuad
                     if (HitCharacterController.GetUUID() != GetUUID())
                     {
-                        MakeSpeechBubble("Interacted with " + HitCharacterController.GetCharacter().Name);
+                        MakeSpeechBubble("Interacted with " +
+                        HitCharacterController.GetCharacter().Name);
+
                         // Do interaction with a character controller (talking)
-
                         // start the dialog action TODO
-
                         // creates a dialog controller
                         // self joins dialog controller
                         // tells other charatter to join dialog controller
                         // getcandodialog will be the faction check etc TODO
-
-
                         interacted = true;
                         break;
                     }
                 }
+
                 /*
                 else
                 {
@@ -1520,7 +1526,6 @@ public class CharacterController : MonoBehaviour
         {
             // do interaction here
             HitCharacterController.DoInteractAction(this.gameObject);
-
         }
 
         NeedsUIUpdate = true;
@@ -1528,43 +1533,54 @@ public class CharacterController : MonoBehaviour
 
     public void Target()
     {
-
         if (TargetCoolDown >= 0.0f)
         {
             TargetCoolDown -= Time.deltaTime;
         }
         else
         {
-            if (!hasTarget)// if doesnt have a target, find one
+            if (
+                !hasTarget // if doesnt have a target, find one
+            )
             {
                 MakeSpeechBubble("fiding targt");
                 rand = Random.Range(1, 254);
 
                 float radius = Character.TargetRange / 2.0f;
-                Vector3 center = CharacterTransform.position + (CharacterTransform.forward * Character.TargetRange / 2.0f);
+                Vector3 center =
+                    CharacterTransform.position +
+                    (CharacterTransform.forward * Character.TargetRange / 2.0f);
                 Collider[] hitColliders = Physics.OverlapSphere(center, radius);
                 int i = 0;
-                //Vector3 SummonPositon = center;
 
+                //Vector3 SummonPositon = center;
                 while (i < hitColliders.Length)
                 {
-                    if (hitColliders[i].gameObject.GetComponent<CharacterController>() != null)
+                    if (
+                        hitColliders[i]
+                            .gameObject
+                            .GetComponent<CharacterController>() !=
+                        null
+                    )
                     {
-                        int TargetRand = hitColliders[i].gameObject.GetComponent<CharacterController>().GetRand();
+                        int TargetRand =
+                            hitColliders[i]
+                                .gameObject
+                                .GetComponent<CharacterController>()
+                                .GetRand();
                         if (TargetRand != rand)
                         {
                             SetTarget(hitColliders[i].gameObject);
-
 
                             break;
                         }
                     }
                     i++;
                 }
-            }
-            else// if does have target, de-target
+            } // if does have target, de-target
+            else
             {
-                Destroy(TargetBeaconObject);
+                Destroy (TargetBeaconObject);
                 CombatTarget = null;
                 TargetCharacter = null;
                 TargetCharacterController = null;
@@ -1573,29 +1589,34 @@ public class CharacterController : MonoBehaviour
             TargetCoolDown = 0.05f;
         }
         NeedsUIUpdate = true;
-
     }
 
     private void DoInteractAction(GameObject WhoInteracted)
     {
-        MakeSpeechBubble("I was interacted with by " + WhoInteracted + " my leader is" + Character.squadLeaderId);
+        MakeSpeechBubble("I was interacted with by " +
+        WhoInteracted +
+        " my leader is" +
+        Character.squadLeaderId);
         MakeSpeechBubble(Character.IsFollower.ToString());
 
         // summon dialog manager
-        CharacterController WhoInteractedController = WhoInteracted.GetComponent<CharacterController>();
+        CharacterController WhoInteractedController =
+            WhoInteracted.GetComponent<CharacterController>();
+
         // if they can join a dialog do so
         if (CanJoinDialog && WhoInteractedController.GetCanJoinDialog())
         {
             // join dialog as 2nd person
-            Vector3 SummonPositon = CharacterTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
-            DialogManagerObject = Instantiate(DialogManagerPreFab, SummonPositon, Quaternion.identity);
-            CurrentDialogManager = DialogManagerObject.GetComponent<DialogManager>();
+            Vector3 SummonPositon =
+                CharacterTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
+            DialogManagerObject =
+                Instantiate(DialogManagerPreFab,
+                SummonPositon,
+                Quaternion.identity);
+            CurrentDialogManager =
+                DialogManagerObject.GetComponent<DialogManager>();
             CurrentDialogManager.StartDialog(WhoInteractedController, this);
-
-
-
         }
-
 
         // TODO do dialog stuff before this part
         /*
@@ -1634,17 +1655,15 @@ public class CharacterController : MonoBehaviour
 
         */
         NeedsUIUpdate = true;
-
     }
-
 
     public void MakeSpeechBubble(string WhatToSay)
     {
         // TODO make stacking speechbubbles above head max 3 with string of what to say
         // make expire after n seconds
-
         // make new list of speechbubbles
         List<GameObject> tempList = new List<GameObject>();
+
         // move all bubbles up and remove null bubbles from list
         foreach (GameObject bubble in SpeechBubbles)
         {
@@ -1652,7 +1671,7 @@ public class CharacterController : MonoBehaviour
             {
                 SpeechBubble speechBubble = bubble.GetComponent<SpeechBubble>();
                 speechBubble.moveUp();
-                tempList.Add(bubble);
+                tempList.Add (bubble);
             }
         }
         SpeechBubbles = tempList;
@@ -1661,42 +1680,39 @@ public class CharacterController : MonoBehaviour
         //float RandZ = Random.Range(-0.2f, 0.2f);
         //float RandX = Random.Range(-0.2f, 0.2f);
         //Vector3 SummonPositon = CharacterTransform.position + new Vector3(RandX, 2.0f, RandZ);
-
-        Vector3 SummonPositon = CharacterTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
-        SpeechBubbleObject = Instantiate(SpeechBubblePreFab, SummonPositon, Quaternion.identity);
+        Vector3 SummonPositon =
+            CharacterTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
+        SpeechBubbleObject =
+            Instantiate(SpeechBubblePreFab, SummonPositon, Quaternion.identity);
         SpeechBubbleObject.GetComponent<SpeechBubble>().SetText(WhatToSay);
 
         //SpeechBubbleObject.gameObject.GetComponent<Transform>().parent = CharacterTransform;
-        SpeechBubbleObject.gameObject.GetComponent<Transform>().SetParent(CharacterTransform, true);
+        SpeechBubbleObject
+            .gameObject
+            .GetComponent<Transform>()
+            .SetParent(CharacterTransform, true);
 
-
-        SpeechBubbles.Add(SpeechBubbleObject);
+        SpeechBubbles.Add (SpeechBubbleObject);
     }
 
-
-
-
-    private void DoTargetedAction()// character will make a beacon above their head
+    private void DoTargetedAction() // character will make a beacon above their head
     {
         MakeSpeechBubble("I was targetd");
         NeedsUIUpdate = true;
 
         //TODO reacte to being targeted etc
-
     }
 
-
-    private void CheckIfItemInHand()//updates the hand var
+    private void CheckIfItemInHand() //updates the hand var
     {
-
         //TODO enable or disable spell if hand empty
-
         Transform handTransform = Hand.GetComponent<Transform>();
         int i = 0;
         foreach (Transform child in handTransform)
         {
             //Debug.Log("is child of hand" + child);
-            ItemController heldItemController = child.gameObject.GetComponent<ItemController>();
+            ItemController heldItemController =
+                child.gameObject.GetComponent<ItemController>();
             if (heldItemController != null)
             {
                 HeldItemController = heldItemController;
@@ -1710,7 +1726,9 @@ public class CharacterController : MonoBehaviour
         else
         {
             HasItemInHand = false;
+            HeldItemController = null;
         }
+
         // if somehow holding many items, drop em all
         if (i >= 2)
         {
@@ -1719,7 +1737,6 @@ public class CharacterController : MonoBehaviour
     }
 
     // Getters and setters for interactions
-
     public CharacterData GetCharacter()
     {
         return this.Character;
@@ -1755,7 +1772,6 @@ public class CharacterController : MonoBehaviour
         return Belt.transform;
     }
 
-
     public int GetRand()
     {
         return rand;
@@ -1776,12 +1792,10 @@ public class CharacterController : MonoBehaviour
         Action = 0.0f;
     }
 
-
     public bool GetHasItemInHand()
     {
         return this.HasItemInHand;
     }
-
 
     // TODO add value to health etc
     // add negative value to reduce
@@ -1792,8 +1806,6 @@ public class CharacterController : MonoBehaviour
 
     public void AddValueToMana(float value)
     {
-
-
         Character.CurrentMana += value;
 
         if (Character.CurrentMana <= 0.0f)
@@ -1801,9 +1813,7 @@ public class CharacterController : MonoBehaviour
             Character.CurrentMana = 0.0f;
             AddValueToHealth(value * 0.25f);
         }
-
     }
-
 
     public void AddValueToHealth(float value)
     {
@@ -1821,14 +1831,13 @@ public class CharacterController : MonoBehaviour
         {
             Character.CurrentHealth += value;
         }
-
-
     }
 
     public float GetCurrentHealth()
     {
         return this.Character.CurrentHealth;
     }
+
     public float GetCurrentMana()
     {
         return this.Character.CurrentMana;
@@ -1853,37 +1862,41 @@ public class CharacterController : MonoBehaviour
     // clear the target for when attacking to override target
     public void SetTarget(GameObject TargetToSet)
     {
-
         DeTarget();
-
 
         Transform TargetTransform = TargetToSet.GetComponent<Transform>();
         float RandZ = Random.Range(-0.2f, 0.2f);
         float RandX = Random.Range(-0.2f, 0.2f);
+
         //Vector3 SummonPositon = TargetTransform.position + new Vector3(0.0f, 2.0f, 0.0f);
-        Vector3 SummonPositon = TargetTransform.position + new Vector3(RandX, 2.0f, RandZ);
-        TargetBeaconObject = Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
+        Vector3 SummonPositon =
+            TargetTransform.position + new Vector3(RandX, 2.0f, RandZ);
+        TargetBeaconObject =
+            Instantiate(TargetBeacon, SummonPositon, Quaternion.identity);
 
         // set the color of target beacon
-        SpriteRenderer[] SpriteRendersInTargetBeacon = TargetBeaconObject.gameObject.GetComponentsInChildren<SpriteRenderer>();
+        SpriteRenderer[] SpriteRendersInTargetBeacon =
+            TargetBeaconObject
+                .gameObject
+                .GetComponentsInChildren<SpriteRenderer>();
         SpriteRendersInTargetBeacon[0].color = UIColor;
 
         //Light[] LightsInTargetBeacon = TargetBeaconObject.gameObject.GetComponentsInChildren<Light>();
         //LightsInTargetBeacon[0].color = UIColor;
-
-
-
         hasTarget = true;
         CombatTarget = TargetToSet;
-        TargetCharacter = TargetToSet.gameObject.GetComponent<CharacterController>().GetCharacter();
-        TargetCharacterController = CombatTarget.GetComponent<CharacterController>();
+        TargetCharacter =
+            TargetToSet
+                .gameObject
+                .GetComponent<CharacterController>()
+                .GetCharacter();
+        TargetCharacterController =
+            CombatTarget.GetComponent<CharacterController>();
 
         //make the target beacon a child of its taret
-        TargetBeaconObject.gameObject.GetComponent<Transform>().parent = CombatTarget.GetComponent<Transform>();
-
-
+        TargetBeaconObject.gameObject.GetComponent<Transform>().parent =
+            CombatTarget.GetComponent<Transform>();
     }
-
 
     public bool GetHasTarget()
     {
@@ -1901,21 +1914,21 @@ public class CharacterController : MonoBehaviour
         Character.x_pos = CharacterTransform.position.x;
         Character.y_pos = CharacterTransform.position.y;
         Character.z_pos = CharacterTransform.position.z;
-        CDM.Save(Character);
-
+        CDM.Save (Character);
     }
 
     public void Load()
     {
         Character = CDM.Load();
+
         // set world postion
         // TODO move this to recall potion
         //CharacterTransform.position = new Vector3(Character.x_pos, Character.y_pos, Character.z_pos);
-
-        MakeSpeechBubble("Loaded data for " + Character.Name + " from " + CharacterSaveFile);
-
+        MakeSpeechBubble("Loaded data for " +
+        Character.Name +
+        " from " +
+        CharacterSaveFile);
     }
-
 
     public void SetIsPlayer(bool NewStatus)
     {
@@ -1935,7 +1948,8 @@ public class CharacterController : MonoBehaviour
     }
 
     // swap into target as long as its not self and let camera know
-    public bool SwapIntoTarget(CharacterController SwapTargetCharacterController)
+    public bool
+    SwapIntoTarget(CharacterController SwapTargetCharacterController)
     {
         if (SwapTargetCharacterController != this)
         {
@@ -1955,9 +1969,7 @@ public class CharacterController : MonoBehaviour
             hasTarget = false;
             IsFighting = false;
             */
-
             // TODO cooldown set from being swapped into
-
             SetNavAgentStateFromIsPlayer();
             return true;
         }
@@ -1978,12 +1990,10 @@ public class CharacterController : MonoBehaviour
         return TargetCharacterController.GetCameraTarget();
     }
     */
-
     private void SetNavAgentStateFromIsPlayer()
     {
         NavAgent.enabled = !Character.IsPlayer;
     }
-
 
     private void SetNavAgentStateFromIsMoving()
     {
@@ -1999,26 +2009,28 @@ public class CharacterController : MonoBehaviour
     {
         Character.squadLeaderId = newUUID;
     }
+
     private void GetFollowTargetFromSquadLeaderId()
     {
-
         // if character is a foller and in a squad find follow target
         if (Character.IsFollower && (Character.squadLeaderId != ""))
         {
-            var characterControllersList = FindObjectsOfType<CharacterController>();
+            var characterControllersList =
+                FindObjectsOfType<CharacterController>();
             string id;
             foreach (CharacterController controller in characterControllersList)
             {
                 id = controller.GetUUID();
+
                 //Debug.Log("found id" + id);
                 if (id == Character.squadLeaderId)
                 {
                     FollowTarget = controller.gameObject;
+
                     //Debug.Log(Character.Name + " found my followtagret " + FollowTarget);
                     break;
                 }
             }
-
         }
     }
 
@@ -2043,16 +2055,16 @@ public class CharacterController : MonoBehaviour
     {
         string InviterID = InviterController.GetUUID();
         string InviterLeaderID = InviterController.GetSquadLeaderUUID();
+
         // if inviter is leader or has none, join them
         if (InviterID == InviterLeaderID || InviterLeaderID == "")
         {
-            JoinSquadLeadBy(InviterID);
+            JoinSquadLeadBy (InviterID);
         }
         else
         {
-            JoinSquadLeadBy(InviterLeaderID);
+            JoinSquadLeadBy (InviterLeaderID);
         }
-
     }
 
     public bool GetNeedsUIUpdate()
@@ -2065,16 +2077,18 @@ public class CharacterController : MonoBehaviour
         NeedsUIUpdate = newState;
     }
 
-
     private void CheckForOtherFactionsToFight()
     {
-        Collider[] hitColliders = Physics.OverlapSphere(CharacterTransform.position, Character.TargetRange);
+        Collider[] hitColliders =
+            Physics
+                .OverlapSphere(CharacterTransform.position,
+                Character.TargetRange);
         foreach (var hitCollider in hitColliders)
         {
-            CharacterController controller = hitCollider.gameObject.GetComponent<CharacterController>();
+            CharacterController controller =
+                hitCollider.gameObject.GetComponent<CharacterController>();
             if (controller != null)
             {
-
                 if (GetMyAlignmentWithFaction(controller.GetFaction()) < 0.0f)
                 {
                     //Debug.Log(Character.id+"I should attack"+controller.GetUUID());
@@ -2083,10 +2097,7 @@ public class CharacterController : MonoBehaviour
                 }
             }
         }
-
     }
-
-
 
     private void DetermineMyFaction()
     {
@@ -2177,8 +2188,8 @@ public class CharacterController : MonoBehaviour
     {
         selfDestuctStarted = true;
         NeedsUIUpdate = true;
-
     }
+
     private void SelfDestruct()
     {
         if (selfDestructTimer <= 0.0f)
@@ -2193,7 +2204,8 @@ public class CharacterController : MonoBehaviour
             selfDestructTimer -= Time.deltaTime;
             if (FollowTarget != null)
             {
-                CharacterController controller = FollowTarget.gameObject.GetComponent<CharacterController>();
+                CharacterController controller =
+                    FollowTarget.gameObject.GetComponent<CharacterController>();
                 controller.SetNeedsUIUpdate(true);
                 Character.squadLeaderId = "";
             }
@@ -2209,10 +2221,12 @@ public class CharacterController : MonoBehaviour
             rb.constraints = RigidbodyConstraints.None;
 
             // if has target face them if close enough
-
             if (hasTarget && CombatTarget != null)
             {
-                float distance = Vector3.Distance(CharacterTransform.position, CombatTarget.gameObject.transform.position);
+                float distance =
+                    Vector3
+                        .Distance(CharacterTransform.position,
+                        CombatTarget.gameObject.transform.position);
                 float lockOnRange = Character.Reach;
                 if (HeldItemController != null)
                 {
@@ -2221,14 +2235,27 @@ public class CharacterController : MonoBehaviour
                 }
                 if (distance <= lockOnRange)
                 {
-                    CharacterTransform.rotation = Quaternion.Slerp(CharacterTransform.rotation, Quaternion.LookRotation(CombatTarget.gameObject.transform.position - CharacterTransform.position), 90.0f * Time.deltaTime);
+                    CharacterTransform.rotation =
+                        Quaternion
+                            .Slerp(CharacterTransform.rotation,
+                            Quaternion
+                                .LookRotation(CombatTarget
+                                    .gameObject
+                                    .transform
+                                    .position -
+                                CharacterTransform.position),
+                            90.0f * Time.deltaTime);
                 }
             }
-
         }
         else
         {
-            rb.constraints = RigidbodyConstraints.FreezePositionX | RigidbodyConstraints.FreezePositionY | RigidbodyConstraints.FreezePositionZ | RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+            rb.constraints =
+                RigidbodyConstraints.FreezePositionX |
+                RigidbodyConstraints.FreezePositionY |
+                RigidbodyConstraints.FreezePositionZ |
+                RigidbodyConstraints.FreezeRotationX |
+                RigidbodyConstraints.FreezeRotationZ;
 
             // cant move
         }
@@ -2263,7 +2290,7 @@ public class CharacterController : MonoBehaviour
 
     private void DeTarget()
     {
-        Destroy(TargetBeaconObject);
+        Destroy (TargetBeaconObject);
         CombatTarget = null;
         TargetCharacter = null;
         hasTarget = false;
@@ -2276,7 +2303,6 @@ public class CharacterController : MonoBehaviour
         rb.velocity = VelocityVector;
     }
 
-
     public string GetBuildingUUIDOfType(string buildingType)
     {
         foreach (BuildingController building in Buildings)
@@ -2286,9 +2312,9 @@ public class CharacterController : MonoBehaviour
                 return building.GetUUID();
             }
         }
+
         // retrun blank if no building of that type
         return "";
-
     }
 
     public Transform GetBuildingTransformOfType(string buildingType)
@@ -2300,15 +2326,14 @@ public class CharacterController : MonoBehaviour
                 return building.GetTransform();
             }
         }
+
         // retrun blank if no home
         return null;
     }
 
-
-
     public void AddBuildingToList(BuildingController buildingToAdd)
     {
-        Buildings.Add(buildingToAdd);
+        Buildings.Add (buildingToAdd);
     }
 
     private BuildingController GetBuildingControllerOfType(string buildingType)
@@ -2320,25 +2345,25 @@ public class CharacterController : MonoBehaviour
                 return building;
             }
         }
+
         // retrun blank if no home
         return null;
     }
 
-
     public void RemoveBuildingFromListByUUID(string UUIDToRemove)
     {
         List<BuildingController> tempList = new List<BuildingController>();
+
         // move all bubbles up and remove null bubbles from list
         foreach (BuildingController building in Buildings)
         {
             if (building.GetUUID() != UUIDToRemove)
             {
-                tempList.Add(building);
+                tempList.Add (building);
             }
         }
         Buildings = tempList;
     }
-
 
     public string GetCurrentTask()
     {
@@ -2361,12 +2386,12 @@ public class CharacterController : MonoBehaviour
         NextTask = taskToAdd;
     }
 
-
     public bool GetIsFollowingPlayer()
     {
         if (Character.IsFollowing && FollowTarget != null)
         {
-            CharacterController followController = FollowTarget.gameObject.GetComponent<CharacterController>();
+            CharacterController followController =
+                FollowTarget.gameObject.GetComponent<CharacterController>();
             return followController.GetIsPlayer();
         }
         return false;
@@ -2380,9 +2405,9 @@ public class CharacterController : MonoBehaviour
             // heal on sleeping
             Character.CurrentHealth = Character.MaxHealth;
             WentHomeToSleep = false;
-            NextTask = Character.DefaultTask;// wake up and do default stuff
+            NextTask = Character.DefaultTask; // wake up and do default stuff
             IncrementTask();
-            LastTask = Character.DefaultTask;// remove sleep from last task
+            LastTask = Character.DefaultTask; // remove sleep from last task
         }
     }
 
@@ -2418,49 +2443,48 @@ public class CharacterController : MonoBehaviour
         SetCharacterCanMove(true);
         MakeSpeechBubble("bye!");
         NeedsUIUpdate = true;
-
     }
 
     public void DoDialog()
     {
-
         // if is player then they can still move but not attack etc
-
         // is meant to all be controlled from dialog manager
-
         // if isplayer, then get update from ui
         NeedsUIUpdate = true;
 
         MakeSpeechBubble("im in a dialog, managed by a dialog manager");
 
-
         if (GetIsPlayer())
         {
-
         }
-
-
     }
 
-    public void SetIsInShop(bool newStatus, BuildingController newCurrentShopController)
+    public void SetIsInShop(
+        bool newStatus,
+        BuildingController newCurrentShopController
+    )
     {
         isInShop = newStatus;
         CurrentShopController = newCurrentShopController;
     }
 
-    public string GetTownUUID(){
+    public string GetTownUUID()
+    {
         return TownUUID;
     }
-    public void SetTownUUID(string newUUID){
+
+    public void SetTownUUID(string newUUID)
+    {
         TownUUID = newUUID;
     }
 
-    public void SetInBuildMode(bool newStatus){
+    public void SetInBuildMode(bool newStatus)
+    {
         inBuildMode = newStatus;
     }
 
-    public ItemController GetHeldItemController(){
+    public ItemController GetHeldItemController()
+    {
         return HeldItemController;
     }
 }
-

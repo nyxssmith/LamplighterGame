@@ -54,6 +54,9 @@ public class BuildTool : MonoBehaviour
 
     private GameObject TargetBeaconObject;
 
+
+    // TODO resource costs per material
+
     void Start()
     {
         BaseItem = this.gameObject.GetComponent<ItemController>();
@@ -227,6 +230,7 @@ public class BuildTool : MonoBehaviour
                 hitCollider.gameObject.GetComponent<BuildingController>();
             if (controller != null)
             {
+                // TODO readd the check that the town of the building is same as owned town
                 //if (controller.GetType() == buildingType)
                 //{
                 // compare distance and try to find closest
@@ -351,5 +355,17 @@ public class BuildTool : MonoBehaviour
         }
 
         isShowingGhost = false;
+    }
+
+    public string GetResourcesCostString(){
+
+        // TODO when swithcing prefabs, before disable the controller, set the costs vars from building controller
+        string costsString = "stone: 0\nwood: 1\netc: 42";
+
+        return costsString;
+    }
+
+    public bool GetCanPlace(){
+        return canPlace;
     }
 }
