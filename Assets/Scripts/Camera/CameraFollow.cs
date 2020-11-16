@@ -189,6 +189,8 @@ public class CameraFollow : MonoBehaviour
             // update buildmode text here
             //InfoText = "build mode";
             UpdateInfoUIForBuildMode();
+            buildToolIndex = BuildToolController.Index;
+                
         }
         else
         {
@@ -272,6 +274,8 @@ public class CameraFollow : MonoBehaviour
                 BuildToolController =
                     BuildToolObject.gameObject.GetComponent<BuildTool>();
 
+                BuildToolController.Index=  buildToolIndex;
+                //BuildToolController.SetIndex( buildToolIndex);
                 // give the build tool as hand item
                 inBuildMode = true;
 

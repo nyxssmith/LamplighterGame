@@ -563,7 +563,7 @@ public class CharacterController : MonoBehaviour
         }
 
         // debug super helpful
-        MakeSpeechBubble("CURRENT " + CurrentTask + " next " + NextTask + " last " + LastTask + " nextnext " + NextNextTask);
+        //MakeSpeechBubble("CURRENT " + CurrentTask + " next " + NextTask + " last " + LastTask + " nextnext " + NextNextTask);
         
         
         if (StandingStillTimer > 0.0f)

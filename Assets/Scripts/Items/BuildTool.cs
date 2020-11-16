@@ -54,9 +54,7 @@ public class BuildTool : MonoBehaviour
 
     private GameObject TargetBeaconObject;
 
-
     // TODO resource costs per material
-
     void Start()
     {
         BaseItem = this.gameObject.GetComponent<ItemController>();
@@ -298,6 +296,17 @@ public class BuildTool : MonoBehaviour
             GhostMaterialNotAllowedToPlace;
         GhostImage.GetComponent<BuildingController>().enabled = false;
 
+        // disable all collision
+        foreach (Collider c in GhostImage.GetComponents<Collider>())
+        {
+            c.enabled = false;
+        }
+        // disable all walls and navmesh holes, so ghost is just visual
+        foreach (Transform child in GhostImage.transform)
+        {
+            child.gameObject.SetActive(false); // or false
+        }
+
         isShowingGhost = true;
     }
 
@@ -357,15 +366,20 @@ public class BuildTool : MonoBehaviour
         isShowingGhost = false;
     }
 
-    public string GetResourcesCostString(){
-
+    public string GetResourcesCostString()
+    {
         // TODO when swithcing prefabs, before disable the controller, set the costs vars from building controller
         string costsString = "stone: 0\nwood: 1\netc: 42";
 
         return costsString;
     }
 
-    public bool GetCanPlace(){
+    public bool GetCanPlace()
+    {
         return canPlace;
     }
+
+    //public void SetIndex(int newIndex){
+    //    Index = newIndex;
+    //}
 }
