@@ -101,6 +101,7 @@ public class CameraFollow : MonoBehaviour
     private bool needsUIUpdate = true;
 
     private int buildToolIndex = 0;
+    private int buildToolLength;
 
     private float ConstUpdateTimer = 0f;
 
@@ -275,6 +276,8 @@ public class CameraFollow : MonoBehaviour
                     BuildToolObject.gameObject.GetComponent<BuildTool>();
 
                 BuildToolController.Index=  buildToolIndex;
+
+                buildToolLength = BuildToolController.GetLength();
                 //BuildToolController.SetIndex( buildToolIndex);
                 // give the build tool as hand item
                 inBuildMode = true;
@@ -465,6 +468,8 @@ public class CameraFollow : MonoBehaviour
         buildString =
             buildString +
             "Push [TAB] to cycle through buildable objects and delete tool\n";
+
+        buildString = buildString + "Build Option: "+(buildToolIndex+1).ToString()+"/"+BuildToolController.GetLength()+"\n";
 
         if (BuildToolController.Index == 0)
         {

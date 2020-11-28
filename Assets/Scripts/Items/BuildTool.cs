@@ -379,6 +379,11 @@ public class BuildTool : MonoBehaviour
         return canPlace;
     }
 
+    // get len of build list for info string
+    public int GetLength(){
+        return BuildObjects.Count;
+    }
+
     //public void SetIndex(int newIndex){
     //    Index = newIndex;
     //}
