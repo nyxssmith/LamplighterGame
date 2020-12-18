@@ -344,6 +344,25 @@ public class BuildTool : MonoBehaviour
                             .GetComponent<BuildingController>());
             }
         }
+        // TODO resource checks
+
+        // TODO move down to ground / fix placement (maybe add in manual control for this)
+
+
+        // TODO collision box checks
+
+        /*
+        foreach (Collider c in GhostImage.GetComponents<Collider>())
+        {
+            //c.enabled = false;// check for collsion with anything not it
+        }
+        */
+
+
+
+        // DEBUG TODO RM THIS LATER
+        canPlace = true;
+
         if (canPlace)
         {
             GhostImage.GetComponent<MeshRenderer>().material =
