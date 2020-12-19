@@ -40,7 +40,7 @@ public class WorldManager : MonoBehaviour
     public void Update()
     {
         // push u to generate road
-        if (Input.GetKey("u"))
+        if (Input.GetKey("p"))
         {
             if (!generated_road)
             {

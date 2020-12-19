@@ -53,13 +53,14 @@ public class CharacterController : MonoBehaviour {
             PlayerMove ();
 
             //Debug save and load functions
-            if (Input.GetKey ("i")) {
-                Character = CDM.Load ();
-            }
+            //if (Input.GetKey ("i")) {
+            //    Character = CDM.Load ();
+            //}
+            //if (Input.GetKey ("o")) {
+            //    CDM.Save (Character);
+            //}
 
-            if (Input.GetKey ("o")) {
-                CDM.Save (Character);
-            }
+
             if (Input.GetKey ("e")) {
                 Interact ();
             }

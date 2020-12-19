@@ -64,25 +64,25 @@ public class ItemController : MonoBehaviour
     {
         //happens on physics updates
         //saving etc
-        if (Input.GetKeyDown("i"))
-        {
-            Load();
-        }
-        if (Input.GetKeyDown("o"))
-        {
-            Save();
-        }
+        //if (Input.GetKeyDown("i"))
+        //{
+        //    Load();
+        //}
+        //if (Input.GetKeyDown("o"))
+        //{
+        //    Save();
+        //}
 
         // for debug
-        if (Input.GetKeyDown("k"))
-        {
-            if (isPickedUp && Item.heldLocation == "Hand")
-            {
-                string summary = GetSummaryString();
-                ActionTargetCharacterController
-                    .MakeSpeechBubble("Item is\n" + summary);
-            }
-        }
+        //if (Input.GetKeyDown("k"))
+        //{
+        //    if (isPickedUp && Item.heldLocation == "Hand")
+        //    {
+        //        string summary = GetSummaryString();
+        //        ActionTargetCharacterController
+        //            .MakeSpeechBubble("Item is\n" + summary);
+        //    }
+        //}
     }
 
     private void Load()

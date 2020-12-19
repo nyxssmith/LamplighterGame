@@ -170,7 +170,7 @@ public class CameraFollow : MonoBehaviour
         GetPlayersTargetCharacter();
         DoUI();
 
-        if (Input.GetKeyDown("j"))
+        if (Input.GetKeyDown("h"))
         {
             UnityEngine.Debug.Log("setting player to ask for ui update");
             Player.SetNeedsUIUpdate(true);
@@ -467,7 +467,9 @@ public class CameraFollow : MonoBehaviour
 
         buildString =
             buildString +
-            "Push [TAB] to cycle through buildable objects and delete tool\n";
+            "Push [TAB] to cycle through buildable objects and delete tool\nUse [I] and [K] to change build distance\nUse [U] and [O] to change tilt\nUse [J] and [L] to change rotation\nUse [N] and [M] to change the build height postion\n";
+
+
 
         buildString = buildString + "Build Option: "+(buildToolIndex+1).ToString()+"/"+BuildToolController.GetLength()+"\n";
 
@@ -482,10 +484,13 @@ public class CameraFollow : MonoBehaviour
         {
             buildString = buildString + "[Mode: Construction]\n";
 
+
             if (!BuildToolController.GetCanPlace())
             {
-                buildString = buildString + "Can only build in town\n";
+                // if cant place, get debug reason
+                buildString = buildString + BuildToolController.GetReasonCantPlace();
             }
+
 
             // add resoruce costs
             buildString =

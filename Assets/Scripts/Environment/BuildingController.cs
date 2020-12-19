@@ -15,7 +15,7 @@ public class BuildingController : MonoBehaviour
 
     private string ownerUUID = "";
     private string UUID = "";
-    public string Type = "";// HOME SHOP FARM
+    public string Type = "";// HOME SHOP FARM OBJECT
 
     private bool HasDoneWork = false;
 

@@ -40,6 +40,7 @@ public class BuildTool : MonoBehaviour
     public GameObject Prefab4;
 
     public GameObject Prefab5;
+    public GameObject Prefab6;
 
     private List<GameObject> BuildObjects = new List<GameObject>();
 
@@ -50,9 +51,36 @@ public class BuildTool : MonoBehaviour
 
     private bool canPlace;
 
+    private string reasonCantPlace;
+
     private GameObject TargetedBuilding;
 
     private GameObject TargetBeaconObject;
+
+    // building placement modifiers
+    private float distanceFromCharater = 5.0f;
+
+    private float maxDistanceFromCharater = 10.0f;
+
+    private float minDistanceFromCharater = 2.5f;
+
+    private float buildingRotation = 0.0f;
+
+    private float minBuildingRotation = -90.0f;
+
+    private float maxBuildingRotation = 90.0f;
+
+    private float buildingTilt = 0.0f;
+
+    private float maxBuildingTilt = 15.0f;
+
+    private float minBuildingTilt = -15.0f;
+
+    private float buildingHeight = 0.0f;
+
+    private float maxBuildingHeight = 2.0f;
+
+    private float minBuildingHeight = -2.0f;
 
     // TODO resource costs per material
     void Start()
@@ -73,6 +101,7 @@ public class BuildTool : MonoBehaviour
         BuildObjects.Add (Prefab3);
         BuildObjects.Add (Prefab4);
         BuildObjects.Add (Prefab5);
+        BuildObjects.Add (Prefab6);
     }
 
     public void SetCharacter(CharacterController CurrentCharacter)
@@ -82,6 +111,7 @@ public class BuildTool : MonoBehaviour
 
     public void Update()
     {
+        // cycle prefab to summon
         if (Input.GetKeyDown("tab"))
         {
             Index += 1;
@@ -93,6 +123,71 @@ public class BuildTool : MonoBehaviour
             DeTarget();
         }
 
+        //move building closer and farther away
+        if (Input.GetKeyDown("i"))
+        {
+            if (distanceFromCharater <= maxDistanceFromCharater)
+            {
+                distanceFromCharater += 0.5f;
+            }
+        }
+        if (Input.GetKeyDown("k"))
+        {
+            if (distanceFromCharater >= minDistanceFromCharater)
+            {
+                distanceFromCharater -= 0.5f;
+            }
+        }
+
+        //rotate building direction
+        if (Input.GetKeyDown("j"))
+        {
+            if (buildingRotation <= maxBuildingRotation)
+            {
+                buildingRotation += 5.0f;
+            }
+        }
+        if (Input.GetKeyDown("l"))
+        {
+            if (buildingRotation >= minBuildingRotation)
+            {
+                buildingRotation -= 5.0f;
+            }
+        }
+
+        //tild building
+        if (Input.GetKeyDown("u"))
+        {
+            if (buildingTilt <= maxBuildingTilt)
+            {
+                buildingTilt += 1.0f;
+            }
+        }
+        if (Input.GetKeyDown("o"))
+        {
+            if (buildingTilt >= minBuildingTilt)
+            {
+                buildingTilt -= 1.0f;
+            }
+        }
+
+        // change building hieght
+        if (Input.GetKeyDown("n"))
+        {
+            if (buildingHeight >= minBuildingHeight)
+            {
+                buildingHeight -= 0.25f;
+            }
+        }
+        if (Input.GetKeyDown("m"))
+        {
+            if (buildingHeight <= maxBuildingHeight)
+            {
+                buildingHeight += 0.25f;
+            }
+        }
+
+        // pick which prefab
         CurrentPrefab = BuildObjects[Index];
 
         if (BaseItem.CanDoAction == ActionToFunctionOn)
@@ -221,7 +316,7 @@ public class BuildTool : MonoBehaviour
 
         // 100.0f is range to look for house
         Collider[] hitColliders =
-            Physics.OverlapSphere(CharacterTransform.position, 100.0f);
+            Physics.OverlapSphere(CharacterTransform.position, 25.0f);
         foreach (var hitCollider in hitColliders)
         {
             BuildingController controller =
@@ -273,6 +368,31 @@ public class BuildTool : MonoBehaviour
                 Character.GetCharacterTransform().forward * 10.0f,
                 Quaternion.identity);
 
+            // use same position as ghost image
+            house.transform.forward =
+                new Vector3(Character.GetCharacterTransform().forward.x,
+                    Character.GetCharacterTransform().forward.y,
+                    Character.GetCharacterTransform().forward.z);
+
+            Vector3 rot = house.transform.rotation.eulerAngles;
+
+            // rotate to face character
+            rot =
+                new Vector3(rot.x + buildingTilt,
+                    rot.y + 180 + buildingRotation,
+                    rot.z);
+
+            Debug.Log("rot for building" + rot.ToString());
+            house.transform.rotation = Quaternion.Euler(rot);
+
+            // set position
+            house.transform.position =
+                Character.GetCharacterTransform().position +
+                Character.GetCharacterTransform().forward *
+                distanceFromCharater +
+                Character.GetCharacterTransform().up * buildingHeight;
+
+            /*
             house.transform.forward =
                 new Vector3(Character.GetCharacterTransform().forward.x,
                     Character.GetCharacterTransform().forward.y,
@@ -280,6 +400,7 @@ public class BuildTool : MonoBehaviour
             Vector3 rot = house.transform.rotation.eulerAngles;
             rot = new Vector3(rot.x, rot.y + 180, rot.z);
             house.transform.rotation = Quaternion.Euler(rot);
+            */
         }
     }
 
@@ -288,7 +409,7 @@ public class BuildTool : MonoBehaviour
         GhostImage =
             Instantiate(CurrentPrefab,
             Character.GetCharacterTransform().position +
-            Character.GetCharacterTransform().forward * 10.0f,
+            Character.GetCharacterTransform().forward * distanceFromCharater,
             Quaternion.identity);
 
         //set prefab stuff to ghost mode
@@ -301,6 +422,7 @@ public class BuildTool : MonoBehaviour
         {
             c.enabled = false;
         }
+
         // disable all walls and navmesh holes, so ghost is just visual
         foreach (Transform child in GhostImage.transform)
         {
@@ -316,15 +438,27 @@ public class BuildTool : MonoBehaviour
             new Vector3(Character.GetCharacterTransform().forward.x,
                 Character.GetCharacterTransform().forward.y,
                 Character.GetCharacterTransform().forward.z);
+
         Vector3 rot = GhostImage.transform.rotation.eulerAngles;
-        rot = new Vector3(rot.x, rot.y + 180, rot.z);
+
+        // rotate to face character
+        rot =
+            new Vector3(rot.x + buildingTilt,
+                rot.y + 180 + buildingRotation,
+                rot.z);
+
+        //Debug.Log("rot for building" + rot.ToString());
         GhostImage.transform.rotation = Quaternion.Euler(rot);
+
+        // set position
         GhostImage.transform.position =
             Character.GetCharacterTransform().position +
-            Character.GetCharacterTransform().forward * 10.0f;
+            Character.GetCharacterTransform().forward * distanceFromCharater +
+            Character.GetCharacterTransform().up * buildingHeight;
 
         // check if in town etc, so find town controller and ask if allowed to place prefab
         canPlace = false;
+        reasonCantPlace = "\n";
 
         //get town controller, if null then not allowed
         // if in town do a "get can place" from town
@@ -343,23 +477,21 @@ public class BuildTool : MonoBehaviour
                         .GetAllowedToPlaceBuilding(GhostImage
                             .GetComponent<BuildingController>());
             }
+            else
+            {
+                reasonCantPlace = "Must be placed in a town\n";
+            }
         }
+
         // TODO resource checks
-
         // TODO move down to ground / fix placement (maybe add in manual control for this)
-
-
         // TODO collision box checks
-
         /*
         foreach (Collider c in GhostImage.GetComponents<Collider>())
         {
             //c.enabled = false;// check for collsion with anything not it
         }
         */
-
-
-
         // DEBUG TODO RM THIS LATER
         canPlace = true;
 
@@ -398,8 +530,14 @@ public class BuildTool : MonoBehaviour
         return canPlace;
     }
 
+    public string GetReasonCantPlace()
+    {
+        return reasonCantPlace;
+    }
+
     // get len of build list for info string
-    public int GetLength(){
+    public int GetLength()
+    {
         return BuildObjects.Count;
     }
 
