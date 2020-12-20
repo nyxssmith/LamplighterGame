@@ -40,6 +40,7 @@ public class BuildTool : MonoBehaviour
     public GameObject Prefab4;
 
     public GameObject Prefab5;
+
     public GameObject Prefab6;
 
     private List<GameObject> BuildObjects = new List<GameObject>();
@@ -82,10 +83,14 @@ public class BuildTool : MonoBehaviour
 
     private float minBuildingHeight = -2.0f;
 
+    // overlap distance check
+    private float overlapDistance;
+
     // TODO resource costs per material
     void Start()
     {
         BaseItem = this.gameObject.GetComponent<ItemController>();
+        BaseItem.SetCanBeDropped(false);
 
         // torches are always lit by default
         FillListOfBuildObjects();
@@ -353,8 +358,14 @@ public class BuildTool : MonoBehaviour
                 //}
             }
         }
-
-        return foundbuilding.gameObject;
+        if (foundbuilding != null)
+        {
+            return foundbuilding.gameObject;
+        }
+        else
+        {
+            return null;
+        }
     }
 
     private void SummonHouse()
@@ -391,16 +402,6 @@ public class BuildTool : MonoBehaviour
                 Character.GetCharacterTransform().forward *
                 distanceFromCharater +
                 Character.GetCharacterTransform().up * buildingHeight;
-
-            /*
-            house.transform.forward =
-                new Vector3(Character.GetCharacterTransform().forward.x,
-                    Character.GetCharacterTransform().forward.y,
-                    Character.GetCharacterTransform().forward.z);
-            Vector3 rot = house.transform.rotation.eulerAngles;
-            rot = new Vector3(rot.x, rot.y + 180, rot.z);
-            house.transform.rotation = Quaternion.Euler(rot);
-            */
         }
     }
 
@@ -415,6 +416,33 @@ public class BuildTool : MonoBehaviour
         //set prefab stuff to ghost mode
         GhostImage.GetComponent<MeshRenderer>().material =
             GhostMaterialNotAllowedToPlace;
+
+        string Type = GhostImage.GetComponent<BuildingController>().GetType();
+
+        //Debug.Log (Type);
+        if (Type == "HOME")
+        {
+            overlapDistance = 5.0f;
+        }
+        else if (Type == "SHOP")
+        {
+            overlapDistance = 5.0f;
+        }
+        else if (Type == "FARM")
+        {
+            overlapDistance = 10.0f;
+        }
+        else if (Type == "OBJECT")
+        {
+            // objects are allowed to overlap
+            overlapDistance = 0.0f;
+        }
+        else
+        {
+            // TODO cover all sizes or make better rule for sizing
+            overlapDistance = 1.0f;
+        }
+
         GhostImage.GetComponent<BuildingController>().enabled = false;
 
         // disable all collision
@@ -479,21 +507,51 @@ public class BuildTool : MonoBehaviour
             }
             else
             {
-                reasonCantPlace = "Must be placed in a town\n";
+                reasonCantPlace = "Buildings can only be placed in a town\n";
             }
         }
 
-        // TODO resource checks
-        // TODO move down to ground / fix placement (maybe add in manual control for this)
-        // TODO collision box checks
-        /*
-        foreach (Collider c in GhostImage.GetComponents<Collider>())
-        {
-            //c.enabled = false;// check for collsion with anything not it
-        }
-        */
-        // DEBUG TODO RM THIS LATER
+        // DEBUG to allow place out of town
+        // TODO RM THIS LATER
         canPlace = true;
+
+        // TODO resource checks
+
+
+
+
+        
+        // Check that building is not too close to others
+        //Debug.Log("overlapdist" + overlapDistance.ToString());
+        if (overlapDistance > 0.0f)
+        {
+            // checks to make sure there are no building controllers in that range, if so, then can place
+            hitColliders =
+                Physics
+                    .OverlapSphere(GhostImage.transform.position,
+                    overlapDistance);
+            foreach (var hitCollider in hitColliders)
+            {
+                BuildingController controller =
+                    hitCollider.gameObject.GetComponent<BuildingController>();
+
+                if (controller != null)
+                {
+                    // object type buildings do not count as overlap
+                    string otherBuildingType = controller.GetType();
+                    //Debug.Log("other type "+otherBuildingType);
+                    if (otherBuildingType != "OBJECT")
+                    {
+                        canPlace = false;
+                    }
+                }
+                else
+                {
+                    reasonCantPlace =
+                        "Building of this type cannot be overlapping or too close to another building\n";
+                }
+            }
+        }
 
         if (canPlace)
         {

@@ -25,7 +25,7 @@ public class CharacterController : MonoBehaviour {
     private SummonTest Summoner = new SummonTest();
 
     // variables that are used for interacting with world but dont matter for save
-    private bool IsDroppingItem = false;
+    //private bool IsDroppingItem = false;
 
     //When character comes online, set vars needed for init
     private void Awake () {
@@ -69,11 +69,11 @@ public class CharacterController : MonoBehaviour {
 
             }
 
-            if (Input.GetKey ("q")) {
-                IsDroppingItem = true;
-            }else{
-                IsDroppingItem = false;
-            }
+            //if (Input.GetKey ("q")) {
+            //    IsDroppingItem = true;
+            //}else{
+            //    IsDroppingItem = false;
+            //}
 
             if (Input.GetKey("g")){
                 Summoner.SummonBunchOfCubes();
@@ -219,9 +219,9 @@ public class CharacterController : MonoBehaviour {
         return this.CharacterTransform;
     }
 
-    public bool GetIsDroppingItem () {
-        return this.IsDroppingItem;
-    }
+    //public bool GetIsDroppingItem () {
+    //    return this.IsDroppingItem;
+    //}
 
 
 }

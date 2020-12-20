@@ -44,6 +44,8 @@ public class ItemController : MonoBehaviour
 
     private GameObject HoldingCharacter;
 
+    private bool CanBeDropped = true;// check that item can be dropped, for built tool use
+
     //When character comes online, set vars needed for init
     private void Awake()
     {
@@ -186,8 +188,8 @@ public class ItemController : MonoBehaviour
 
             //CurrentItemAction = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
             if (
-                (Status == "Dropping" && Item.heldLocation == "Hand") ||
-                CurrentItemAction == -1.0f
+                ((Status == "Dropping" && Item.heldLocation == "Hand") ||
+                CurrentItemAction == -1.0f) && CanBeDropped
             )
             {
                 Debug.Log("parent id dropping me");
@@ -601,6 +603,8 @@ public class ItemController : MonoBehaviour
                 HoldingCharacter);
             }
         }
+
+
     }
 
     void OnCollisionEnter(Collision collision)
@@ -946,4 +950,14 @@ public class ItemController : MonoBehaviour
     {
         return Item;
     }
+
+    public void SetCanBeDropped(bool newStatus){
+        CanBeDropped = newStatus;
+    }
+
+
+    public float GetCoolDown(){
+        return CooldownTimer;
+    }
+    
 }

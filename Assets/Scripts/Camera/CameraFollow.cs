@@ -465,13 +465,15 @@ public class CameraFollow : MonoBehaviour
     {
         string buildString = "[Build Mode]\n";
 
+        buildString = buildString + "Build Option: "+(buildToolIndex+1).ToString()+"/"+BuildToolController.GetLength()+"\n";
+
+
         buildString =
             buildString +
             "Push [TAB] to cycle through buildable objects and delete tool\nUse [I] and [K] to change build distance\nUse [U] and [O] to change tilt\nUse [J] and [L] to change rotation\nUse [N] and [M] to change the build height postion\n";
 
 
 
-        buildString = buildString + "Build Option: "+(buildToolIndex+1).ToString()+"/"+BuildToolController.GetLength()+"\n";
 
         if (BuildToolController.Index == 0)
         {

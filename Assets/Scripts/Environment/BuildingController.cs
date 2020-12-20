@@ -1,32 +1,32 @@
+using System;
+using System;
+using System.Collections;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using System;
 using System.IO;
-using System.Text;
-using System.Collections;
-
-using System;
 using System.Linq;
+using System.Text;
+using UnityEngine;
 
 public class BuildingController : MonoBehaviour
 {
-
-
     private string ownerUUID = "";
+
     private string UUID = "";
-    public string Type = "";// HOME SHOP FARM OBJECT
+
+    public string Type = ""; // HOME SHOP FARM OBJECT
 
     private bool HasDoneWork = false;
 
-
     private Transform BuildingTransform;
-    //private Transform MerchantSpot = null;
 
+    //private Transform MerchantSpot = null;
     private CharacterController OwnerControllerIfPresent = null;
 
-    private List<CharacterController> CharactersWhoInteract = new List<CharacterController>();
+    private List<CharacterController>
+        CharactersWhoInteract = new List<CharacterController>();
 
+    private float OverlapSize;
 
     public void Start()
     {
@@ -42,37 +42,34 @@ public class BuildingController : MonoBehaviour
         //    Debug.Log("found merchant spot"+MerchantSpot);
         //}
 
-
+        
     }
 
     public void Update()
     {
-
-
     }
 
+    
 
     private void OnTriggerEnter(Collider EnteringCharacter)
     {
-
         if (Type == "HOME")
         {
-
             //Debug.Log("enter" + EnteringCharacter);
-
-            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+            CharacterController EnteringCharacterController =
+                EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
-                AssignOwnership(EnteringCharacterController);
+                AssignOwnership (EnteringCharacterController);
                 //AssignHousingOwnership(EnteringCharacterController);
             }
         }
         else if (Type == "SHOP")
         {
-            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+            CharacterController EnteringCharacterController =
+                EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
-
                 EnteringCharacterController.SetIsInShop(true, this);
 
                 if (EnteringCharacterController.GetUUID() == GetOwner())
@@ -82,36 +79,36 @@ public class BuildingController : MonoBehaviour
 
                 if (!EnteringCharacterController.GetIsPlayer())
                 {
-                    string EnteringCharactersTask = EnteringCharacterController.GetCurrentTask();
+                    string EnteringCharactersTask =
+                        EnteringCharacterController.GetCurrentTask();
 
                     if (EnteringCharactersTask == "SHOP")
                     {
-                        EnteringCharacterController.MakeSpeechBubble("im shopping");
-                    }// maybe else for items
+                        EnteringCharacterController
+                            .MakeSpeechBubble("im shopping");
+                    } // maybe else for items
                 }
             }
         }
-
-
     }
 
     private void OnTriggerExit(Collider EnteringCharacter)
     {
-
         if (Type == "HOME")
         {
             //Debug.Log("exit" + EnteringCharacter);
-
-            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+            CharacterController EnteringCharacterController =
+                EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
-                AssignOwnership(EnteringCharacterController);
+                AssignOwnership (EnteringCharacterController);
                 //AssignHousingOwnership(EnteringCharacterController);
             }
         }
         else if (Type == "SHOP")
         {
-            CharacterController EnteringCharacterController = EnteringCharacter.GetComponent<CharacterController>();
+            CharacterController EnteringCharacterController =
+                EnteringCharacter.GetComponent<CharacterController>();
             if (EnteringCharacterController != null)
             {
                 if (EnteringCharacterController.GetUUID() == GetOwner())
@@ -122,34 +119,29 @@ public class BuildingController : MonoBehaviour
                 EnteringCharacterController.SetIsInShop(false, null);
             }
         }
-
-
-
     }
-
 
     public void AssignOwnership(CharacterController EnteringCharacter)
     {
         // assign ownership, if already has owner, and is allowed shared types, assign allocation
-
         bool hasOwner = (ownerUUID != "");
+
         //bool hasHouse = (EnteringCharacter.GetHouseUUID() != "");
-        bool hasOne = (EnteringCharacter.GetBuildingUUIDOfType(this.Type) != "");
+        bool hasOne =
+            (EnteringCharacter.GetBuildingUUIDOfType(this.Type) != "");
+
         // if unowned and chaacter has no house, claim both
         if (!hasOwner && !hasOne)
         {
             SetOwner(EnteringCharacter.GetUUID());
-            AssociateCharacterAndBuilding(EnteringCharacter);
-
+            AssociateCharacterAndBuilding (EnteringCharacter);
         }
-        // if has owner but charatcer doesnt, assign to the new owner
-        else if (!hasOne)
+        else // if has owner but charatcer doesnt, assign to the new owner
+        if (!hasOne)
         {
-            AssociateCharacterAndBuilding(EnteringCharacter);
-
+            AssociateCharacterAndBuilding (EnteringCharacter);
         }
     }
-
 
     public string GetType()
     {
@@ -178,10 +170,8 @@ public class BuildingController : MonoBehaviour
 
     public float GetWanderRange()
     {
-
         if (Type == "FARM")
         {
-
             // get sphere radius and set that to the wander range
             SphereCollider myCollider;
             myCollider = GetComponent<SphereCollider>();
@@ -192,10 +182,8 @@ public class BuildingController : MonoBehaviour
             }
         }
 
-
         return 1.0f;
     }
-
 
     public CharacterController GetOwnerControllerIfPresent()
     {
@@ -205,7 +193,6 @@ public class BuildingController : MonoBehaviour
     //public Transform GetMerchantSpot(){
     //    return MerchantSpot;
     //}
-
     // TODO implenment resources
     public void GetResources()
     {
@@ -227,21 +214,19 @@ public class BuildingController : MonoBehaviour
         // for all in people to notify, rm building by uuid
         foreach (CharacterController character in CharactersWhoInteract)
         {
-            character.RemoveBuildingFromListByUUID(UUID);
+            character.RemoveBuildingFromListByUUID (UUID);
         }
-        
+        // TODO also tell town its gone too
         Destroy(this.gameObject);
-
-
     }
 
-
-    private void AssociateCharacterAndBuilding(CharacterController CharatcerToAssociate)
+    private void AssociateCharacterAndBuilding(
+        CharacterController CharatcerToAssociate
+    )
     {
-        CharactersWhoInteract.Add(CharatcerToAssociate);
+        CharactersWhoInteract.Add (CharatcerToAssociate);
         CharatcerToAssociate.AddBuildingToList(this);
     }
 
-    // TODO a destroy function to tell all ascociated that its gone
 
 }

@@ -1,11 +1,11 @@
 {
-    "Name": "summon house",
+    "Name": "Build Tool",
     "Damage": 0.0,
     "Range": 2.0,
     "IsPickup": true,
     "PrimaryActionClass": "SUMMON",
     "SecondartActionClass": "NONE",
-    "Cooldown": 2.0,
+    "Cooldown": 0.1,
     "HoldingOffsetX": 0.0,
     "HoldingOffsetY": 4.0,
     "HoldingOffsetZ": 0.0,
@@ -17,6 +17,6 @@
     "x_pos": 5.2576212882995609,
     "y_pos": 0.6910681128501892,
     "z_pos": 20.761838912963868,
-    "Description": "A basic torch",
-    "Value":10
+    "Description": "Build tool",
+    "Value":0
 }
