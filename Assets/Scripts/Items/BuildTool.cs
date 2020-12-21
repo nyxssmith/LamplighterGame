@@ -43,6 +43,9 @@ public class BuildTool : MonoBehaviour
 
     public GameObject Prefab6;
 
+    public GameObject Prefab7;
+    public GameObject Prefab8;
+
     private List<GameObject> BuildObjects = new List<GameObject>();
 
     public int Index = 0;
@@ -107,6 +110,8 @@ public class BuildTool : MonoBehaviour
         BuildObjects.Add (Prefab4);
         BuildObjects.Add (Prefab5);
         BuildObjects.Add (Prefab6);
+        BuildObjects.Add (Prefab7);
+        BuildObjects.Add (Prefab8);
     }
 
     public void SetCharacter(CharacterController CurrentCharacter)
@@ -414,8 +419,9 @@ public class BuildTool : MonoBehaviour
             Quaternion.identity);
 
         //set prefab stuff to ghost mode
-        GhostImage.GetComponent<MeshRenderer>().material =
-            GhostMaterialNotAllowedToPlace;
+        //GhostImage.GetComponent<MeshRenderer>().material =
+        //    GhostMaterialNotAllowedToPlace;
+        ChangeMaterialOfGhostImage (GhostMaterialNotAllowedToPlace);
 
         string Type = GhostImage.GetComponent<BuildingController>().GetType();
 
@@ -516,11 +522,6 @@ public class BuildTool : MonoBehaviour
         canPlace = true;
 
         // TODO resource checks
-
-
-
-
-        
         // Check that building is not too close to others
         //Debug.Log("overlapdist" + overlapDistance.ToString());
         if (overlapDistance > 0.0f)
@@ -539,6 +540,7 @@ public class BuildTool : MonoBehaviour
                 {
                     // object type buildings do not count as overlap
                     string otherBuildingType = controller.GetType();
+
                     //Debug.Log("other type "+otherBuildingType);
                     if (otherBuildingType != "OBJECT")
                     {
@@ -555,15 +557,82 @@ public class BuildTool : MonoBehaviour
 
         if (canPlace)
         {
-            GhostImage.GetComponent<MeshRenderer>().material =
-                GhostMaterialAllowedToPlace;
+            ChangeMaterialOfGhostImage (GhostMaterialAllowedToPlace);
+            //GhostImage.GetComponent<MeshRenderer>().material =
+            //    GhostMaterialAllowedToPlace;
         }
         else
         {
-            GhostImage.GetComponent<MeshRenderer>().material =
-                GhostMaterialNotAllowedToPlace;
+            ChangeMaterialOfGhostImage (GhostMaterialNotAllowedToPlace);
+            //GhostImage.GetComponent<MeshRenderer>().material =
+            //    GhostMaterialNotAllowedToPlace;
         }
     }
+
+    private void ChangeMaterialOfGhostImage(Material newMaterial)
+    {
+
+        ChangeMaterialOfObject(GhostImage.gameObject,newMaterial);
+        /*
+
+        MeshRenderer ObjectMeshRenderer = GhostImage.GetComponent<MeshRenderer>();
+        if(ObjectMeshRenderer != null){
+            ObjectMeshRenderer.material = newMaterial;
+        }else
+        {
+            // TODO fix this and make it so stuff shows up
+            foreach (Transform child in GhostImage.transform)
+            {
+
+                
+
+
+
+                MeshRenderer childMeshRenderer =
+                    child.GetComponent<MeshRenderer>(); // = newMaterial;
+                
+
+                    Material[] materials = childMeshRenderer.materials;
+                    Debug.Log(child.ToString() +" "+ materials.Length.ToString());
+
+                // change child material
+                childMeshRenderer.material = newMaterial;
+                
+            }
+        }
+        */
+    }
+
+    private void ChangeMaterialOfObject(GameObject ObjectToModify, Material newMaterial)
+    {
+        MeshRenderer ObjectMeshRenderer = ObjectToModify.GetComponent<MeshRenderer>();
+        if(ObjectMeshRenderer != null){
+            Debug.Log("found i can change material of "+ObjectToModify.ToString());
+            ObjectMeshRenderer.material = newMaterial;
+        }else
+        {
+            // TODO fix this and make it so stuff shows up
+            foreach (Transform child in ObjectToModify.transform)
+            {
+                Debug.Log("recusivly changng material "+ObjectToModify.ToString()+" p:c " +child.gameObject.ToString());
+                ChangeMaterialOfObject(child.gameObject,newMaterial);
+                /*
+                MeshRenderer childMeshRenderer =
+                    child.GetComponent<MeshRenderer>(); // = newMaterial;
+                
+
+                    Material[] materials = childMeshRenderer.materials;
+                    Debug.Log(child.ToString() +" "+ materials.Length.ToString());
+
+                // change child material
+                childMeshRenderer.material = newMaterial;
+                */
+                
+            }
+        }
+    }
+
+    
 
     public void HideGhostImage()
     {

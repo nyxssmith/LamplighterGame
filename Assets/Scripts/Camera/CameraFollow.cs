@@ -155,7 +155,7 @@ public class CameraFollow : MonoBehaviour
 
         if (GetIfPlayerRequestedUIUpdate() || needsUIUpdate)
         {
-            UnityEngine.Debug.Log("player requested ui update");
+            //UnityEngine.Debug.Log("player requested ui update");
             GetPlayer();
             GetPlayerCharacter();
             SquadListText = GenerateSquadList();

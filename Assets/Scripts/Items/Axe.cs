@@ -34,7 +34,7 @@ public class Axe : MonoBehaviour
 
             DoHit(BaseItem.GetDamage());
         }
-        else if (Input.GetMouseButtonDown(0) && BaseItem.GetCoolDown() >= 0.0f)
+        else if (Input.GetMouseButtonDown(0) && BaseItem.GetCoolDown() >= 0.0f && BaseItem.isPickedUp && BaseItem.GetHoldingCharacterController().GetIsPlayer())
         {
             // if not fighting, try to chop a tree
             DoChop();
