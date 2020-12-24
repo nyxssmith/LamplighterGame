@@ -1,7 +1,8 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections.Generic;
 
 public class DialogManager : MonoBehaviour
 {
@@ -16,9 +17,8 @@ public class DialogManager : MonoBehaviour
 
     public string TalkingUUID;
 
-    public List<DialogOption> DialogListA = new List<DialogOption>();
+    private string DialogLevelSaveLocation = "Assets/DialogJson";
 
-    public List<DialogOption> DialogListB = new List<DialogOption>();
 
     void Start()
     {
@@ -69,12 +69,62 @@ public class DialogManager : MonoBehaviour
 
         TalkingUUID = AUUID; // A started the dialog
 
-        // make dialog
-        //FillDialogLists();
+        // Load dialog/tree for character B as start, since they are who is being talked too
+        string startOfDialogTree = DetermineDialogToLoadFromCharacterDefaultTask(CharacterB);
 
-        // do dialog
-        //DoDialog();
-        //
+        LoadDialogTree(startOfDialogTree);
+        // then go to loop when b navigates that tree
+
+        
+        
+
+    }
+
+    /*
+    results of dialog data
+
+    end // ends dialog
+    sell_%itemname% //sells and item
+    buy_%itemname% //buys and item
+    fight // starts a fight 
+    friend // increases friend value
+    join_squad // joins squad
+    none // intermediate step / no effect
+
+    */
+
+    private string DetermineDialogToLoadFromCharacterDefaultTask(CharacterController character){
+        // TODO this
+        return "farmer1.json";
+    }
+
+
+    private void LoadDialogTree(string DialogLevelFileName)
+    {
+
+        // TODO populate recusrivly using DialogTree classes to make a tree data structure
+        
+        // TODO load dialog level 0
+        // if it has any dialog levels in it, load them in for each, repeat each level
+    }
+
+    // TODO make algo to path for quests through the tree to do NPC talking
+
+    private DialogData LoadDialogLevel(string DialogLevelFileName)
+    {
+        string FullSavePath =
+            Path.Combine(this.DialogLevelSaveLocation, DialogLevelFileName);
+
+        Debug.Log("loading dialog from " + FullSavePath);
+        StreamReader reader = new StreamReader(FullSavePath);
+        string json = reader.ReadToEnd();
+        reader.Close();
+
+        DialogData Dialog = JsonUtility.FromJson<DialogData>(json);
+
+        Debug.Log("loaded dialog");
+        Debug.Log(Dialog.levels);
+        return Dialog;
     }
 
     /*
@@ -169,22 +219,21 @@ public class DialogManager : MonoBehaviour
         //pick dialog option and then call do-dialog
     }
     */
-
 }
 
-public class DialogOption : MonoBehaviour
+
+// dialog tree class
+
+// contains levels of dialog
+
+// its a list of lists
+
+// outer list = levels
+// each level has list of Dialog
+
+public class DialogTree
 {
-    /*
-    selection number
-    text
-    next dialog option = null
-
-    */
-    public int SelectionNumber; // -1 if taking input for ammount // todo maybe
-
-    public string Text;
-
-    public string Type; // BUY EXIT JOIN QUEST
-
-    public DialogOption NextOption;
+    public DialogData Dialog;
+    public int Level;
+    public List<DialogTree> childBranches;
 }

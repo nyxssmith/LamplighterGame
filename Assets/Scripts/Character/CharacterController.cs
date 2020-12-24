@@ -1615,6 +1615,8 @@ public class CharacterController : MonoBehaviour
                 Quaternion.identity);
             CurrentDialogManager =
                 DialogManagerObject.GetComponent<DialogManager>();
+
+            
             CurrentDialogManager.StartDialog(WhoInteractedController, this);
         }
 
