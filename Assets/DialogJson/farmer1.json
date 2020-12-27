@@ -1,6 +1,6 @@
 {
-    "prompt":"Hello farmer1dialog",
-    "response":"Hi there",
+    "prompt":"Hello fromA",
+    "response":"Hi from B",
     "result":"none",
-    "levels":["exit.json"]
+    "levels":["farmer1level2.json","exit.json"]
 }

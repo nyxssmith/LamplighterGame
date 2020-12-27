@@ -142,6 +142,8 @@ public class CharacterController : MonoBehaviour
 
     private GameObject DialogManagerObject = null;
 
+    private string DialogText = "";
+
     // buildings relevant to character like home and shops
     public List<BuildingController> Buildings = new List<BuildingController>();
 
@@ -2444,6 +2446,7 @@ public class CharacterController : MonoBehaviour
         IsInDialog = false;
         SetCharacterCanMove(true);
         MakeSpeechBubble("bye!");
+        SetDialogText("");
         NeedsUIUpdate = true;
     }
 
@@ -2454,11 +2457,15 @@ public class CharacterController : MonoBehaviour
         // if isplayer, then get update from ui
         NeedsUIUpdate = true;
 
+        // act as dead end for ai tree, so it will be all controlled by dialog manager
+
+        /*
         MakeSpeechBubble("im in a dialog, managed by a dialog manager");
 
         if (GetIsPlayer())
         {
         }
+        */
     }
 
     public void SetIsInShop(
@@ -2489,4 +2496,14 @@ public class CharacterController : MonoBehaviour
     {
         return HeldItemController;
     }
+
+    public void SetDialogText(string newText){
+        DialogText = newText;
+    }
+
+    public string GetDialogText(){
+        return DialogText;
+    }
+
+
 }

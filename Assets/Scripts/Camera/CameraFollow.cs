@@ -179,10 +179,13 @@ public class CameraFollow : MonoBehaviour
         // if not in dialog mode
         if (inDialog)
         {
-            if (Input.GetKeyDown("1"))
-            {
-                Player.MakeSpeechBubble("pushed a key");
-            }
+            // dont get keys for squad, since dialogmanager is handling it
+            
+            
+            //if (Input.GetKeyDown("1"))
+            //{
+            //    Player.MakeSpeechBubble("pushed a key");
+            //}
         }
         else if (inBuildMode)
         {
@@ -232,6 +235,7 @@ public class CameraFollow : MonoBehaviour
             {
                 SafeSwithctoTarget(8);
             }
+
         }
 
         if (Input.GetKeyDown("b"))
@@ -384,10 +388,10 @@ public class CameraFollow : MonoBehaviour
         DoSquadUI();
 
         // if in dialog mode, then do dialog
-        if (inDialog)
-        {
+        //if (inDialog)
+        //{
             DoDialogUI();
-        }
+        //}
 
         DoInfoUI();
     }
@@ -504,7 +508,14 @@ public class CameraFollow : MonoBehaviour
 
     private void DoDialogUI()
     {
-        //DialogBox.GetComponent<Text>().text = SquadListText;
+        // const set text to dialogText
+        DialogText = Player.GetDialogText();// get dialog text from player that is set from dialog manager
+        
+        DialogBox.GetComponent<Text>().text = DialogText;
+    }
+
+    public void SetDialogText(string newText){
+        DialogText = newText;
     }
 
     private string GenerateSquadList()
