@@ -106,13 +106,11 @@ public class DialogManager : MonoBehaviour
 
     public void EndDialog()
     {
-
         // clear dialog text
-        if(CharacterA.GetIsPlayer()){
+        if (CharacterA.GetIsPlayer())
+        {
             CharacterA.SetDialogText("");
         }
-
-
 
         CharacterA.LeaveDialog();
         CharacterB.LeaveDialog();
@@ -158,6 +156,7 @@ public class DialogManager : MonoBehaviour
     fight // starts a fight 
     friend // increases friend value
     join_squad // joins squad
+    leave_squad // leaves squad
     none // intermediate step / no effect
 
     */
@@ -307,6 +306,63 @@ public class DialogManager : MonoBehaviour
     {
         // populates Tree recusrivly using DialogTree classes to make the tree data structure
         Tree = LoadDialogLevelToDialogTree(DialogLevelFileName, 0);
+
+        // add join squad option
+        DialogTree joinOption = MakeJoinSquadOption();
+        if (joinOption != null)
+        {
+            Tree.levels.Add (joinOption);
+        }
+
+        // add leave squad option if in same squad
+        DialogTree leaveOption = MakeLeaveSquadOption();
+        if (leaveOption != null)
+        {
+            Tree.levels.Add (leaveOption);
+        }
+
+        // TODO add "protect X" option for gaurd option
+
+        // TODO add "do x route" to merchant option
+    }
+
+    private DialogTree MakeJoinSquadOption()
+    {
+        // if B not in same squad as A
+        bool InSameSquad =
+            CharacterA.GetSquadLeaderUUID() == CharacterB.GetSquadLeaderUUID();
+        if (InSameSquad)
+        {
+            return null;
+        }
+
+        // determine if B would say yes or no and put option in
+        float allignment =
+            CharacterB.GetMyAlignmentWithFaction(CharacterA.GetFaction());
+
+        if (allignment >= 0.0f)
+        {
+            // return yes
+            return LoadDialogLevelToDialogTree("join_squad_yes.json", 1);
+        }
+        else
+        {
+            // return no
+            return LoadDialogLevelToDialogTree("join_squad_no.json", 1);
+        }
+    }
+
+    private DialogTree MakeLeaveSquadOption()
+    {
+        // if B in same squad as A
+        // if B not in same squad as A
+        bool InSameSquad =
+            CharacterA.GetSquadLeaderUUID() == CharacterB.GetSquadLeaderUUID();
+        if (InSameSquad)
+        {
+            return LoadDialogLevelToDialogTree("leave_squad.json", 1);
+        }
+        return null;
     }
 
     // TODO make algo to path for quests through the tree to do NPC talking
@@ -360,8 +416,23 @@ public class DialogManager : MonoBehaviour
 
     private void ProcessResultOfPickedOption(string result)
     {
+        // results list
+        /*
+        end ends convo
+        join_squad_yes joins squad (and must do cost calc if needed), ends convo
+        join_squad_no declines join squad, ends convo
+        leave_squad B leaves A squad
+        */
         if (result == "end")
         {
+            EndDialog();
+        }
+        else if (result == "join_squad_yes")
+        {
+            CharacterB.JoinSquadOfCharacter(CharacterA);
+            EndDialog();
+        }else if (result == "leave_squad"){
+            CharacterB.LeaveSquad();
             EndDialog();
         }
     }

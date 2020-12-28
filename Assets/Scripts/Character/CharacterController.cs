@@ -169,7 +169,6 @@ public class CharacterController : MonoBehaviour
     // Targeting and interacting with enemy and squad
     private GameObject FollowTarget = null;
 
-    //TODO private this
     private GameObject CombatTarget = null;
 
     private CharacterData TargetCharacter = null; //save info on target character
@@ -2006,6 +2005,11 @@ public class CharacterController : MonoBehaviour
 
     public string GetSquadLeaderUUID()
     {
+        // if has no leader, set self to leader as needed
+        if(Character.squadLeaderId == ""){
+            SetSquadLeaderUUID(GetUUID());
+        }
+
         return Character.squadLeaderId;
     }
 
@@ -2054,8 +2058,12 @@ public class CharacterController : MonoBehaviour
         NeedsUIUpdate = true;
     }
 
+    public void LeaveSquad(){
+        JoinSquadLeadBy("");
+    }
+
     // either joins a squad that the inviter is in and climbs that tree, or joins their squad owned by them
-    private void JoinSquadOfCharacter(CharacterController InviterController)
+    public void JoinSquadOfCharacter(CharacterController InviterController)
     {
         string InviterID = InviterController.GetUUID();
         string InviterLeaderID = InviterController.GetSquadLeaderUUID();
