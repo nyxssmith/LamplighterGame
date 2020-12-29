@@ -2,20 +2,61 @@
 
 DEV controls
 
-wasd movement
-space jump
-left shift sprint
-e interact
-q drop (if holding item)
-i load current player save file
-o save current player to save
-f to use use item (TODO)
-[,] to rewind/forard the daylight cycle
-scroll wheel  or , . to zoom in/out the camera
 
-walk into items to pick up / hold
-f to swap hand and back
-g to swap hand and belt
-r to use belt item if can
 
-left and right click to use items primary and secondary functions
+# IMPLIMENTED
+
+## CHARACTERS
+ - summon characters at start
+ - character controller
+ - character camera follow
+ 
+
+## ITEMS
+
+ - torch
+ - axe
+ 
+
+## BUILDINGS
+
+- houses
+- shops
+- farms
+
+## GAMEPLAY
+
+### DIALOG
+ 
+ - easy add lines and make dialog trees
+ - generate dialog tree on the fly for squad join and leave
+ 
+
+### CONTROLS
+ - wasd movement
+ - left shift sprint
+ - e interact
+ - q drop (if holding item)
+ - f swap hand and back items
+ - g swap hand and belt items
+ - ] forward time
+ - scroll wheel  or , . to zoom in/out the camera
+ - left click to use held item
+ - right click TODO (mybe make use belt item)
+ - walk into items to pick up / hold (if they are marked as "pickup")
+
+
+
+
+# IN PROGRESS
+
+
+# TODO LIST
+
+- split charactercontroller tasks into their own classes
+- right click to use belt item
+- quests
+- Shop dialog generation
+- town resources
+
+
