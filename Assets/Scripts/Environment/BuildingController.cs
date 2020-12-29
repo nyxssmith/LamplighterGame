@@ -28,6 +28,8 @@ public class BuildingController : MonoBehaviour
 
     private float OverlapSize;
 
+    private TownController Town;
+
     public void Start()
     {
         BuildingTransform = gameObject.GetComponent<Transform>();
@@ -41,15 +43,11 @@ public class BuildingController : MonoBehaviour
         //    MerchantSpot = BuildingTransform.transform.Find("MerchantSpot");
         //    Debug.Log("found merchant spot"+MerchantSpot);
         //}
-
-        
     }
 
     public void Update()
     {
     }
-
-    
 
     private void OnTriggerEnter(Collider EnteringCharacter)
     {
@@ -135,9 +133,8 @@ public class BuildingController : MonoBehaviour
         {
             SetOwner(EnteringCharacter.GetUUID());
             AssociateCharacterAndBuilding (EnteringCharacter);
-        }
-        else // if has owner but charatcer doesnt, assign to the new owner
-        if (!hasOne)
+        } // if has owner but charatcer doesnt, assign to the new owner
+        else if (!hasOne)
         {
             AssociateCharacterAndBuilding (EnteringCharacter);
         }
@@ -155,6 +152,7 @@ public class BuildingController : MonoBehaviour
 
     public void SetOwner(string newOwnerUUID)
     {
+        // when building owner set update the town
         ownerUUID = newOwnerUUID;
     }
 
@@ -165,7 +163,14 @@ public class BuildingController : MonoBehaviour
 
     public Transform GetTransform()
     {
-        return BuildingTransform;
+        if (BuildingTransform != null)
+        {
+            return BuildingTransform;
+        }
+        else
+        {
+            return gameObject.GetComponent<Transform>();
+        }
     }
 
     public float GetWanderRange()
@@ -216,6 +221,7 @@ public class BuildingController : MonoBehaviour
         {
             character.RemoveBuildingFromListByUUID (UUID);
         }
+
         // TODO also tell town its gone too
         Destroy(this.gameObject);
     }
@@ -224,9 +230,23 @@ public class BuildingController : MonoBehaviour
         CharacterController CharatcerToAssociate
     )
     {
+        if (Town != null)
+        {
+            Town.DoTownUpdate();
+            Town.UpdatePlayerUIIfPlayerIsPresentInTown();   
+        }
+
         CharactersWhoInteract.Add (CharatcerToAssociate);
         CharatcerToAssociate.AddBuildingToList(this);
     }
 
+    public void SetTown(TownController newTown)
+    {
+        Town = newTown;
+    }
 
+
+    public List<CharacterController> GetCharactersWhoInteract(){
+        return CharactersWhoInteract;
+    }
 }

@@ -76,6 +76,9 @@ public class CameraFollow : MonoBehaviour
     [SerializeField]
     GameObject InfoBox;
 
+    [SerializeField]
+    GameObject TownUI;
+
     private bool hasTarget = false;
 
     private bool inDialog = false;
@@ -101,6 +104,7 @@ public class CameraFollow : MonoBehaviour
     private bool needsUIUpdate = true;
 
     private int buildToolIndex = 0;
+
     private int buildToolLength;
 
     private float ConstUpdateTimer = 0f;
@@ -165,6 +169,11 @@ public class CameraFollow : MonoBehaviour
             // when needs update update info text
             UpdateInfoUIForItem();
             needsUIUpdate = false;
+
+
+            // update town info if realivant
+            
+
         }
 
         GetPlayersTargetCharacter();
@@ -180,8 +189,6 @@ public class CameraFollow : MonoBehaviour
         if (inDialog)
         {
             // dont get keys for squad, since dialogmanager is handling it
-            
-            
             //if (Input.GetKeyDown("1"))
             //{
             //    Player.MakeSpeechBubble("pushed a key");
@@ -194,7 +201,6 @@ public class CameraFollow : MonoBehaviour
             //InfoText = "build mode";
             UpdateInfoUIForBuildMode();
             buildToolIndex = BuildToolController.Index;
-                
         }
         else
         {
@@ -235,7 +241,6 @@ public class CameraFollow : MonoBehaviour
             {
                 SafeSwithctoTarget(8);
             }
-
         }
 
         if (Input.GetKeyDown("b"))
@@ -279,9 +284,10 @@ public class CameraFollow : MonoBehaviour
                 BuildToolController =
                     BuildToolObject.gameObject.GetComponent<BuildTool>();
 
-                BuildToolController.Index=  buildToolIndex;
+                BuildToolController.Index = buildToolIndex;
 
                 buildToolLength = BuildToolController.GetLength();
+
                 //BuildToolController.SetIndex( buildToolIndex);
                 // give the build tool as hand item
                 inBuildMode = true;
@@ -352,6 +358,9 @@ public class CameraFollow : MonoBehaviour
             //Player.SetLoadedControllerIsPlayer(false);
             //SwitchTargetCharacterController.SetLoadedControllerIsPlayer(true);
             // set the new player for the isloadedcontroller
+            //clear ref to this camera
+            UpdateCharactersReferenceToCamera(null);
+
             CameraFollowObj = SwitchTargetCharacterController.GetCameraTarget();
 
             GetPlayer();
@@ -366,6 +375,8 @@ public class CameraFollow : MonoBehaviour
             CameraFollowObj
                 .gameObject
                 .GetComponentInParent<CharacterController>();
+        // tell new player about its camera
+        UpdateCharactersReferenceToCamera(this.gameObject);
     }
 
     private void GetPlayerCharacter()
@@ -390,10 +401,32 @@ public class CameraFollow : MonoBehaviour
         // if in dialog mode, then do dialog
         //if (inDialog)
         //{
-            DoDialogUI();
-        //}
+        DoDialogUI();
 
+        //}
         DoInfoUI();
+    }
+
+    public void DoTownUI(string NewText)
+    {
+
+        // TODO fix townui not showing up if swap to player back inside town
+        // might be fixed by changing hit collider that exits to cameraFollow if I can get tht to to work
+
+
+        TownUI.GetComponent<Text>().text = NewText;
+
+        
+
+
+    }
+
+    private void UpdateTownUIFromPlayer(){
+
+        TownController Town =  Player.GetTown();
+        if(Town != null){
+            DoTownUI( Town.GenerateTownUIString());
+        }
     }
 
     private void DoHealthUI()
@@ -469,15 +502,17 @@ public class CameraFollow : MonoBehaviour
     {
         string buildString = "[Build Mode]\n";
 
-        buildString = buildString + "Build Option: "+(buildToolIndex+1).ToString()+"/"+BuildToolController.GetLength()+"\n";
-
+        buildString =
+            buildString +
+            "Build Option: " +
+            (buildToolIndex + 1).ToString() +
+            "/" +
+            BuildToolController.GetLength() +
+            "\n";
 
         buildString =
             buildString +
             "Push [TAB] to cycle through buildable objects and delete tool\nUse [I] and [K] to change build distance\nUse [U] and [O] to change tilt\nUse [J] and [L] to change rotation\nUse [N] and [M] to change the build height postion\n";
-
-
-
 
         if (BuildToolController.Index == 0)
         {
@@ -490,13 +525,12 @@ public class CameraFollow : MonoBehaviour
         {
             buildString = buildString + "[Mode: Construction]\n";
 
-
             if (!BuildToolController.GetCanPlace())
             {
                 // if cant place, get debug reason
-                buildString = buildString + BuildToolController.GetReasonCantPlace();
+                buildString =
+                    buildString + BuildToolController.GetReasonCantPlace();
             }
-
 
             // add resoruce costs
             buildString =
@@ -509,12 +543,13 @@ public class CameraFollow : MonoBehaviour
     private void DoDialogUI()
     {
         // const set text to dialogText
-        DialogText = Player.GetDialogText();// get dialog text from player that is set from dialog manager
-        
+        DialogText = Player.GetDialogText(); // get dialog text from player that is set from dialog manager
+
         DialogBox.GetComponent<Text>().text = DialogText;
     }
 
-    public void SetDialogText(string newText){
+    public void SetDialogText(string newText)
+    {
         DialogText = newText;
     }
 
@@ -544,7 +579,7 @@ public class CameraFollow : MonoBehaviour
         }
 
         // set the squad list
-        Player.SetSquadListAndUpdateOthers(SquadCharacterControllers);
+        Player.SetSquadListAndUpdateOthers (SquadCharacterControllers);
 
         //Debug.Log("list of new squad" + SquadCharacterControllers.Count);
         return BaseSquadListText + ListString;
@@ -658,4 +693,12 @@ public class CameraFollow : MonoBehaviour
             Player.SetNeedsUIUpdate(true);
         }
     }
+
+    private void UpdateCharactersReferenceToCamera(GameObject newObject){
+        Player.SetCameraWithHUD(newObject);
+    }
+
+
+
+
 }

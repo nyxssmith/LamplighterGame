@@ -151,7 +151,11 @@ public class CharacterController : MonoBehaviour
 
     private BuildingController CurrentShopController;
 
+    // town they own/belong to
     private string TownUUID;
+
+    // town they are in
+    private TownController Town;
 
     // schedule and task stuff
     // will do current task, when done, if no next task will do last task, current task can set next task
@@ -177,6 +181,8 @@ public class CharacterController : MonoBehaviour
 
     // TODO private this
     private CharacterController TargetCharacterController = null; //save info on target character
+
+    private GameObject CameraWithHUD = null;
 
     //When character comes online, set vars needed for init
     private void Awake()
@@ -407,9 +413,8 @@ public class CharacterController : MonoBehaviour
             CurrentAnimationState = Character.midair_animation;
             JumpCoolDown -= Time.deltaTime;
         }
-        */
-        else // sprinting for player
-        if (isSprinting && Character.CurrentStamina > 10)
+        */ // sprinting for player
+        else if (isSprinting && Character.CurrentStamina > 10)
         {
             if (Character.IsPlayer)
             {
@@ -1208,6 +1213,7 @@ public class CharacterController : MonoBehaviour
 
     private void SetNavAgentDestination(Vector3 goal_position)
     {
+        // TODO check is on a navmesh, if not do rescue
         //MakeSpeechBubble("Set destination to " + goal_position.ToString());
         if (NavAgent.enabled)
         {
@@ -1711,6 +1717,7 @@ public class CharacterController : MonoBehaviour
             if (allignment < 0.0f)
             {
                 IsFighting = true;
+
                 //SetTarget(whoTargeted.gameObject);
                 MakeSpeechBubble("Help! I'm under attack!");
                 CallSquadForHelp (whoTargeted);
@@ -1727,7 +1734,8 @@ public class CharacterController : MonoBehaviour
             if (squadCharacter.GetUUID() != GetUUID())
             {
                 // set target
-                squadCharacter.MakeSpeechBubble("Coming "+Character.Name+"!");
+                squadCharacter
+                    .MakeSpeechBubble("Coming " + Character.Name + "!");
 
                 // if they have no target
                 if (!squadCharacter.GetHasTarget())
@@ -2385,7 +2393,11 @@ public class CharacterController : MonoBehaviour
 
     public void AddBuildingToList(BuildingController buildingToAdd)
     {
-        Buildings.Add (buildingToAdd);
+        // cant have multiple of the same type of building in list
+        if (GetBuildingControllerOfType(buildingToAdd.GetType()) == null)
+        {
+            Buildings.Add (buildingToAdd);
+        }
     }
 
     private BuildingController GetBuildingControllerOfType(string buildingType)
@@ -2569,5 +2581,32 @@ public class CharacterController : MonoBehaviour
         {
             squadCharacter.SetSquadList (newList);
         }
+    }
+
+    public void SetCameraWithHUD(GameObject newObject)
+    {
+        CameraWithHUD = newObject;
+    }
+
+    public CameraFollow GetCameraFollow()
+    {
+        // gets camera follow object
+        CameraFollow camFollow = CameraWithHUD.GetComponent<CameraFollow>();
+        if (camFollow != null)
+        {
+            return camFollow;
+        }
+
+        return null;
+    }
+
+    public void SetTown(TownController newTown)
+    {
+        Town = newTown;
+    }
+
+    public TownController GetTown()
+    {
+        return Town;
     }
 }

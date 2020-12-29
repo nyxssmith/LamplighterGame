@@ -89,6 +89,8 @@ public class BuildTool : MonoBehaviour
     // overlap distance check
     private float overlapDistance;
 
+    private TownController Town;
+
     // TODO resource costs per material
     void Start()
     {
@@ -407,6 +409,18 @@ public class BuildTool : MonoBehaviour
                 Character.GetCharacterTransform().forward *
                 distanceFromCharater +
                 Character.GetCharacterTransform().up * buildingHeight;
+
+            BuildingController houseController = house.GetComponent<BuildingController>();
+
+            //subtract resource costs
+            houseController.SetTown(Town);
+        
+            Town.SubtractResourceCostsBuilding(houseController);
+            Town.DoTownUpdate();
+
+            // update the character
+            Town.UpdateCameraTownUI(Character.gameObject,Town.GenerateTownUIString());
+            Character.SetNeedsUIUpdate(true);
         }
     }
 
@@ -510,16 +524,18 @@ public class BuildTool : MonoBehaviour
                     controller
                         .GetAllowedToPlaceBuilding(GhostImage
                             .GetComponent<BuildingController>());
+                Town = controller;// update the current town controller
             }
             else
             {
+                
                 reasonCantPlace = "Buildings can only be placed in a town\n";
             }
         }
 
         // DEBUG to allow place out of town
         // TODO RM THIS LATER
-        canPlace = true;
+        //canPlace = true;
 
         // TODO resource checks
         // Check that building is not too close to others
@@ -607,7 +623,7 @@ public class BuildTool : MonoBehaviour
     {
         MeshRenderer ObjectMeshRenderer = ObjectToModify.GetComponent<MeshRenderer>();
         if(ObjectMeshRenderer != null){
-            Debug.Log("found i can change material of "+ObjectToModify.ToString());
+            //Debug.Log("found i can change material of "+ObjectToModify.ToString());
             ObjectMeshRenderer.material = newMaterial;
         }else
         {
