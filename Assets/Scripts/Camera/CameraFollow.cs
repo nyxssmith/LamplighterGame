@@ -543,6 +543,9 @@ public class CameraFollow : MonoBehaviour
             }
         }
 
+        // set the squad list
+        Player.SetSquadListAndUpdateOthers(SquadCharacterControllers);
+
         //Debug.Log("list of new squad" + SquadCharacterControllers.Count);
         return BaseSquadListText + ListString;
     }

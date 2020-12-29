@@ -173,6 +173,8 @@ public class CharacterController : MonoBehaviour
 
     private CharacterData TargetCharacter = null; //save info on target character
 
+    private List<CharacterController> SquadCharacterControllers = null;
+
     // TODO private this
     private CharacterController TargetCharacterController = null; //save info on target character
 
@@ -399,15 +401,14 @@ public class CharacterController : MonoBehaviour
                     HeldItemController.SetCanDoAction(1.0f);
                 }
             }
-        }
-        else /*
+        } /*
         else if (!IsGrounded && Character.IsPlayer && (JumpCoolDown > 0.0f))
         {
             CurrentAnimationState = Character.midair_animation;
             JumpCoolDown -= Time.deltaTime;
         }
         */
-        // sprinting for player
+        else // sprinting for player
         if (isSprinting && Character.CurrentStamina > 10)
         {
             if (Character.IsPlayer)
@@ -485,8 +486,8 @@ public class CharacterController : MonoBehaviour
                 }
             }
         }
-        //MakeSpeechBubble("im fighitng"+IsFighting.ToString());
 
+        //MakeSpeechBubble("im fighitng"+IsFighting.ToString());
         // fighting takes priority
         if (IsFighting)
         {
@@ -565,8 +566,6 @@ public class CharacterController : MonoBehaviour
 
         // debug super helpful
         //MakeSpeechBubble("CURRENT " + CurrentTask + " next " + NextTask + " last " + LastTask + " nextnext " + NextNextTask);
-        
-        
         if (StandingStillTimer > 0.0f)
         {
             bool ShouldOverrideStanding = false;
@@ -975,7 +974,6 @@ public class CharacterController : MonoBehaviour
                 MakeSpeechBubble("im @" + buildingType);
                 return GetBuildingControllerOfType(buildingType)
                     .GetWanderRange();
-
             }
         }
         return 0.0f;
@@ -996,7 +994,6 @@ public class CharacterController : MonoBehaviour
             Target();
             return;
         }
-
 
         //Debug.Log("Attacking", CombatTarget);
         Transform TargetTransform = CombatTarget.GetComponent<Transform>();
@@ -1020,6 +1017,7 @@ public class CharacterController : MonoBehaviour
             Vector3
                 .Distance(CharacterTransform.position,
                 TargetTransform.position);
+
         /*
         MakeSpeechBubble("stop " +
         stop.ToString() +
@@ -1028,7 +1026,6 @@ public class CharacterController : MonoBehaviour
         " range " +
         range.ToString());
         */
-
         /*
         if (distance <= range2 && distance >= range)
         {
@@ -1093,22 +1090,27 @@ public class CharacterController : MonoBehaviour
 
     private bool CheckIfTargetIsDead()
     {
-
         //MakeSpeechBubble("did he die?");
-        if(CombatTarget.gameObject.Equals(null)){
+        if (CombatTarget.gameObject.Equals(null))
+        {
             return true;
         }
 
-        if(TargetCharacterController.gameObject.Equals(null)){
+        if (TargetCharacterController.gameObject.Equals(null))
+        {
             return true;
         }
 
-        CharacterController CombatTargetCharacterController = CombatTarget.gameObject.GetComponent<CharacterController>();
-        if(CombatTargetCharacterController.Equals(null)){
+        CharacterController CombatTargetCharacterController =
+            CombatTarget.gameObject.GetComponent<CharacterController>();
+        if (CombatTargetCharacterController.Equals(null))
+        {
             return true;
-        
-        }else{
-            if(CombatTargetCharacterController.GetCurrentHealth() <= 0.0f){
+        }
+        else
+        {
+            if (CombatTargetCharacterController.GetCurrentHealth() <= 0.0f)
+            {
                 return true;
             }
         }
@@ -1418,7 +1420,6 @@ public class CharacterController : MonoBehaviour
         dir.Normalize();
 
         // Move the player by the direction multiplied by speed and delta time
-
         transform.position += dir * Character.CurrentSpeed * Time.deltaTime;
 
         // Set rotation to direction of movement if moving
@@ -1480,14 +1481,12 @@ public class CharacterController : MonoBehaviour
                         .GetComponent<CharacterController>();
                 if (HitCharacterController != null)
                 {
-                    MakeSpeechBubble("i almost interacted with a person");
-
+                    //MakeSpeechBubble("i almost interacted with a person");
                     // if not targeting self or sqwuad
                     if (HitCharacterController.GetUUID() != GetUUID())
                     {
-                        MakeSpeechBubble("Interacted with " +
-                        HitCharacterController.GetCharacter().Name);
-
+                        //MakeSpeechBubble("Interacted with " +
+                        //HitCharacterController.GetCharacter().Name);
                         // Do interaction with a character controller (talking)
                         // start the dialog action TODO
                         // creates a dialog controller
@@ -1544,7 +1543,7 @@ public class CharacterController : MonoBehaviour
                 !hasTarget // if doesnt have a target, find one
             )
             {
-                MakeSpeechBubble("fiding targt");
+                //MakeSpeechBubble("fiding targt");
                 rand = Random.Range(1, 254);
 
                 float radius = Character.TargetRange / 2.0f;
@@ -1594,12 +1593,11 @@ public class CharacterController : MonoBehaviour
 
     private void DoInteractAction(GameObject WhoInteracted)
     {
-        MakeSpeechBubble("I was interacted with by " +
-        WhoInteracted +
-        " my leader is" +
-        Character.squadLeaderId);
-        MakeSpeechBubble(Character.IsFollower.ToString());
-
+        //MakeSpeechBubble("I was interacted with by " +
+        //WhoInteracted +
+        //" my leader is" +
+        //Character.squadLeaderId);
+        //MakeSpeechBubble(Character.IsFollower.ToString());
         // summon dialog manager
         CharacterController WhoInteractedController =
             WhoInteracted.GetComponent<CharacterController>();
@@ -1617,7 +1615,6 @@ public class CharacterController : MonoBehaviour
             CurrentDialogManager =
                 DialogManagerObject.GetComponent<DialogManager>();
 
-            
             CurrentDialogManager.StartDialog(WhoInteractedController, this);
         }
 
@@ -1698,12 +1695,49 @@ public class CharacterController : MonoBehaviour
         SpeechBubbles.Add (SpeechBubbleObject);
     }
 
-    private void DoTargetedAction() // character will make a beacon above their head
+    private void DoTargetedAction(CharacterController whoTargeted) // character will make a beacon above their head
     {
         MakeSpeechBubble("I was targetd");
         NeedsUIUpdate = true;
 
+        // check if is leader of squad, alert all others in squad
         //TODO reacte to being targeted etc
+        if (SquadCharacterControllers != null)
+        {
+            float allignment =
+                GetMyAlignmentWithFaction(whoTargeted.GetFaction());
+
+            // if targeted by enemy
+            if (allignment < 0.0f)
+            {
+                IsFighting = true;
+                //SetTarget(whoTargeted.gameObject);
+                MakeSpeechBubble("Help! I'm under attack!");
+                CallSquadForHelp (whoTargeted);
+            }
+        }
+    }
+
+    private void CallSquadForHelp(CharacterController whoTargeted)
+    {
+        // all members in squad who have no target target who targed me
+        foreach (CharacterController squadCharacter in SquadCharacterControllers
+        )
+        {
+            if (squadCharacter.GetUUID() != GetUUID())
+            {
+                // set target
+                squadCharacter.MakeSpeechBubble("Coming "+Character.Name+"!");
+
+                // if they have no target
+                if (!squadCharacter.GetHasTarget())
+                {
+                    // then have them attack the attacker
+                    squadCharacter.SetTarget(whoTargeted.gameObject);
+                    squadCharacter.IsFighting = true;
+                }
+            }
+        }
     }
 
     private void CheckIfItemInHand() //updates the hand var
@@ -1899,6 +1933,9 @@ public class CharacterController : MonoBehaviour
         //make the target beacon a child of its taret
         TargetBeaconObject.gameObject.GetComponent<Transform>().parent =
             CombatTarget.GetComponent<Transform>();
+
+        // target does action if they were targeted
+        TargetCharacterController.DoTargetedAction(this);
     }
 
     public bool GetHasTarget()
@@ -2006,7 +2043,8 @@ public class CharacterController : MonoBehaviour
     public string GetSquadLeaderUUID()
     {
         // if has no leader, set self to leader as needed
-        if(Character.squadLeaderId == ""){
+        if (Character.squadLeaderId == "")
+        {
             SetSquadLeaderUUID(GetUUID());
         }
 
@@ -2058,8 +2096,10 @@ public class CharacterController : MonoBehaviour
         NeedsUIUpdate = true;
     }
 
-    public void LeaveSquad(){
+    public void LeaveSquad()
+    {
         JoinSquadLeadBy("");
+        SquadCharacterControllers = null;
     }
 
     // either joins a squad that the inviter is in and climbs that tree, or joins their squad owned by them
@@ -2453,7 +2493,8 @@ public class CharacterController : MonoBehaviour
         CanJoinDialog = true;
         IsInDialog = false;
         SetCharacterCanMove(true);
-        MakeSpeechBubble("bye!");
+
+        //MakeSpeechBubble("bye!");
         SetDialogText("");
         NeedsUIUpdate = true;
     }
@@ -2505,13 +2546,28 @@ public class CharacterController : MonoBehaviour
         return HeldItemController;
     }
 
-    public void SetDialogText(string newText){
+    public void SetDialogText(string newText)
+    {
         DialogText = newText;
     }
 
-    public string GetDialogText(){
+    public string GetDialogText()
+    {
         return DialogText;
     }
 
+    public void SetSquadList(List<CharacterController> newList)
+    {
+        // sets self squadlist
+        SquadCharacterControllers = newList;
+    }
 
+    public void SetSquadListAndUpdateOthers(List<CharacterController> newList)
+    {
+        // sets all in squad to the same squadlist
+        foreach (CharacterController squadCharacter in newList)
+        {
+            squadCharacter.SetSquadList (newList);
+        }
+    }
 }
