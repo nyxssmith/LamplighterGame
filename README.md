@@ -156,9 +156,20 @@ Can set the faction of all its residents when they move in/ generate
 
 # TODO LIST
 
-- better dialog and HUD
+`*` = started
+
+- better dialog and HUD (add background to text)
 - right click to use belt item
 - quests for npcs to do complex tasks
-- split charactercontroller tasks into their own classes
+- split charactercontroller tasks/professions into their own classes
 - Shop dialog generation
-- town resources
+- town resources*
+- all houses are actual houses
+- create all buildings in list
+- split all building types into own classes from main building controller
+- add more items
+- make buildings "unlockable" in build tool instead of all available at start
+- make the controls / key inputs configurable
+- fix bugs with the entering town/switching characters
+- do all TODO in the code
+
