@@ -286,7 +286,7 @@ public class BuildTool : MonoBehaviour
 
         // material
         //OrigMaterial =
-        ChangeMaterialOfObject(TargetToSet, GhostMaterialDeleteTarget);
+        ChangeMaterialOfObject (TargetToSet, GhostMaterialDeleteTarget);
 
         //OrigMaterial = TargetToSet.GetComponent<MeshRenderer>().material;
         //TargetToSet.GetComponent<MeshRenderer>().material =
@@ -489,7 +489,28 @@ public class BuildTool : MonoBehaviour
 
         // disable all walls and navmesh holes, so ghost is just visual
         // TODO make this detect farm etc
+        // TODO make this work with multipart and not disable all parts
+        if (CheckIfMultiPart(GhostImage))
+        {
+            foreach (Transform child in GhostImage.transform)
+            {
+                foreach (Transform childchild in child.transform)
+                {
+                    childchild.gameObject.SetActive(false); // or false
+                }
+            }
+        }
+        else
+        {
+            foreach (Transform child in GhostImage.transform)
+            {
+                child.gameObject.SetActive(false); // or false
+            }
+        }
+        
+
         /* 
+
         foreach (Transform child in GhostImage.transform)
         {
 
@@ -500,6 +521,19 @@ public class BuildTool : MonoBehaviour
         ChangeMaterialOfGhostImage (GhostMaterialNotAllowedToPlace);
 
         isShowingGhost = true;
+    }
+
+    private bool CheckIfMultiPart(GameObject objectToCheck)
+    {
+        MeshRenderer ObjectMeshRenderer =
+            objectToCheck.GetComponent<MeshRenderer>();
+
+        if (ObjectMeshRenderer != null)
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private void MoveGhostImage()
@@ -616,7 +650,6 @@ public class BuildTool : MonoBehaviour
     private void ChangeMaterialOfGhostImage(Material newMaterial)
     {
         //Material unused =
-
         ChangeMaterialOfObject(GhostImage.gameObject, newMaterial);
         /*
 
@@ -648,8 +681,10 @@ public class BuildTool : MonoBehaviour
         */
     }
 
-    private void
-    ChangeMaterialOfObject(GameObject ObjectToModify, Material newMaterial)
+    private void ChangeMaterialOfObject(
+        GameObject ObjectToModify,
+        Material newMaterial
+    )
     {
         Debug.Log("chaning material of" + ObjectToModify);
 
@@ -680,7 +715,7 @@ public class BuildTool : MonoBehaviour
                     ObjectToModify.ToString() +
                     " p:c " +
                     child.gameObject.ToString());
-                
+
                 ChangeMaterialOfObject(child.gameObject, newMaterial);
                 //return ChangeMaterialOfObject(child.gameObject, newMaterial);
                 /*
