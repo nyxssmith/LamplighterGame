@@ -77,6 +77,7 @@ Can set the faction of all its residents when they move in/ generate
   - Food resource is required for a residents work to be done
     - Residents will still work and act normally, but each needs 1 food per day do do work / work to be turned into resources at end of day
     - Farms get priority for food resource > resources made conversion, then calculated for other buildings
+    - Farms cost 1 food to run, but if food = 0 they will still run
   - Building costs:
     - wood n
 - Shop
@@ -164,7 +165,6 @@ Can set the faction of all its residents when they move in/ generate
 - split charactercontroller tasks/professions into their own classes
 - Shop dialog generation
 - town resources*
-- all houses are actual houses
 - create all buildings in list
 - split all building types into own classes from main building controller
 - add more items

@@ -1,7 +1,6 @@
 using System.Collections;
-using UnityEngine;
 using System.Collections.Generic;
-
+using UnityEngine;
 
 public class DaylightCycle : MonoBehaviour
 {
@@ -10,21 +9,24 @@ public class DaylightCycle : MonoBehaviour
     public float RotationDegree = 0.0f;
 
     private bool UpdatedFlamesToday = true;
+
     private bool WasBedtime = false;
 
     private float SecondsItTakesForTwentyFourHoursToGoBy = 600.0f;
-    private float DegreesPerTimeIncrement = 0.1f;
-    private float SecondsBetweenTimeIncrements = 0.166666f;
 
+    private float DegreesPerTimeIncrement = 0.1f;
+
+    private float SecondsBetweenTimeIncrementsDay = 0.166666f;
+    private float SecondsBetweenTimeIncrementsNight = 0.16666f;
 
     private float SecondsSinceLastTimeIncrement = 0.0f;
+
+    private bool IsDay;
 
     void Start()
     {
         CenterOfRotation = gameObject.GetComponent<Transform>();
-        RotationDegree += 90.0f;// start at noon
-
-
+        RotationDegree += 90.0f; // start at noon
     }
 
     public void Update()
@@ -34,14 +36,21 @@ public class DaylightCycle : MonoBehaviour
             RotationDegree = 0.0f;
             UpdatedFlamesToday = false;
             WasBedtime = false;
-
         }
         else if (RotationDegree <= 0.0f)
         {
             RotationDegree = 360.0f;
         }
 
-        CenterOfRotation.localEulerAngles = new Vector3(RotationDegree, 0.0f, 0.0f);
+        if(RotationDegree > 1.0f && RotationDegree < 180.0f){
+            IsDay = true;
+        }else{
+            IsDay = false;
+        }
+
+
+        CenterOfRotation.localEulerAngles =
+            new Vector3(RotationDegree, 0.0f, 0.0f);
 
         /*
         // Temp disable rewind time
@@ -49,7 +58,6 @@ public class DaylightCycle : MonoBehaviour
             RotationDegree -= 0.5f;
         }
         */
-
         if (Input.GetKey("]"))
         {
             RotationDegree += 10.5f;
@@ -58,21 +66,31 @@ public class DaylightCycle : MonoBehaviour
 
         if (!UpdatedFlamesToday && RotationDegree > 10.0f)
         {
-
             UpdateAllFlames();
+
             //Debug.Log(UpdatedFlamesToday);// tell to wake up
             TellAllCharactersToWakeUp();
-
         }
         else if (!WasBedtime && RotationDegree > 170.0f)
         {
             TellAllCharactersToSleep();
+            // count all resouces at end of day
+            DoTownResourceUpdates();
         }
 
         // do the standard passage of time
         DoPassageOfTime();
+    }
 
+    private void DoTownResourceUpdates()
+    {
+        var TownControllerList = FindObjectsOfType<TownController>();
+        foreach (TownController controller in TownControllerList)
+        {
+            controller.DoResourcesUpdate();
+        }
 
+        
     }
 
     public float GetTime()
@@ -82,6 +100,13 @@ public class DaylightCycle : MonoBehaviour
 
     private void DoPassageOfTime()
     {
+        // change time speed at day or night
+        float SecondsBetweenTimeIncrements;
+        if(IsDay){
+            SecondsBetweenTimeIncrements = SecondsBetweenTimeIncrementsDay;
+        }else{
+            SecondsBetweenTimeIncrements = SecondsBetweenTimeIncrementsNight;
+        }
 
         if (SecondsSinceLastTimeIncrement > SecondsBetweenTimeIncrements)
         {
@@ -92,7 +117,6 @@ public class DaylightCycle : MonoBehaviour
                 RotationDegree = 0.0f;
                 UpdatedFlamesToday = false;
                 WasBedtime = false;
-
             }
             else if (RotationDegree <= 0.0f)
             {
@@ -105,10 +129,7 @@ public class DaylightCycle : MonoBehaviour
         {
             SecondsSinceLastTimeIncrement += Time.deltaTime;
         }
-
-
     }
-
 
     private void UpdateAllFlames()
     {
@@ -116,14 +137,11 @@ public class DaylightCycle : MonoBehaviour
         {
             // find all flames in world and tick them down
             //Debug.Log("upating all flames");
-
             var flameControllersList = FindObjectsOfType<FlameController>();
             int DurationLeft;
             foreach (FlameController controller in flameControllersList)
             {
                 //Debug.Log(controller.GetTimeLeft());
-
-
                 DurationLeft = controller.GetTimeLeft();
                 if (DurationLeft >= 1)
                 {
@@ -137,19 +155,24 @@ public class DaylightCycle : MonoBehaviour
     private void TellAllCharactersToSleep()
     {
         //Debug.Log("go to sleep");
-
         // set all current task to sleep
-
         var CharacterControllerList = FindObjectsOfType<CharacterController>();
         foreach (CharacterController controller in CharacterControllerList)
         {
             string CurrentTask = controller.GetCurrentTask();
             string DefaultTask = controller.GetDefaultTask();
+
             // lamplighters and those followng the player are busy at night
-            bool isBusy = (DefaultTask == "LAMPLIGHT" || controller.GetIsFollowingPlayer() || controller.GetIsPlayer());
+            bool isBusy =
+                (
+                DefaultTask == "LAMPLIGHT" ||
+                controller.GetIsFollowingPlayer() ||
+                controller.GetIsPlayer()
+                );
 
             if (!isBusy)
-            {// tell to go to sleep
+            {
+                // tell to go to sleep
                 controller.MakeSpeechBubble("im going to bed");
                 controller.OverrideNextTaskAndPushbackNextTask("SLEEP");
             }
@@ -168,7 +191,4 @@ public class DaylightCycle : MonoBehaviour
             controller.WakeUp();
         }
     }
-
-
-    
 }

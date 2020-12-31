@@ -34,6 +34,8 @@ public class TownController : MonoBehaviour
 
     private float money = 0;
 
+    private float food = 0;
+
     public float range = 12;
 
     // TODO name all towns
@@ -127,6 +129,7 @@ public class TownController : MonoBehaviour
             "/" +
             supported_population.ToString() +
             "\n";
+        townUIString = townUIString + "Food : " + food.ToString() + "\n";
         townUIString = townUIString + "Wood : " + wood.ToString() + "\n";
         townUIString = townUIString + "Stone : " + stone.ToString() + "\n";
         townUIString = townUIString + "Metal : " + metal.ToString() + "\n";
@@ -142,14 +145,49 @@ public class TownController : MonoBehaviour
         // for each building in town
         // if each type of work generating building
         //   add its specific resource type
+        List<BuildingController> NotFarms = new List<BuildingController>();
+
+        //process all farms first and add rest to second round
+        // farms take and make food but do not require any starting food to work
         foreach (BuildingController building in Buildings)
         {
-            if (building.GetHasDoneWork())
+            if (building.GetType() == "FARM")
             {
-                // get resouces type etc and add
-                // if building type is X or Y add to resouces etc
+                if (building.GetHasDoneWork())
+                {
+                    int AmountOfWorkers =
+                        building.GetCharactersWhoInteract().Count;
+                    if (AmountOfWorkers > 3)
+                    {
+                        AmountOfWorkers = 3;
+                    }
+                    food = food + (1.5f * AmountOfWorkers);
+
+                    // reset work counter and cost food
+                    food = food - 1.0f;
+
+                    building.SetHasDoneWork(false);
+                }
+            }
+            else
+            {
+                NotFarms.Add (building);
             }
         }
+
+        // process all other buildings
+        foreach (BuildingController building in NotFarms)
+        {
+            if (building.GetHasDoneWork() && food > 0.0f)
+            {
+                food = food - 1.0f;
+                Debug.Log("buildng " + building.GetType() + " has done work");
+                building.SetHasDoneWork(false);
+            }
+        }
+
+
+        UpdatePlayerUIIfPlayerIsPresentInTown();
     }
 
     public void DoBuildingRecount()
@@ -192,7 +230,9 @@ public class TownController : MonoBehaviour
     {
         Debug.Log("doing town update");
         DoBuildingRecount();
-        DoResourcesUpdate();
+
+        // only needs to be done daily
+        //DoResourcesUpdate();
         DoResidentRecount();
     }
 
