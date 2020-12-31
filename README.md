@@ -172,4 +172,7 @@ Can set the faction of all its residents when they move in/ generate
 - make the controls / key inputs configurable
 - fix bugs with the entering town/switching characters
 - do all TODO in the code
+- raids on towns
+- bandits on roads
+- lampligher jobs based on quests
 

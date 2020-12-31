@@ -44,7 +44,12 @@ public class BuildTool : MonoBehaviour
     public GameObject Prefab6;
 
     public GameObject Prefab7;
+
     public GameObject Prefab8;
+
+    public GameObject Prefab9;
+
+    public GameObject Prefab10;
 
     private List<GameObject> BuildObjects = new List<GameObject>();
 
@@ -54,6 +59,8 @@ public class BuildTool : MonoBehaviour
     private float ActionToFunctionOn = 1.0f;
 
     private bool canPlace;
+
+    private bool lastCanPlace;
 
     private string reasonCantPlace;
 
@@ -114,6 +121,8 @@ public class BuildTool : MonoBehaviour
         BuildObjects.Add (Prefab6);
         BuildObjects.Add (Prefab7);
         BuildObjects.Add (Prefab8);
+        BuildObjects.Add (Prefab9);
+        BuildObjects.Add (Prefab10);
     }
 
     public void SetCharacter(CharacterController CurrentCharacter)
@@ -275,10 +284,13 @@ public class BuildTool : MonoBehaviour
     {
         DeTarget();
 
-        OrigMaterial = TargetToSet.GetComponent<MeshRenderer>().material;
-        TargetToSet.GetComponent<MeshRenderer>().material =
-            GhostMaterialDeleteTarget;
+        // material
+        //OrigMaterial =
+        ChangeMaterialOfObject(TargetToSet, GhostMaterialDeleteTarget);
 
+        //OrigMaterial = TargetToSet.GetComponent<MeshRenderer>().material;
+        //TargetToSet.GetComponent<MeshRenderer>().material =
+        //    GhostMaterialDeleteTarget;
         Transform TargetTransform = TargetToSet.GetComponent<Transform>();
 
         //float RandZ = Random.Range(-0.2f, 0.2f);
@@ -307,10 +319,13 @@ public class BuildTool : MonoBehaviour
 
     public void DeTarget()
     {
+        // TODO fix set back to orig material
         if (TargetedBuilding != null)
         {
-            TargetedBuilding.GetComponent<MeshRenderer>().material =
-                OrigMaterial;
+            ChangeMaterialOfObject (TargetedBuilding, OrigMaterial);
+
+            //TargetedBuilding.GetComponent<MeshRenderer>().material =
+            //   OrigMaterial;
         }
 
         TargetedBuilding = null;
@@ -326,9 +341,9 @@ public class BuildTool : MonoBehaviour
         float currentDistanceToBuilding = -1;
         Transform CharacterTransform = Character.GetCharacterTransform();
 
-        // 100.0f is range to look for house
+        // 5.0f is range to look for house
         Collider[] hitColliders =
-            Physics.OverlapSphere(CharacterTransform.position, 25.0f);
+            Physics.OverlapSphere(CharacterTransform.position, 5.0f);
         foreach (var hitCollider in hitColliders)
         {
             BuildingController controller =
@@ -410,16 +425,19 @@ public class BuildTool : MonoBehaviour
                 distanceFromCharater +
                 Character.GetCharacterTransform().up * buildingHeight;
 
-            BuildingController houseController = house.GetComponent<BuildingController>();
+            BuildingController houseController =
+                house.GetComponent<BuildingController>();
 
             //subtract resource costs
-            houseController.SetTown(Town);
-        
-            Town.SubtractResourceCostsBuilding(houseController);
+            houseController.SetTown (Town);
+
+            Town.SubtractResourceCostsBuilding (houseController);
             Town.DoTownUpdate();
 
             // update the character
-            Town.UpdateCameraTownUI(Character.gameObject,Town.GenerateTownUIString());
+            Town
+                .UpdateCameraTownUI(Character.gameObject,
+                Town.GenerateTownUIString());
             Character.SetNeedsUIUpdate(true);
         }
     }
@@ -435,8 +453,6 @@ public class BuildTool : MonoBehaviour
         //set prefab stuff to ghost mode
         //GhostImage.GetComponent<MeshRenderer>().material =
         //    GhostMaterialNotAllowedToPlace;
-        ChangeMaterialOfGhostImage (GhostMaterialNotAllowedToPlace);
-
         string Type = GhostImage.GetComponent<BuildingController>().GetType();
 
         //Debug.Log (Type);
@@ -472,10 +488,16 @@ public class BuildTool : MonoBehaviour
         }
 
         // disable all walls and navmesh holes, so ghost is just visual
+        // TODO make this detect farm etc
+        /* 
         foreach (Transform child in GhostImage.transform)
         {
+
             child.gameObject.SetActive(false); // or false
         }
+        */
+        lastCanPlace = false;
+        ChangeMaterialOfGhostImage (GhostMaterialNotAllowedToPlace);
 
         isShowingGhost = true;
     }
@@ -524,11 +546,10 @@ public class BuildTool : MonoBehaviour
                     controller
                         .GetAllowedToPlaceBuilding(GhostImage
                             .GetComponent<BuildingController>());
-                Town = controller;// update the current town controller
+                Town = controller; // update the current town controller
             }
             else
             {
-                
                 reasonCantPlace = "Buildings can only be placed in a town\n";
             }
         }
@@ -536,7 +557,6 @@ public class BuildTool : MonoBehaviour
         // DEBUG to allow place out of town
         // TODO RM THIS LATER
         //canPlace = true;
-
         // TODO resource checks
         // Check that building is not too close to others
         //Debug.Log("overlapdist" + overlapDistance.ToString());
@@ -571,24 +591,33 @@ public class BuildTool : MonoBehaviour
             }
         }
 
-        if (canPlace)
+        // if there is a change in placement, then do update, else keep same
+        if (lastCanPlace != canPlace)
         {
-            ChangeMaterialOfGhostImage (GhostMaterialAllowedToPlace);
-            //GhostImage.GetComponent<MeshRenderer>().material =
-            //    GhostMaterialAllowedToPlace;
+            if (canPlace)
+            {
+                ChangeMaterialOfGhostImage (GhostMaterialAllowedToPlace);
+
+                //GhostImage.GetComponent<MeshRenderer>().material =
+                //    GhostMaterialAllowedToPlace;
+            }
+            else
+            {
+                ChangeMaterialOfGhostImage (GhostMaterialNotAllowedToPlace);
+                //GhostImage.GetComponent<MeshRenderer>().material =
+                //    GhostMaterialNotAllowedToPlace;
+            }
         }
-        else
-        {
-            ChangeMaterialOfGhostImage (GhostMaterialNotAllowedToPlace);
-            //GhostImage.GetComponent<MeshRenderer>().material =
-            //    GhostMaterialNotAllowedToPlace;
-        }
+
+        // update last can place
+        lastCanPlace = canPlace;
     }
 
     private void ChangeMaterialOfGhostImage(Material newMaterial)
     {
+        //Material unused =
 
-        ChangeMaterialOfObject(GhostImage.gameObject,newMaterial);
+        ChangeMaterialOfObject(GhostImage.gameObject, newMaterial);
         /*
 
         MeshRenderer ObjectMeshRenderer = GhostImage.GetComponent<MeshRenderer>();
@@ -619,19 +648,41 @@ public class BuildTool : MonoBehaviour
         */
     }
 
-    private void ChangeMaterialOfObject(GameObject ObjectToModify, Material newMaterial)
+    private void
+    ChangeMaterialOfObject(GameObject ObjectToModify, Material newMaterial)
     {
-        MeshRenderer ObjectMeshRenderer = ObjectToModify.GetComponent<MeshRenderer>();
-        if(ObjectMeshRenderer != null){
-            //Debug.Log("found i can change material of "+ObjectToModify.ToString());
-            ObjectMeshRenderer.material = newMaterial;
-        }else
+        Debug.Log("chaning material of" + ObjectToModify);
+
+        MeshRenderer ObjectMeshRenderer =
+            ObjectToModify.GetComponent<MeshRenderer>();
+        Debug.Log(ObjectToModify + " o:mr  " + ObjectMeshRenderer);
+
+        if (ObjectMeshRenderer != null)
         {
+            Material OriginalMaterial = ObjectMeshRenderer.material;
+            Debug
+                .Log("found i can change material of " +
+                ObjectToModify.ToString());
+            ObjectMeshRenderer.material = newMaterial;
+            //return OriginalMaterial;
+        }
+        else
+        {
+            Debug.Log("has no mesh renderer, so skipping it for now");
+
+            //return null;
+            // pass for now and let it stay
             // TODO fix this and make it so stuff shows up
             foreach (Transform child in ObjectToModify.transform)
             {
-                Debug.Log("recusivly changng material "+ObjectToModify.ToString()+" p:c " +child.gameObject.ToString());
-                ChangeMaterialOfObject(child.gameObject,newMaterial);
+                Debug
+                    .Log("recusivly changng material " +
+                    ObjectToModify.ToString() +
+                    " p:c " +
+                    child.gameObject.ToString());
+                
+                ChangeMaterialOfObject(child.gameObject, newMaterial);
+                //return ChangeMaterialOfObject(child.gameObject, newMaterial);
                 /*
                 MeshRenderer childMeshRenderer =
                     child.GetComponent<MeshRenderer>(); // = newMaterial;
@@ -643,12 +694,10 @@ public class BuildTool : MonoBehaviour
                 // change child material
                 childMeshRenderer.material = newMaterial;
                 */
-                
             }
         }
+        //return null;
     }
-
-    
 
     public void HideGhostImage()
     {
