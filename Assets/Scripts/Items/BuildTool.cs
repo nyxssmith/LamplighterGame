@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class BuildTool : MonoBehaviour
 {
@@ -286,6 +287,9 @@ public class BuildTool : MonoBehaviour
 
         // material
         //OrigMaterial =
+        // get orig material
+        OrigMaterial = GetAMaterialForObject(TargetToSet);
+        // change to red ghost
         ChangeMaterialOfObject (TargetToSet, GhostMaterialDeleteTarget);
 
         //OrigMaterial = TargetToSet.GetComponent<MeshRenderer>().material;
@@ -333,6 +337,27 @@ public class BuildTool : MonoBehaviour
         {
             Destroy (TargetBeaconObject);
         }
+    }
+
+    private Material GetAMaterialForObject(GameObject objectToGetMaterialFor)
+    {
+        // gets the first possible material as "orig material" for a gameobject
+        MeshRenderer ObjectMeshRenderer =
+            objectToGetMaterialFor.GetComponent<MeshRenderer>();
+
+        if (ObjectMeshRenderer != null)
+        {
+            return ObjectMeshRenderer.material;
+        }
+        else
+        {
+            foreach (Transform child in objectToGetMaterialFor.transform)
+            {
+                return GetAMaterialForObject(child.gameObject);
+            }
+        }
+
+        return null;
     }
 
     private GameObject FindNearestBuilding()
@@ -487,53 +512,63 @@ public class BuildTool : MonoBehaviour
             c.enabled = false;
         }
 
-        // disable all walls and navmesh holes, so ghost is just visual
-        // TODO make this detect farm etc
-        // TODO make this work with multipart and not disable all parts
-        if (CheckIfMultiPart(GhostImage))
-        {
-            foreach (Transform child in GhostImage.transform)
-            {
-                foreach (Transform childchild in child.transform)
-                {
-                    childchild.gameObject.SetActive(false); // or false
-                }
-            }
-        }
-        else
-        {
-            foreach (Transform child in GhostImage.transform)
-            {
-                child.gameObject.SetActive(false); // or false
-            }
-        }
-        
+        // disable all collision etc
+        DisableAllCollisionAndNav (GhostImage);
 
-        /* 
-
-        foreach (Transform child in GhostImage.transform)
-        {
-
-            child.gameObject.SetActive(false); // or false
-        }
-        */
         lastCanPlace = false;
         ChangeMaterialOfGhostImage (GhostMaterialNotAllowedToPlace);
 
         isShowingGhost = true;
     }
 
-    private bool CheckIfMultiPart(GameObject objectToCheck)
+    private void DisableAllCollisionAndNav(GameObject objectToGhost)
     {
-        MeshRenderer ObjectMeshRenderer =
-            objectToCheck.GetComponent<MeshRenderer>();
-
-        if (ObjectMeshRenderer != null)
+        // for disable all components in object if can
+        // then run this on all children
+        // disable mesh colliders
+        MeshCollider ObjectMeshCollider =
+            objectToGhost.GetComponent<MeshCollider>();
+        if (ObjectMeshCollider != null)
         {
-            return false;
+            ObjectMeshCollider.enabled = false;
         }
 
-        return true;
+        // disable box colliders
+        BoxCollider ObjectBoxCollider =
+            objectToGhost.GetComponent<BoxCollider>();
+        if (ObjectBoxCollider != null)
+        {
+            ObjectBoxCollider.enabled = false;
+        }
+
+        // disable cap colliders
+        CapsuleCollider ObjectCapCollider =
+            objectToGhost.GetComponent<CapsuleCollider>();
+        if (ObjectCapCollider != null)
+        {
+            ObjectCapCollider.enabled = false;
+        }
+
+        // disable sphere colliders
+        SphereCollider ObjectSphereCollider =
+            objectToGhost.GetComponent<SphereCollider>();
+        if (ObjectSphereCollider != null)
+        {
+            ObjectSphereCollider.enabled = false;
+        }
+
+        // disable navmesh obs
+        NavMeshObstacle ObjectNavOb =
+            objectToGhost.GetComponent<NavMeshObstacle>();
+        if (ObjectNavOb != null)
+        {
+            ObjectNavOb.enabled = false;
+        }
+
+        foreach (Transform child in objectToGhost.transform)
+        {
+            DisableAllCollisionAndNav(child.gameObject);
+        }
     }
 
     private void MoveGhostImage()
