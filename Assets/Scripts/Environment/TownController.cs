@@ -14,7 +14,7 @@ public class TownController : MonoBehaviour
 
     private SphereCollider TownCollider;
 
-    private string UUID;
+    public string UUID;
 
     // population supported (1 house = 1 or 2 person)
     // wood (given by lumberman per day)
