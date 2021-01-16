@@ -24,17 +24,17 @@ public class TownController : MonoBehaviour
     // range = dist from center to farthest building * 1.5
     // current population
     // list of all buildings
-    private float wood = 0;
+    public float wood = 0;
 
-    private float stone = 0;
+    public float stone = 0;
 
-    private float metal = 0;
+    public float metal = 0;
 
-    private float ore = 0;
+    public float ore = 0;
 
-    private float money = 0;
+    public float money = 0;
 
-    private float food = 0;
+    public float food = 0;
 
     public float range = 12;
 

@@ -8,7 +8,8 @@ public class SaveButton : MonoBehaviour {
 	void Start () {
 		Button btn = this.gameObject.GetComponent<Button>();
 		btn.onClick.AddListener(TaskOnClick);
-        Saver = new SaveManager();
+        Saver  = gameObject.GetComponentInParent<SaveManager>();
+		
 	}
 
 	void TaskOnClick(){

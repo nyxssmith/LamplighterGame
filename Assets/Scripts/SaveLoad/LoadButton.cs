@@ -8,7 +8,7 @@ public class LoadButton : MonoBehaviour {
 	void Start () {
 		Button btn = this.gameObject.GetComponent<Button>();
 		btn.onClick.AddListener(TaskOnClick);
-        Loader = new SaveManager();
+        Loader = gameObject.GetComponentInParent<SaveManager>();
 	}
 
 	void TaskOnClick(){
