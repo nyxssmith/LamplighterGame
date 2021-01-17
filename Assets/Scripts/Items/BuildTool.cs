@@ -94,6 +94,8 @@ public class BuildTool : MonoBehaviour
 
     private float minBuildingHeight = -2.0f;
 
+    private bool isUsedForLoading = false;
+
     // overlap distance check
     private float overlapDistance;
 
@@ -107,6 +109,8 @@ public class BuildTool : MonoBehaviour
 
         // torches are always lit by default
         FillListOfBuildObjects();
+
+        CurrentPrefab = BuildObjects[Index];
     }
 
     private void FillListOfBuildObjects()
@@ -133,152 +137,156 @@ public class BuildTool : MonoBehaviour
 
     public void Update()
     {
-        // cycle prefab to summon
-        if (Input.GetKeyDown("tab"))
+        if (!isUsedForLoading)
         {
-            Index += 1;
-            if (Index >= BuildObjects.Count)
+            //Debug.Log("updaitng in build tool");
+            // cycle prefab to summon
+            if (Input.GetKeyDown("tab"))
             {
-                Index = 0;
-            }
-            HideGhostImage();
-            DeTarget();
-        }
-
-        //move building closer and farther away
-        if (Input.GetKeyDown("i"))
-        {
-            if (distanceFromCharater <= maxDistanceFromCharater)
-            {
-                distanceFromCharater += 0.5f;
-            }
-        }
-        if (Input.GetKeyDown("k"))
-        {
-            if (distanceFromCharater >= minDistanceFromCharater)
-            {
-                distanceFromCharater -= 0.5f;
-            }
-        }
-
-        //rotate building direction
-        if (Input.GetKeyDown("j"))
-        {
-            if (buildingRotation <= maxBuildingRotation)
-            {
-                buildingRotation += 5.0f;
-            }
-        }
-        if (Input.GetKeyDown("l"))
-        {
-            if (buildingRotation >= minBuildingRotation)
-            {
-                buildingRotation -= 5.0f;
-            }
-        }
-
-        //tild building
-        if (Input.GetKeyDown("u"))
-        {
-            if (buildingTilt <= maxBuildingTilt)
-            {
-                buildingTilt += 1.0f;
-            }
-        }
-        if (Input.GetKeyDown("o"))
-        {
-            if (buildingTilt >= minBuildingTilt)
-            {
-                buildingTilt -= 1.0f;
-            }
-        }
-
-        // change building hieght
-        if (Input.GetKeyDown("n"))
-        {
-            if (buildingHeight >= minBuildingHeight)
-            {
-                buildingHeight -= 0.25f;
-            }
-        }
-        if (Input.GetKeyDown("m"))
-        {
-            if (buildingHeight <= maxBuildingHeight)
-            {
-                buildingHeight += 0.25f;
-            }
-        }
-
-        // pick which prefab
-        CurrentPrefab = BuildObjects[Index];
-
-        if (BaseItem.CanDoAction == ActionToFunctionOn)
-        {
-            UnityEngine.Debug.Log("doing summon house");
-            BaseItem.CanDoAction = 0.0f;
-
-            //SetCharacter(BaseItem.ActionTargetCharacterController);
-            //BaseItem.SetActionTargetCharacterController(null);
-            if (Index > 0)
-            {
-                SummonHouse();
-            }
-            else
-            {
-                Debug.Log("deleteing");
-                BuildingController controller =
-                    TargetedBuilding.GetComponent<BuildingController>();
-                if (controller != null)
+                Index += 1;
+                if (Index >= BuildObjects.Count)
                 {
-                    controller.SelfDestruct();
+                    Index = 0;
+                }
+                HideGhostImage();
+                DeTarget();
+            }
+
+            CurrentPrefab = BuildObjects[Index];
+
+            //move building closer and farther away
+            if (Input.GetKeyDown("i"))
+            {
+                if (distanceFromCharater <= maxDistanceFromCharater)
+                {
+                    distanceFromCharater += 0.5f;
+                }
+            }
+            if (Input.GetKeyDown("k"))
+            {
+                if (distanceFromCharater >= minDistanceFromCharater)
+                {
+                    distanceFromCharater -= 0.5f;
+                }
+            }
+
+            //rotate building direction
+            if (Input.GetKeyDown("j"))
+            {
+                if (buildingRotation <= maxBuildingRotation)
+                {
+                    buildingRotation += 5.0f;
+                }
+            }
+            if (Input.GetKeyDown("l"))
+            {
+                if (buildingRotation >= minBuildingRotation)
+                {
+                    buildingRotation -= 5.0f;
+                }
+            }
+
+            //tild building
+            if (Input.GetKeyDown("u"))
+            {
+                if (buildingTilt <= maxBuildingTilt)
+                {
+                    buildingTilt += 1.0f;
+                }
+            }
+            if (Input.GetKeyDown("o"))
+            {
+                if (buildingTilt >= minBuildingTilt)
+                {
+                    buildingTilt -= 1.0f;
+                }
+            }
+
+            // change building hieght
+            if (Input.GetKeyDown("n"))
+            {
+                if (buildingHeight >= minBuildingHeight)
+                {
+                    buildingHeight -= 0.25f;
+                }
+            }
+            if (Input.GetKeyDown("m"))
+            {
+                if (buildingHeight <= maxBuildingHeight)
+                {
+                    buildingHeight += 0.25f;
+                }
+            }
+
+            // pick which prefab
+            if (BaseItem.CanDoAction == ActionToFunctionOn)
+            {
+                UnityEngine.Debug.Log("doing summon house");
+                BaseItem.CanDoAction = 0.0f;
+
+                //SetCharacter(BaseItem.ActionTargetCharacterController);
+                //BaseItem.SetActionTargetCharacterController(null);
+                if (Index > 0)
+                {
+                    SummonHouse();
                 }
                 else
                 {
-                    // if not destroying buildng but a fence or something
-                    Character
-                        .MakeSpeechBubble("destroyingbuilding and not telling owner");
-                    Destroy (TargetedBuilding);
+                    Debug.Log("deleteing");
+                    BuildingController controller =
+                        TargetedBuilding.GetComponent<BuildingController>();
+                    if (controller != null)
+                    {
+                        controller.SelfDestruct();
+                    }
+                    else
+                    {
+                        // if not destroying buildng but a fence or something
+                        Character
+                            .MakeSpeechBubble("destroyingbuilding and not telling owner");
+                        Destroy (TargetedBuilding);
+                    }
                 }
             }
+
+            bool isInHand =
+                BaseItem.GetItem().heldLocation == "Hand" &&
+                BaseItem.GetIsPickedUp();
+
+            isInHand = true;
+
+            // if nidex isnt 0
+            if (Index != 0)
+            {
+                if (isInHand && !isShowingGhost && Character != null)
+                {
+                    ShowGhostImage();
+                }
+                else if (!isInHand)
+                {
+                    HideGhostImage();
+                }
+
+                if (isShowingGhost)
+                {
+                    MoveGhostImage();
+                    // add an update ghost image to check if allowed to be placed to avoid overlap etc
+                }
+            }
+            else
+            {
+                // if delete mode
+                //Character.MakeSpeechBubble("deleting");
+                GameObject nearestBuilding = FindNearestBuilding();
+                if (nearestBuilding != null)
+                {
+                    // put target beacon on building to be deleted
+                    SetTarget (nearestBuilding);
+                }
+            }
+            // else if index is 0 do delete tool here
+            // else if index is 0 do delete tool hereindex
         }
-
-        bool isInHand =
-            BaseItem.GetItem().heldLocation == "Hand" &&
-            BaseItem.GetIsPickedUp();
-
-        isInHand = true;
-
-        // if nidex isnt 0
-        if (Index != 0)
-        {
-            if (isInHand && !isShowingGhost && Character != null)
-            {
-                ShowGhostImage();
-            }
-            else if (!isInHand)
-            {
-                HideGhostImage();
-            }
-
-            if (isShowingGhost)
-            {
-                MoveGhostImage();
-                // add an update ghost image to check if allowed to be placed to avoid overlap etc
-            }
-        }
-        else
-        {
-            // if delete mode
-            //Character.MakeSpeechBubble("deleting");
-            GameObject nearestBuilding = FindNearestBuilding();
-            if (nearestBuilding != null)
-            {
-                // put target beacon on building to be deleted
-                SetTarget (nearestBuilding);
-            }
-        }
-        // else if index is 0 do delete tool here
-        // else if index is 0 do delete tool hereindex
     }
 
     public void SetTarget(GameObject TargetToSet)
@@ -289,6 +297,7 @@ public class BuildTool : MonoBehaviour
         //OrigMaterial =
         // get orig material
         OrigMaterial = GetAMaterialForObject(TargetToSet);
+
         // change to red ghost
         ChangeMaterialOfObject (TargetToSet, GhostMaterialDeleteTarget);
 
@@ -455,6 +464,8 @@ public class BuildTool : MonoBehaviour
 
             //subtract resource costs
             houseController.SetTown (Town);
+
+            houseController.SetBuildToolIndex (Index);
 
             Town.SubtractResourceCostsBuilding (houseController);
             Town.DoTownUpdate();
@@ -801,6 +812,16 @@ public class BuildTool : MonoBehaviour
     public int GetLength()
     {
         return BuildObjects.Count;
+    }
+
+    public GameObject GetGameObjectAtBuildListIndex(int indexToGet)
+    {
+        return BuildObjects[indexToGet];
+    }
+
+    public void SetUsedForLoading(bool newState)
+    {
+        isUsedForLoading = newState;
     }
 
     //public void SetIndex(int newIndex){

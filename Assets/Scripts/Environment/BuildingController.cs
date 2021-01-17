@@ -13,6 +13,7 @@ public class BuildingController : MonoBehaviour
     private string ownerUUID = "";
 
     private string UUID = "";
+    private int buildToolIndex = -1;
 
     public string Type = ""; // HOME SHOP FARM OBJECT
 
@@ -26,7 +27,7 @@ public class BuildingController : MonoBehaviour
     private List<CharacterController>
         CharactersWhoInteract = new List<CharacterController>();
 
-    private float OverlapSize;
+    //private float OverlapSize;
 
     private TownController Town;
 
@@ -145,6 +146,12 @@ public class BuildingController : MonoBehaviour
         return Type;
     }
 
+    public void SetType(string newType)
+    {
+        Type = newType;
+    }
+    
+
     public string GetOwner()
     {
         return ownerUUID;
@@ -159,6 +166,10 @@ public class BuildingController : MonoBehaviour
     public string GetUUID()
     {
         return UUID;
+    }
+
+    public void SetUUID(string newUUID){
+        UUID = newUUID;
     }
 
     public Transform GetTransform()
@@ -244,9 +255,20 @@ public class BuildingController : MonoBehaviour
     {
         Town = newTown;
     }
+    public TownController GetTown(){
+        return Town;
+    }
 
 
     public List<CharacterController> GetCharactersWhoInteract(){
         return CharactersWhoInteract;
+    }
+
+    public void SetBuildToolIndex(int index){
+        buildToolIndex = index;
+    }
+
+    public int GetBuildToolIndex(){
+        return buildToolIndex;
     }
 }
