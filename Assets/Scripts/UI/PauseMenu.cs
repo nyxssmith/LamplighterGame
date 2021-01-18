@@ -40,6 +40,14 @@ public class PauseMenu : MonoBehaviour
                 Cursor.lockState = CursorLockMode.None;
                 Cursor.visible = true;
                 Time.timeScale = 0;
+
+                // turn off build mode if was active
+                CameraFollow cameraControl = FindObjectOfType<CameraFollow>();
+                Debug.Log("camera" + cameraControl);
+                if (cameraControl.GetInBuildMode())
+                {
+                    cameraControl.ExitBuildMode();
+                }
             }
             else
             {

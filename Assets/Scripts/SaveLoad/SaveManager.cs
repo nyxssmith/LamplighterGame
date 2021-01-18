@@ -26,7 +26,8 @@ public class SaveManager : MonoBehaviour
     public void Save()
     {
         // create folder with timestamp
-        CreateSaveDirectory();
+        //CreateSaveDirectory();
+        SaveFolder = Path.Combine(SavesFolder, "testsave");
 
         // for each character save a json of the using data manager each as its
         //  uuid.json
@@ -45,6 +46,23 @@ public class SaveManager : MonoBehaviour
 
     private void SaveCharacters()
     {
+        // for each character,
+        // make a folder in saves/characters/characters
+        // save the character data via characterdata already made save(method)
+        
+        // create new CharacterSaveData to save all other parts like buildings and towns etc
+
+        
+    }
+
+    private void LoadCharacters()
+    {
+        // for each character,
+        // for each in its folder, 
+        // create character with cdm data
+        // load and set other settings from characterSaveData
+        // call awake on the character again to set new values
+        // 
     }
 
     private void SaveBuildings()
@@ -103,16 +121,18 @@ public class SaveManager : MonoBehaviour
     {
         // get list of all town controllers
         var TownList = FindObjectsOfType<TownController>();
+
         // make a buildtool to get buildings from
         GameObject buildToolObject = Instantiate(BuildToolPrefab);
+
         // make sure update() isnt called on the tool
         buildToolObject.SendMessage("SetUsedForLoading", true);
+
         // populate its list to pull from
         buildToolObject.SendMessage("FillListOfBuildObjects");
 
         // get the buildtool controller
         BuildTool buildTool = buildToolObject.GetComponent<BuildTool>();
-
 
         // for all files in the save director
         string BuildingsSaveFolderPath =
@@ -176,6 +196,7 @@ public class SaveManager : MonoBehaviour
                     new Vector3(BuildingSave.position_x,
                         BuildingSave.position_y,
                         BuildingSave.position_z);
+
                 // rotate building
                 var rot = BuildingObject.transform.rotation;
                 BuildingObject.transform.rotation =

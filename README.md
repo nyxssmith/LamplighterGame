@@ -14,7 +14,7 @@
 - q drop (if holding item)
 - f swap hand and back items
 - g swap hand and belt items
-- ] forward time
+- ] switch timescale in .5 increments up to 10x speed
 - scroll wheel or , . to zoom in/out the camera
 - left click to use held item
 - right click TODO (mybe make use belt item)

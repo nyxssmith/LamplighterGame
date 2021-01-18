@@ -170,10 +170,7 @@ public class CameraFollow : MonoBehaviour
             UpdateInfoUIForItem();
             needsUIUpdate = false;
 
-
             // update town info if realivant
-            
-
         }
 
         GetPlayersTargetCharacter();
@@ -184,6 +181,21 @@ public class CameraFollow : MonoBehaviour
             UnityEngine.Debug.Log("setting player to ask for ui update");
             Player.SetNeedsUIUpdate(true);
         }
+
+        // To time warp
+        // toggle half, full, etc time speed
+        if (Input.GetKeyDown("]"))
+        {
+
+            if(Time.timeScale >= 10.0f){
+                Time.timeScale = 0.5f;
+            }else{
+                Time.timeScale += 0.5f;
+            }
+            Player.MakeSpeechBubble("Timescale set to "+Time.timeScale.ToString());
+            //RotationDegree += 0.5f;
+        }
+        
 
         // if not in dialog mode
         if (inDialog)
@@ -250,73 +262,76 @@ public class CameraFollow : MonoBehaviour
 
             if (!inBuildMode)
             {
-                // to swap to build mode
-                //get current item in hand and disable it
-                ItemController heldItemController =
-                    Player.GetHeldItemController();
-                if (heldItemController != null)
-                {
-                    PlayersHeldItem = heldItemController.gameObject;
-
-                    PlayersHeldItem.SetActive(false);
-                }
-
-                Transform hand = Player.GetHandTransform();
-                BuildToolObject =
-                    Instantiate(BuildToolPrefab,
-                    hand.position,
-                    Quaternion.identity);
-
-                //make the target beacon a child of its taret
-                BuildToolObject.gameObject.GetComponent<Transform>().parent =
-                    hand;
-
-                BuildToolObject
-                    .gameObject
-                    .GetComponent<BuildTool>()
-                    .SetCharacter(Player);
-
-                BuildToolObject
-                    .gameObject
-                    .GetComponent<ItemController>()
-                    .GetPickedUpBy(Player);
-
-                BuildToolController =
-                    BuildToolObject.gameObject.GetComponent<BuildTool>();
-
-                BuildToolController.Index = buildToolIndex;
-
-                buildToolLength = BuildToolController.GetLength();
-
-                //BuildToolController.SetIndex( buildToolIndex);
-                // give the build tool as hand item
-                inBuildMode = true;
-
-                //Player.Setinbu
-                Player.SetInBuildMode(true);
+                EnterBuildMode();
             }
             else
             {
-                // to swap out
-                // enable hand item
-                // delete build tool object
-                if (PlayersHeldItem != null)
-                {
-                    PlayersHeldItem.SetActive(true);
-                }
-                BuildToolObject.gameObject.GetComponent<BuildTool>().DeTarget();
-                BuildToolObject
-                    .gameObject
-                    .GetComponent<BuildTool>()
-                    .HideGhostImage();
-
-                Destroy (BuildToolObject);
-
-                inBuildMode = false;
-                Player.SetInBuildMode(false);
-                needsUIUpdate = true; // update ui after exit build mode
+                ExitBuildMode();
             }
         }
+    }
+
+    void EnterBuildMode()
+    {
+        // to swap to build mode
+        //get current item in hand and disable it
+        ItemController heldItemController = Player.GetHeldItemController();
+        if (heldItemController != null)
+        {
+            PlayersHeldItem = heldItemController.gameObject;
+
+            PlayersHeldItem.SetActive(false);
+        }
+
+        Transform hand = Player.GetHandTransform();
+        BuildToolObject =
+            Instantiate(BuildToolPrefab, hand.position, Quaternion.identity);
+
+        //make the target beacon a child of its taret
+        BuildToolObject.gameObject.GetComponent<Transform>().parent = hand;
+
+        BuildToolObject
+            .gameObject
+            .GetComponent<BuildTool>()
+            .SetCharacter(Player);
+
+        BuildToolObject
+            .gameObject
+            .GetComponent<ItemController>()
+            .GetPickedUpBy(Player);
+
+        BuildToolController =
+            BuildToolObject.gameObject.GetComponent<BuildTool>();
+
+        BuildToolController.Index = buildToolIndex;
+
+        buildToolLength = BuildToolController.GetLength();
+
+        //BuildToolController.SetIndex( buildToolIndex);
+        // give the build tool as hand item
+        inBuildMode = true;
+
+        //Player.Setinbu
+        Player.SetInBuildMode(true);
+    }
+
+    public void ExitBuildMode()
+    {
+        // to swap out
+        // enable hand item
+        // delete build tool object
+        if (PlayersHeldItem != null)
+        {
+            PlayersHeldItem.SetActive(true);
+        }
+        BuildToolObject.gameObject.GetComponent<BuildTool>().DeTarget();
+        BuildToolObject.gameObject.GetComponent<BuildTool>().HideGhostImage();
+
+        Destroy (BuildToolObject);
+
+        inBuildMode = false;
+        Player.SetInBuildMode(false);
+        needsUIUpdate = true; // update ui after exit build mode
     }
 
     void LateUpdate()
@@ -375,6 +390,7 @@ public class CameraFollow : MonoBehaviour
             CameraFollowObj
                 .gameObject
                 .GetComponentInParent<CharacterController>();
+
         // tell new player about its camera
         UpdateCharactersReferenceToCamera(this.gameObject);
     }
@@ -409,23 +425,17 @@ public class CameraFollow : MonoBehaviour
 
     public void DoTownUI(string NewText)
     {
-
         // TODO fix townui not showing up if swap to player back inside town
         // might be fixed by changing hit collider that exits to cameraFollow if I can get tht to to work
-
-
         TownUI.GetComponent<Text>().text = NewText;
-
-        
-
-
     }
 
-    private void UpdateTownUIFromPlayer(){
-
-        TownController Town =  Player.GetTown();
-        if(Town != null){
-            DoTownUI( Town.GenerateTownUIString());
+    private void UpdateTownUIFromPlayer()
+    {
+        TownController Town = Player.GetTown();
+        if (Town != null)
+        {
+            DoTownUI(Town.GenerateTownUIString());
         }
     }
 
@@ -694,11 +704,12 @@ public class CameraFollow : MonoBehaviour
         }
     }
 
-    private void UpdateCharactersReferenceToCamera(GameObject newObject){
-        Player.SetCameraWithHUD(newObject);
+    private void UpdateCharactersReferenceToCamera(GameObject newObject)
+    {
+        Player.SetCameraWithHUD (newObject);
     }
 
-
-
-
+    public bool GetInBuildMode(){
+        return inBuildMode;
+    }
 }

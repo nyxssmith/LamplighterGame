@@ -17,6 +17,7 @@ public class DaylightCycle : MonoBehaviour
     private float DegreesPerTimeIncrement = 0.1f;
 
     private float SecondsBetweenTimeIncrementsDay = 0.166666f;
+
     private float SecondsBetweenTimeIncrementsNight = 0.16666f;
 
     private float SecondsSinceLastTimeIncrement = 0.0f;
@@ -42,27 +43,19 @@ public class DaylightCycle : MonoBehaviour
             RotationDegree = 360.0f;
         }
 
-        if(RotationDegree > 1.0f && RotationDegree < 180.0f){
+        if (RotationDegree > 1.0f && RotationDegree < 180.0f)
+        {
             IsDay = true;
-        }else{
+        }
+        else
+        {
             IsDay = false;
         }
-
 
         CenterOfRotation.localEulerAngles =
             new Vector3(RotationDegree, 0.0f, 0.0f);
 
-        /*
-        // Temp disable rewind time
-        if (Input.GetKey ("[")) {
-            RotationDegree -= 0.5f;
-        }
-        */
-        if (Input.GetKey("]"))
-        {
-            RotationDegree += 10.5f;
-            //RotationDegree += 0.5f;
-        }
+
 
         if (!UpdatedFlamesToday && RotationDegree > 10.0f)
         {
@@ -74,6 +67,7 @@ public class DaylightCycle : MonoBehaviour
         else if (!WasBedtime && RotationDegree > 170.0f)
         {
             TellAllCharactersToSleep();
+
             // count all resouces at end of day
             DoTownResourceUpdates();
         }
@@ -89,8 +83,6 @@ public class DaylightCycle : MonoBehaviour
         {
             controller.DoResourcesUpdate();
         }
-
-        
     }
 
     public float GetTime()
@@ -102,9 +94,12 @@ public class DaylightCycle : MonoBehaviour
     {
         // change time speed at day or night
         float SecondsBetweenTimeIncrements;
-        if(IsDay){
+        if (IsDay)
+        {
             SecondsBetweenTimeIncrements = SecondsBetweenTimeIncrementsDay;
-        }else{
+        }
+        else
+        {
             SecondsBetweenTimeIncrements = SecondsBetweenTimeIncrementsNight;
         }
 

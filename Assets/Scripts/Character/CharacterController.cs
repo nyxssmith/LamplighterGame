@@ -185,7 +185,7 @@ public class CharacterController : MonoBehaviour
     private GameObject CameraWithHUD = null;
 
     //When character comes online, set vars needed for init
-    private void Awake()
+    public void Awake()
     {
         //parts of the character
         rb = gameObject.GetComponent<Rigidbody>();
