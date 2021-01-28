@@ -1437,6 +1437,27 @@ public class CharacterController : MonoBehaviour
                     Quaternion.LookRotation(forward),
                     0.2f);
         }
+
+        // if fighting, must look at enemy
+        if (IsFighting && CombatTarget != null)
+        {
+            var distance =
+                Vector3
+                    .Distance(CharacterTransform.position,
+                    CombatTarget.transform.position);
+
+            // only lock on in range
+            if (distance <= HeldItemController.GetItem().Range)
+            {
+                CharacterTransform.rotation =
+                    Quaternion
+                        .Slerp(CharacterTransform.rotation,
+                        Quaternion
+                            .LookRotation(CombatTarget.transform.position -
+                            CharacterTransform.position),
+                        30.0f * Time.deltaTime);
+            }
+        }
     }
 
     void OnCollisionExit(Collision hit)
