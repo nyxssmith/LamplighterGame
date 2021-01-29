@@ -112,6 +112,12 @@ public class CameraFollow : MonoBehaviour
     // Use this for initialization
     void Start()
     {
+        CameraFollowObj = null;
+        
+        CameraFollowObj =  FindPlayerToFollow();
+        
+        UnityEngine.Debug.Log(CameraFollowObj);
+
         Vector3 rot = transform.localRotation.eulerAngles;
         rotY = rot.y;
         rotX = rot.x;
@@ -136,12 +142,12 @@ public class CameraFollow : MonoBehaviour
         }
 
         // We setup the rotation of the sticks here
-        float inputX = Input.GetAxis("RightStickHorizontal");
-        float inputZ = Input.GetAxis("RightStickVertical");
+        //float inputX = Input.GetAxis("RightStickHorizontal");
+        //float inputZ = Input.GetAxis("RightStickVertical");
         mouseX = Input.GetAxis("Mouse X");
         mouseY = Input.GetAxis("Mouse Y");
-        finalInputX = inputX + mouseX;
-        finalInputZ = inputZ + mouseY;
+        finalInputX = mouseX;
+        finalInputZ = mouseY;
 
         rotY += finalInputX * inputSensitivity * Time.deltaTime;
         rotX += finalInputZ * inputSensitivity * Time.deltaTime;
@@ -269,6 +275,25 @@ public class CameraFollow : MonoBehaviour
                 ExitBuildMode();
             }
         }
+    }
+
+
+    public GameObject FindPlayerToFollow(){
+
+        // get all characters who have same squad leader
+        var characterControllersList = FindObjectsOfType<CharacterController>();
+        UnityEngine.Debug.Log("finding player");
+        foreach (CharacterController controller in characterControllersList)
+        {
+            UnityEngine.Debug.Log(controller);
+            UnityEngine.Debug.Log(controller.GetIsPlayer());
+            if(controller.GetIsPlayer()){
+                UnityEngine.Debug.Log("found player");
+                return controller.GetCameraTarget();
+            }
+        }
+        return FindPlayerToFollow();
+
     }
 
     void EnterBuildMode()

@@ -65,6 +65,10 @@ public class CharacterController : MonoBehaviour
 
     private NavMeshAgent NavAgent;
 
+    public GameObject AnimationControlManagerChild;
+
+    private DM.ControlManager AnimationControlManager;
+
     private IsLoadedController LoadedController;
 
     // variables that are used for interacting with world but dont matter for save
@@ -179,7 +183,6 @@ public class CharacterController : MonoBehaviour
 
     private List<CharacterController> SquadCharacterControllers = null;
 
-    // TODO private this
     private CharacterController TargetCharacterController = null; //save info on target character
 
     private GameObject CameraWithHUD = null;
@@ -196,6 +199,16 @@ public class CharacterController : MonoBehaviour
         CDM.Init (CharacterSaveFileFolder, CharacterSaveFile);
 
         Load();
+
+        if (Character.IsPlayer)
+        {
+            AnimationControlManager =
+                AnimationControlManagerChild.GetComponent<DM.ControlManager>();
+
+            Debug.Log("animationcontroller" + AnimationControlManager);
+
+            AnimationControlManager.characterController = this;
+        }
         CharacterAnimator = AnimationTarget.GetComponent<Animator>();
 
         if (Character.IsPlayer)
@@ -360,6 +373,7 @@ public class CharacterController : MonoBehaviour
             SetNavAgentStateFromIsPlayer();
         }
 
+        // animations
         DoAnimationState();
         if (LastAnimationState != CurrentAnimationState)
         {
@@ -367,6 +381,7 @@ public class CharacterController : MonoBehaviour
             {
                 CurrentAnimationState = Character.landing_animation;
             }
+
             CharacterAnimator.Play(CurrentAnimationState, 0, 0);
             LastAnimationState = CurrentAnimationState;
         }
@@ -999,8 +1014,6 @@ public class CharacterController : MonoBehaviour
             Target();
             return;
         }
-
-        //Debug.Log("Attacking", CombatTarget);
         Transform TargetTransform = CombatTarget.GetComponent<Transform>();
 
         //NavMeshAgent agent = GetComponent<NavMeshAgent>();
@@ -2629,5 +2642,32 @@ public class CharacterController : MonoBehaviour
     public TownController GetTown()
     {
         return Town;
+    }
+
+    public float GetForwardMovement()
+    {
+        if (IsMoving)
+        {
+            if (Character.IsPlayer && Input.GetKey("s"))
+            {
+                return -1.0f;
+            }
+            return 1.0f;
+        }
+        return 0.0f;
+    }
+
+    public float GetLeftRightMovement()
+    {
+        if (IsMoving)
+        {
+            return 1.0f;
+        }
+        return 0.0f;
+    }
+
+    public bool GetIsSprinting()
+    {
+        return isSprinting;
     }
 }
