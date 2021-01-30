@@ -49,4 +49,13 @@ public class CharacterData
     public float farmer_faction;
     public float wild_faction;
 
+
+    public int TorsoOption;
+    public int BeltBackpackOption;
+    public int HeadOption;
+    public int FaceOption;
+    public int HandsOption;
+    public int ShoulderOption;
+    public int ShoeOption;
+
 }

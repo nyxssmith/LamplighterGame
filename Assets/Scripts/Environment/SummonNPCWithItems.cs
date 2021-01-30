@@ -10,6 +10,10 @@ public class SummonNPCWithItems : MonoBehaviour
     public GameObject HandItem;
     public GameObject BackItem;
     public GameObject BeltItem;
+    public string SaveFileToLoad;
+
+    public string CharacterSaveFileFolder = "Assets/CharacterJson";
+
 
 
     //TODO make have a bool for "on awake" vs "when player in range"
@@ -33,6 +37,10 @@ public class SummonNPCWithItems : MonoBehaviour
         // make npc
         GameObject SpawnedNPC = Instantiate(NPC, SummonPositon, Quaternion.identity);
         CharacterController SpawnedNPCController = SpawnedNPC.GetComponent<CharacterController>();
+
+        //SpawnedNPC.SendMessage("DoInit",(CharacterSaveFileFolder,SaveFileToLoad));
+        //SpawnedNPCController.Load(CharacterSaveFileFolder,SaveFileToLoad);
+        SpawnedNPCController.DoInit(CharacterSaveFileFolder,SaveFileToLoad);
 
         Transform HandTransform = SpawnedNPCController.GetHandTransform();
         Transform BackTransform = SpawnedNPCController.GetBackTransform();

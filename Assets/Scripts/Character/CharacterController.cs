@@ -42,10 +42,8 @@ public class CharacterController : MonoBehaviour
     private Color UIColor;
 
     //Character save manager
-    public string CharacterSaveFileFolder = "Assets/CharacterJson";
-
-    public string CharacterSaveFile = "Player1.json";
-
+    //public string CharacterSaveFileFolder = "Assets/CharacterJson";
+    //public string CharacterSaveFile = "Player1.json";
     private CharacterDataManager CDM = new CharacterDataManager();
 
     public CharacterData Character = new CharacterData();
@@ -55,8 +53,7 @@ public class CharacterController : MonoBehaviour
     // animation parts and locations
     public GameObject AnimationTarget; // TODO point this at self / this.
 
-    private Animator CharacterAnimator;
-
+    //private Animator CharacterAnimator;
     public GameObject Hand;
 
     public GameObject Back;
@@ -64,6 +61,10 @@ public class CharacterController : MonoBehaviour
     public GameObject Belt;
 
     private NavMeshAgent NavAgent;
+
+    public GameObject AnimationControlManagerChild;
+
+    private DM.ControlManager AnimationControlManager;
 
     private IsLoadedController LoadedController;
 
@@ -179,49 +180,91 @@ public class CharacterController : MonoBehaviour
 
     private List<CharacterController> SquadCharacterControllers = null;
 
-    // TODO private this
     private CharacterController TargetCharacterController = null; //save info on target character
 
     private GameObject CameraWithHUD = null;
 
-    //When character comes online, set vars needed for init
-    public void Awake()
-    {
-        //parts of the character
-        rb = gameObject.GetComponent<Rigidbody>();
-        CharacterTransform = gameObject.GetComponent<Transform>();
-        NavAgent = this.gameObject.GetComponent<NavMeshAgent>();
+    private bool hasDoneInit = false;
 
+    // Character customization lists
+    private List<GameObject> TorsoOptions = new List<GameObject>();
+
+    private List<GameObject> BeltBackpackOptions = new List<GameObject>();
+
+    private List<GameObject> HeadOptions = new List<GameObject>();
+
+    private List<GameObject> FaceOptions = new List<GameObject>();
+
+    private List<GameObject> HandsOptions = new List<GameObject>();
+
+    private List<GameObject> ShoulderOptions = new List<GameObject>();
+
+    private List<GameObject> ShoeOptions = new List<GameObject>();
+
+    //When character comes online, set vars needed for init
+    public void start()
+    {
+        DoInit("", "");
+    }
+
+    public void DoInit(string CharacterSaveFileFolder, string CharacterSaveFile)
+    {
+        if (!hasDoneInit)
+        {
+            Debug.Log("doing init");
+
+            //parts of the character
+            //rb = gameObject.GetComponent<Rigidbody>();
+            rb = GetComponent<Rigidbody>();
+            Debug.Log("rb" + rb);
+            CharacterTransform = gameObject.GetComponent<Transform>();
+            NavAgent = this.gameObject.GetComponent<NavMeshAgent>();
+
+            /*
         //load chracter save into character
         CDM.Init (CharacterSaveFileFolder, CharacterSaveFile);
 
         Load();
-        CharacterAnimator = AnimationTarget.GetComponent<Animator>();
+        */
+            Load (CharacterSaveFileFolder, CharacterSaveFile);
 
-        if (Character.IsPlayer)
-        {
-            cam = Camera.main;
-            this.tag = "player";
+            AnimationControlManager =
+                AnimationControlManagerChild.GetComponent<DM.ControlManager>();
+
+            Debug.Log("animationcontroller" + AnimationControlManager);
+
+            AnimationControlManager.characterController = this;
+
+            //CharacterAnimator = AnimationTarget.GetComponent<Animator>();
+            if (Character.IsPlayer)
+            {
+                cam = Camera.main;
+                this.tag = "player";
+            }
+            GetFollowTargetFromSquadLeaderId();
+
+            SetNavAgentStateFromIsPlayer();
+
+            // must hit 80 stamina before going again
+            StaminaLevelBeforeSprintAgain = Character.MaxStamina * 0.85f;
+
+            DetermineMyFaction();
+
+            // get the load controller and update if is player
+            LoadedController = gameObject.GetComponent<IsLoadedController>();
+            LoadedController.SetIsPlayer(Character.IsPlayer);
+
+            // pick ui color
+            SetColor();
+            Circle.color = UIColor;
+            MakeSpeechBubble("set cirice color" + Circle.color);
+
+            CurrentTask = Character.DefaultTask;
+            hasDoneInit = true;
+
+            // populate the lists of customization parts of the character
+            PopulateListsOfCustomizeOptions();
         }
-        GetFollowTargetFromSquadLeaderId();
-
-        SetNavAgentStateFromIsPlayer();
-
-        // must hit 80 stamina before going again
-        StaminaLevelBeforeSprintAgain = Character.MaxStamina * 0.85f;
-
-        DetermineMyFaction();
-
-        // get the load controller and update if is player
-        LoadedController = gameObject.GetComponent<IsLoadedController>();
-        LoadedController.SetIsPlayer(Character.IsPlayer);
-
-        // pick ui color
-        SetColor();
-        Circle.color = UIColor;
-        MakeSpeechBubble("set cirice color" + Circle.color);
-
-        CurrentTask = Character.DefaultTask;
     }
 
     private void FixedUpdate()
@@ -339,12 +382,7 @@ public class CharacterController : MonoBehaviour
         // and fix items dropping
         if (selfDestuctStarted)
         {
-            SelfDestruct();
-            SelfDestruct();
-        }
-
-        if (AnimationOverrideTimer > 0.0f)
-        {
+            SetNeedsUIUpdate(true);
             SetCharacterCanMove(false);
         }
         else
@@ -360,6 +398,8 @@ public class CharacterController : MonoBehaviour
             SetNavAgentStateFromIsPlayer();
         }
 
+        // animations
+        /*
         DoAnimationState();
         if (LastAnimationState != CurrentAnimationState)
         {
@@ -367,10 +407,11 @@ public class CharacterController : MonoBehaviour
             {
                 CurrentAnimationState = Character.landing_animation;
             }
-            CharacterAnimator.Play(CurrentAnimationState, 0, 0);
+
+            //CharacterAnimator.Play(CurrentAnimationState, 0, 0);
             LastAnimationState = CurrentAnimationState;
         }
-
+        */
         // if the health cooldown was up, lower it
         if (HealthDamageCoolDown >= 0.0f)
         {
@@ -999,8 +1040,6 @@ public class CharacterController : MonoBehaviour
             Target();
             return;
         }
-
-        //Debug.Log("Attacking", CombatTarget);
         Transform TargetTransform = CombatTarget.GetComponent<Transform>();
 
         //NavMeshAgent agent = GetComponent<NavMeshAgent>();
@@ -1096,7 +1135,11 @@ public class CharacterController : MonoBehaviour
     private bool CheckIfTargetIsDead()
     {
         //MakeSpeechBubble("did he die?");
-        if (CombatTarget.gameObject.Equals(null))
+        if (
+            CombatTarget == null ||
+            CombatTarget.gameObject == null ||
+            CombatTarget.gameObject.Equals(null)
+        )
         {
             return true;
         }
@@ -1986,8 +2029,10 @@ public class CharacterController : MonoBehaviour
         CDM.Save (Character);
     }
 
-    public void Load()
+    public void Load(string CharacterSaveFileFolder, string CharacterSaveFile)
     {
+        CDM.Init (CharacterSaveFileFolder, CharacterSaveFile);
+
         Character = CDM.Load();
 
         // set world postion
@@ -2629,5 +2674,229 @@ public class CharacterController : MonoBehaviour
     public TownController GetTown()
     {
         return Town;
+    }
+
+    public float GetForwardMovement()
+    {
+        if (IsMoving)
+        {
+            if (Character.IsPlayer && Input.GetKey("s"))
+            {
+                return -1.0f;
+            }
+            return 1.0f;
+        }
+        return 0.0f;
+    }
+
+    public float GetLeftRightMovement()
+    {
+        if (IsMoving)
+        {
+            return 1.0f;
+        }
+        return 0.0f;
+    }
+
+    public bool GetIsSprinting()
+    {
+        return isSprinting;
+    }
+
+    public Rigidbody GetRigidbody()
+    {
+        return rb;
+    }
+
+    public void PopulateListsOfCustomizeOptions()
+    {
+        // just populates the lists, doesnt do anything with them
+        // like a refresh for loading
+        //reset lists
+        TorsoOptions = new List<GameObject>();
+        BeltBackpackOptions = new List<GameObject>();
+        HeadOptions = new List<GameObject>();
+        FaceOptions = new List<GameObject>();
+        HandsOptions = new List<GameObject>();
+        ShoulderOptions = new List<GameObject>();
+        ShoeOptions = new List<GameObject>();
+
+        // populate them
+        PopulateCustomizatioListsFromChildrenRecusrively(this.gameObject);
+
+        DebugPrintObjectsInList (TorsoOptions);
+        DebugPrintObjectsInList (BeltBackpackOptions);
+        DebugPrintObjectsInList (HeadOptions);
+        DebugPrintObjectsInList (FaceOptions);
+        DebugPrintObjectsInList (HandsOptions);
+        DebugPrintObjectsInList (ShoulderOptions);
+        DebugPrintObjectsInList (ShoeOptions);
+    }
+
+    public void PopulateCustomizatioListsFromChildrenRecusrively(
+        GameObject parentObj
+    )
+    {
+        // name
+        string name = parentObj.transform.name;
+
+        // populate torso list
+        if (name.Contains("Cloth"))
+        {
+            TorsoOptions.Add (parentObj);
+        }
+
+        // if Belt or Backpack
+        if (name.Contains("Belt") || name.Contains("Back"))
+        {
+            if (!name.ToLower().Contains("hold"))
+            {
+                BeltBackpackOptions.Add (parentObj);
+            }
+        }
+
+        // if has Hat Crown Hair Helm
+        // TODO crown options sometime maybe
+        if (
+            name.Contains("Hat") ||
+            name.Contains("Hair") ||
+            name.Contains("Helm")
+        )
+        {
+            HeadOptions.Add (parentObj);
+        }
+
+        // if has Face
+        if (name.Contains("Face"))
+        {
+            FaceOptions.Add (parentObj);
+        }
+
+        // if has Glove
+        if (name.Contains("Glove"))
+        {
+            HandsOptions.Add (parentObj);
+        }
+
+        // if has Shoulder
+        if (name.Contains("Shoulder"))
+        {
+            ShoulderOptions.Add (parentObj);
+        }
+
+        // if has Shoe
+        if (name.Contains("Shoe"))
+        {
+            ShoeOptions.Add (parentObj);
+        }
+
+        //Debug.Log(parentObj.transform.name + parentObj.activeInHierarchy);
+        foreach (Transform child in parentObj.transform)
+        {
+            PopulateCustomizatioListsFromChildrenRecusrively(child.gameObject);
+        }
+    }
+
+    private void DebugPrintObjectsInList(List<GameObject> listToPrint)
+    {
+        string listString = "";
+        foreach (GameObject obj in listToPrint)
+        {
+            listString = listString + obj.ToString() + ", ";
+        }
+        Debug.Log (listString);
+    }
+
+    public int
+    GetIndexFromOneOfOptionInListThatIsActive(List<GameObject> listToEval)
+    {
+        int i = 1;
+        foreach (GameObject obj in listToEval)
+        {
+            //Debug.Log(obj.transform.name + obj.activeInHierarchy.ToString());
+            if (obj.activeInHierarchy)
+            {
+                return i;
+            }
+
+            i = i + 1;
+        }
+        return 0;
+    }
+
+    private void SetIndexFromOneOfOptionInListThatIsActive(
+        List<GameObject> listToEval,
+        int activeIndex
+    )
+    {
+        int i = 1;
+        foreach (GameObject obj in listToEval)
+        {
+            if (activeIndex == i)
+            {
+                obj.SetActive(true);
+            }
+            else
+            {
+                obj.SetActive(false);
+            }
+
+            i = i + 1;
+        }
+    }
+
+    public void SaveCurrentCustomizedValuesToCharacterData()
+    {
+        // takes current values and puts them into the character data object
+        Character.TorsoOption =
+            GetIndexFromOneOfOptionInListThatIsActive(TorsoOptions);
+        Character.BeltBackpackOption =
+            GetIndexFromOneOfOptionInListThatIsActive(BeltBackpackOptions);
+        Character.HeadOption =
+            GetIndexFromOneOfOptionInListThatIsActive(HeadOptions);
+        Character.FaceOption =
+            GetIndexFromOneOfOptionInListThatIsActive(FaceOptions);
+        Character.HandsOption =
+            GetIndexFromOneOfOptionInListThatIsActive(HandsOptions);
+        Character.ShoulderOption =
+            GetIndexFromOneOfOptionInListThatIsActive(ShoulderOptions);
+        Character.ShoeOption =
+            GetIndexFromOneOfOptionInListThatIsActive(ShoeOptions);
+    }
+
+    public void LoadCurrentCustomizedValuesToCharacterData()
+    {
+        // takes current values from character save and applies them to the lists
+        SetIndexFromOneOfOptionInListThatIsActive(TorsoOptions,
+        Character.TorsoOption);
+        SetIndexFromOneOfOptionInListThatIsActive(BeltBackpackOptions,
+        Character.BeltBackpackOption);
+        SetIndexFromOneOfOptionInListThatIsActive(HeadOptions,
+        Character.HeadOption);
+        SetIndexFromOneOfOptionInListThatIsActive(FaceOptions,
+        Character.FaceOption);
+        SetIndexFromOneOfOptionInListThatIsActive(HandsOptions,
+        Character.HandsOption);
+        SetIndexFromOneOfOptionInListThatIsActive(ShoulderOptions,
+        Character.ShoulderOption);
+        SetIndexFromOneOfOptionInListThatIsActive(ShoeOptions,
+        Character.ShoeOption);
+    }
+
+
+    public List<List<GameObject>> GetCustomizationMatrix(){
+        // returns list of lists
+        List<List<GameObject>> CustomizationOptionsMatrix = new List<List<GameObject>>();
+
+        CustomizationOptionsMatrix.Add(TorsoOptions);
+        CustomizationOptionsMatrix.Add(BeltBackpackOptions);
+        CustomizationOptionsMatrix.Add(HeadOptions);
+        CustomizationOptionsMatrix.Add(FaceOptions);
+        CustomizationOptionsMatrix.Add(HandsOptions);
+        CustomizationOptionsMatrix.Add(ShoulderOptions);
+        CustomizationOptionsMatrix.Add(ShoeOptions);
+
+        return CustomizationOptionsMatrix;
+
     }
 }

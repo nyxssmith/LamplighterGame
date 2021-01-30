@@ -23,6 +23,8 @@ public class CameraFollow : MonoBehaviour
 
     public GameObject BuildToolPrefab;
 
+    public GameObject CustomizeMenuPrefab;
+
     public float camDistanceXToPlayer;
 
     public float camDistanceYToPlayer;
@@ -85,6 +87,8 @@ public class CameraFollow : MonoBehaviour
 
     private bool inBuildMode = false;
 
+    private bool inCustomizeMode = false;
+
     private string BaseSquadListText = "[Squad List]";
 
     private string SquadListText = "[Squad List]";
@@ -94,6 +98,8 @@ public class CameraFollow : MonoBehaviour
     private GameObject PlayersHeldItem;
 
     private GameObject BuildToolObject;
+
+    private GameObject CustomizeMenuObject;
 
     private BuildTool BuildToolController;
 
@@ -109,9 +115,19 @@ public class CameraFollow : MonoBehaviour
 
     private float ConstUpdateTimer = 0f;
 
+    private float PrevTimescale = 1.0f;
+
+    private bool isPaused = false;
+
     // Use this for initialization
     void Start()
     {
+        CameraFollowObj = null;
+
+        CameraFollowObj = FindPlayerToFollow();
+
+        UnityEngine.Debug.Log (CameraFollowObj);
+
         Vector3 rot = transform.localRotation.eulerAngles;
         rotY = rot.y;
         rotX = rot.x;
@@ -136,15 +152,21 @@ public class CameraFollow : MonoBehaviour
         }
 
         // We setup the rotation of the sticks here
-        float inputX = Input.GetAxis("RightStickHorizontal");
-        float inputZ = Input.GetAxis("RightStickVertical");
+        //float inputX = Input.GetAxis("RightStickHorizontal");
+        //float inputZ = Input.GetAxis("RightStickVertical");
         mouseX = Input.GetAxis("Mouse X");
         mouseY = Input.GetAxis("Mouse Y");
-        finalInputX = inputX + mouseX;
-        finalInputZ = inputZ + mouseY;
+        finalInputX = mouseX;
+        finalInputZ = mouseY;
 
-        rotY += finalInputX * inputSensitivity * Time.deltaTime;
-        rotX += finalInputZ * inputSensitivity * Time.deltaTime;
+        float timeFloat = Time.unscaledDeltaTime;
+        if (isPaused)
+        {
+            // if is paused also pause camera
+            timeFloat = Time.deltaTime;
+        }
+        rotY += finalInputX * inputSensitivity * timeFloat;
+        rotX += finalInputZ * inputSensitivity * timeFloat;
 
         rotX = Mathf.Clamp(rotX, -clampAngle, clampAngle);
 
@@ -186,16 +208,19 @@ public class CameraFollow : MonoBehaviour
         // toggle half, full, etc time speed
         if (Input.GetKeyDown("]"))
         {
-
-            if(Time.timeScale >= 10.0f){
+            if (Time.timeScale >= 10.0f)
+            {
                 Time.timeScale = 0.5f;
-            }else{
+            }
+            else
+            {
                 Time.timeScale += 0.5f;
             }
-            Player.MakeSpeechBubble("Timescale set to "+Time.timeScale.ToString());
+            Player
+                .MakeSpeechBubble("Timescale set to " +
+                Time.timeScale.ToString());
             //RotationDegree += 0.5f;
         }
-        
 
         // if not in dialog mode
         if (inDialog)
@@ -205,6 +230,9 @@ public class CameraFollow : MonoBehaviour
             //{
             //    Player.MakeSpeechBubble("pushed a key");
             //}
+        }
+        else if (inCustomizeMode)
+        {
         }
         else if (inBuildMode)
         {
@@ -269,6 +297,78 @@ public class CameraFollow : MonoBehaviour
                 ExitBuildMode();
             }
         }
+
+        // do customize menu
+        if (Input.GetKeyDown("c"))
+        {
+            UnityEngine.Debug.Log("switching to customizer mode");
+            Player.SetNeedsUIUpdate(true);
+
+            if (!inCustomizeMode)
+            {
+                EnterCustomizerMode();
+            }
+            else
+            {
+                ExitCustomizerMode();
+            }
+
+            UnityEngine.Debug.Log("character customize button set");
+            Player.PopulateListsOfCustomizeOptions();
+        }
+    }
+
+    private void EnterCustomizerMode()
+    {
+        inCustomizeMode = true;
+
+        // pause time for customizer
+        PrevTimescale = Time.timeScale;
+        Time.timeScale = 0.0f;
+
+        // update current character data from customization options
+        Player.SaveCurrentCustomizedValuesToCharacterData();
+
+        // instanciate a customize menu and save reference to it
+        CustomizeMenuObject = Instantiate(CustomizeMenuPrefab);
+        CustomizeMenuObject.GetComponent<CustomizeMenu>().SetCharacter(Player);
+        CustomizeMenuObject
+            .GetComponent<CustomizeMenu>()
+            .PopulateCustomizationOptionsMatrix();
+
+        CustomizeMenuObject
+            .GetComponent<CustomizeMenu>()
+            .GenerateCurrentStatusText();
+    }
+
+    private void ExitCustomizerMode()
+    {
+        inCustomizeMode = false;
+        Time.timeScale = PrevTimescale;
+
+        // destroy customize menu object
+        Destroy (CustomizeMenuObject);
+
+        // just to be sure
+        Player.SaveCurrentCustomizedValuesToCharacterData();
+    }
+
+    public GameObject FindPlayerToFollow()
+    {
+        // get all characters who have same squad leader
+        var characterControllersList = FindObjectsOfType<CharacterController>();
+        UnityEngine.Debug.Log("finding player");
+        foreach (CharacterController controller in characterControllersList)
+        {
+            UnityEngine.Debug.Log (controller);
+            UnityEngine.Debug.Log(controller.GetIsPlayer());
+            if (controller.GetIsPlayer())
+            {
+                UnityEngine.Debug.Log("found player");
+                return controller.GetCameraTarget();
+            }
+        }
+        return FindPlayerToFollow();
     }
 
     void EnterBuildMode()
@@ -709,7 +809,13 @@ public class CameraFollow : MonoBehaviour
         Player.SetCameraWithHUD (newObject);
     }
 
-    public bool GetInBuildMode(){
+    public bool GetInBuildMode()
+    {
         return inBuildMode;
+    }
+
+    public void SetIsPaused(bool newState)
+    {
+        isPaused = newState;
     }
 }

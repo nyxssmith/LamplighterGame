@@ -47,22 +47,48 @@ public class SaveManager : MonoBehaviour
     private void SaveCharacters()
     {
         // for each character,
-        // make a folder in saves/characters/characters
+        // make a folder in saves/characters/character
         // save the character data via characterdata already made save(method)
-        
-        // create new CharacterSaveData to save all other parts like buildings and towns etc
+        var CharacterControllerList = FindObjectsOfType<CharacterController>();
+        foreach (CharacterController controller in CharacterControllerList)
+        {
+            // make folder for each character
+            var folder =
+                Directory
+                    .CreateDirectory(Path
+                        .Combine(SaveFolder,
+                        "Characters",
+                        controller.GetUUID()));
 
-        
+            // update character save data for customized options
+            controller.SaveCurrentCustomizedValuesToCharacterData();
+
+
+            // write save data json
+            string saveJSON = controller.GetUUID() + ".json";
+
+            string FullSavePath =
+                Path
+                    .Combine(SaveFolder,
+                    "Characters",
+                    controller.GetUUID(),
+                    saveJSON);
+
+            string json = JsonUtility.ToJson(controller.GetCharacter()); // char
+
+            File.WriteAllText (FullSavePath, json);
+        }
+        // create new CharacterSaveData to save all other parts like buildings and towns etc
     }
 
     private void LoadCharacters()
     {
         // for each character,
-        // for each in its folder, 
+        // for each in its folder,
         // create character with cdm data
         // load and set other settings from characterSaveData
         // call awake on the character again to set new values
-        // 
+        //
     }
 
     private void SaveBuildings()

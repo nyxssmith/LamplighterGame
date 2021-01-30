@@ -48,6 +48,9 @@ public class PauseMenu : MonoBehaviour
                 {
                     cameraControl.ExitBuildMode();
                 }
+
+                // pause mode for camera too
+                cameraControl.SetIsPaused(true);
             }
             else
             {
@@ -55,6 +58,10 @@ public class PauseMenu : MonoBehaviour
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
                 Time.timeScale = 1;
+
+                CameraFollow cameraControl = FindObjectOfType<CameraFollow>();
+                cameraControl.SetIsPaused(false);
+
             }
         }
     }
