@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
@@ -63,7 +64,6 @@ public class SaveManager : MonoBehaviour
             // update character save data for customized options
             controller.SaveCurrentCustomizedValuesToCharacterData();
 
-
             // write save data json
             string saveJSON = controller.GetUUID() + ".json";
 
@@ -75,6 +75,92 @@ public class SaveManager : MonoBehaviour
                     saveJSON);
 
             string json = JsonUtility.ToJson(controller.GetCharacter()); // char
+
+            File.WriteAllText (FullSavePath, json);
+
+            CharacterExtraData ExtraCharacterData = new CharacterExtraData();
+
+            // save all other data for the character
+            // tasks
+            List<string> TasksList = controller.GetTasksForSave();
+            ExtraCharacterData.CurrentTask = TasksList[0];
+            ExtraCharacterData.NextTask = TasksList[1];
+            ExtraCharacterData.NextNextTask = TasksList[2];
+            ExtraCharacterData.LastTask = TasksList[3];
+
+            ExtraCharacterData.IsFighting = controller.GetIsFightingForSave();
+            ExtraCharacterData.WentHomeToSleep =
+                controller.GetWentToSleepForSave();
+
+            ExtraCharacterData.StandingStillTimer =
+                controller.GetStandingStillTimerForSave();
+            ExtraCharacterData.FollowTargetUUID =
+                controller.GetFollowTargetUUIDForSave();
+
+            ExtraCharacterData.TargetCharacterUUID =
+                controller.GetTargetedCharacterUUIDForSave();
+
+            ExtraCharacterData.TownUUID = controller.GetTownUUID();
+
+            List<string> BuildingUUIDs = new List<string>();
+            List<BuildingController> Buildings =
+                controller.GetBuildingControllersForSave();
+            if (Buildings.Count > 0)
+            {
+                foreach (BuildingController buildingController in Buildings)
+                {
+                    BuildingUUIDs.Add(buildingController.GetUUID());
+                }
+            }
+
+            ExtraCharacterData.ListOfBuildingsUUIDs = BuildingUUIDs;
+
+            List<string> SquadUUIDs = new List<string>();
+            List<CharacterController> Squad = controller.GetSquadListForSave();
+            if (Squad.Count > 0)
+            {
+                foreach (CharacterController characterController in Squad)
+                {
+                    SquadUUIDs.Add(characterController.GetUUID());
+                }
+            }
+
+            ExtraCharacterData.SquadMatesCharacterUUIDs = SquadUUIDs;
+
+            // save color properties
+            Color characterColor = controller.GetColorForSave();
+
+            ExtraCharacterData.color_red = characterColor.r;
+            ExtraCharacterData.color_green = characterColor.g;
+            ExtraCharacterData.color_blue = characterColor.b;
+
+            // save position
+            ExtraCharacterData.position_x =
+                controller.gameObject.transform.position.x;
+            ExtraCharacterData.position_y =
+                controller.gameObject.transform.position.y;
+            ExtraCharacterData.position_z =
+                controller.gameObject.transform.position.z;
+
+            // save rotation
+            ExtraCharacterData.rotation_x =
+                controller.gameObject.transform.rotation.eulerAngles.x;
+            ExtraCharacterData.rotation_y =
+                controller.gameObject.transform.rotation.eulerAngles.y;
+            ExtraCharacterData.rotation_z =
+                controller.gameObject.transform.rotation.eulerAngles.z;
+
+            // write save data json
+            string extraSaveJSON = controller.GetUUID() + "ExtraData.json";
+
+            FullSavePath =
+                Path
+                    .Combine(SaveFolder,
+                    "Characters",
+                    controller.GetUUID(),
+                    extraSaveJSON);
+
+            json = JsonUtility.ToJson(ExtraCharacterData); // char
 
             File.WriteAllText (FullSavePath, json);
         }
@@ -438,6 +524,59 @@ public class BuildingSaveData
     public bool HasDoneWork;
 
     public int buildToolIndex;
+
+    public float position_x;
+
+    public float position_y;
+
+    public float position_z;
+
+    public float rotation_x;
+
+    public float rotation_y;
+
+    public float rotation_z;
+}
+
+// TODO remove unused save data from default character ata
+[System.Serializable]
+public class CharacterExtraData
+{
+    // tasks
+    public string CurrentTask;
+
+    public string NextTask;
+
+    public string LastTask;
+
+    public string NextNextTask;
+
+    // TODO quests?
+    // reassemble target from this
+    public string TargetCharacterUUID;
+
+    public bool IsFighting;
+
+    public bool IsFollowing;
+
+    public string FollowTargetUUID;
+
+    // reassemble buildings
+    public string TownUUID;
+
+    public List<string> ListOfBuildingsUUIDs;
+
+    public List<string> SquadMatesCharacterUUIDs;
+
+    public bool WentHomeToSleep;
+
+    public float StandingStillTimer;
+
+    public float color_red;
+
+    public float color_green;
+
+    public float color_blue;
 
     public float position_x;
 

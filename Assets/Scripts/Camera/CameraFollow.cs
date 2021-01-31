@@ -818,4 +818,12 @@ public class CameraFollow : MonoBehaviour
     {
         isPaused = newState;
     }
+
+    public bool GetInDialog(){
+        return inDialog;
+    }
+
+    public CharacterController GetCharacterController(){
+        return Player;
+    }
 }

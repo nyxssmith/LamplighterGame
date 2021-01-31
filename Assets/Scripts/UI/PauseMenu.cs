@@ -49,6 +49,14 @@ public class PauseMenu : MonoBehaviour
                     cameraControl.ExitBuildMode();
                 }
 
+                // exit dialog
+                bool inDialog = cameraControl.GetInDialog();
+                if(inDialog){
+                    CharacterController Player = cameraControl.GetCharacterController();
+                    Player.LeaveDialog();
+                }
+
+
                 // pause mode for camera too
                 cameraControl.SetIsPaused(true);
             }

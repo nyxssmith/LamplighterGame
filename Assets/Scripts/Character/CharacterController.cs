@@ -178,7 +178,7 @@ public class CharacterController : MonoBehaviour
 
     private CharacterData TargetCharacter = null; //save info on target character
 
-    private List<CharacterController> SquadCharacterControllers = null;
+    private List<CharacterController> SquadCharacterControllers = new List<CharacterController>();
 
     private CharacterController TargetCharacterController = null; //save info on target character
 
@@ -2724,13 +2724,13 @@ public class CharacterController : MonoBehaviour
         // populate them
         PopulateCustomizatioListsFromChildrenRecusrively(this.gameObject);
 
-        DebugPrintObjectsInList (TorsoOptions);
-        DebugPrintObjectsInList (BeltBackpackOptions);
-        DebugPrintObjectsInList (HeadOptions);
-        DebugPrintObjectsInList (FaceOptions);
-        DebugPrintObjectsInList (HandsOptions);
-        DebugPrintObjectsInList (ShoulderOptions);
-        DebugPrintObjectsInList (ShoeOptions);
+        //DebugPrintObjectsInList (TorsoOptions);
+        //DebugPrintObjectsInList (BeltBackpackOptions);
+        //DebugPrintObjectsInList (HeadOptions);
+        //DebugPrintObjectsInList (FaceOptions);
+        //DebugPrintObjectsInList (HandsOptions);
+        //DebugPrintObjectsInList (ShoulderOptions);
+        //DebugPrintObjectsInList (ShoeOptions);
     }
 
     public void PopulateCustomizatioListsFromChildrenRecusrively(
@@ -2883,20 +2883,131 @@ public class CharacterController : MonoBehaviour
         Character.ShoeOption);
     }
 
-
-    public List<List<GameObject>> GetCustomizationMatrix(){
+    public List<List<GameObject>> GetCustomizationMatrix()
+    {
         // returns list of lists
-        List<List<GameObject>> CustomizationOptionsMatrix = new List<List<GameObject>>();
+        List<List<GameObject>> CustomizationOptionsMatrix =
+            new List<List<GameObject>>();
 
-        CustomizationOptionsMatrix.Add(TorsoOptions);
-        CustomizationOptionsMatrix.Add(BeltBackpackOptions);
-        CustomizationOptionsMatrix.Add(HeadOptions);
-        CustomizationOptionsMatrix.Add(FaceOptions);
-        CustomizationOptionsMatrix.Add(HandsOptions);
-        CustomizationOptionsMatrix.Add(ShoulderOptions);
-        CustomizationOptionsMatrix.Add(ShoeOptions);
+        CustomizationOptionsMatrix.Add (TorsoOptions);
+        CustomizationOptionsMatrix.Add (BeltBackpackOptions);
+        CustomizationOptionsMatrix.Add (HeadOptions);
+        CustomizationOptionsMatrix.Add (FaceOptions);
+        CustomizationOptionsMatrix.Add (HandsOptions);
+        CustomizationOptionsMatrix.Add (ShoulderOptions);
+        CustomizationOptionsMatrix.Add (ShoeOptions);
 
         return CustomizationOptionsMatrix;
+    }
 
+    public List<string> GetTasksForSave()
+    {
+        List<string> TasksList = new List<string>();
+
+        TasksList.Add (CurrentTask);
+        TasksList.Add (NextTask);
+        TasksList.Add (NextNextTask);
+        TasksList.Add (LastTask);
+
+        return TasksList;
+    }
+
+    public void SetTasksFromSave(List<string> TasksList)
+    {
+        CurrentTask = TasksList[0];
+        NextTask = TasksList[1];
+        NextNextTask = TasksList[2];
+        LastTask = TasksList[3];
+    }
+
+    public Color GetColorForSave()
+    {
+        return UIColor;
+    }
+
+    public void SetColorFromSave(Color newColor)
+    {
+        UIColor = newColor;
+    }
+
+    public bool GetIsFightingForSave()
+    {
+        return IsFighting;
+    }
+
+    public void SetIsFightingFromSave(bool newValue)
+    {
+        IsFighting = newValue;
+    }
+
+    public bool GetWentToSleepForSave()
+    {
+        return WentHomeToSleep;
+    }
+
+    public void SetWentToSleepFromSave(bool newValue)
+    {
+        WentHomeToSleep = newValue;
+    }
+
+    public float GetStandingStillTimerForSave()
+    {
+        return StandingStillTimer;
+    }
+
+    public void SetStandingStillTimerFromSave(float newValue)
+    {
+        StandingStillTimer = newValue;
+    }
+
+    public string GetFollowTargetUUIDForSave()
+    {
+        if (FollowTarget != null)
+        {
+            return FollowTarget.GetComponent<CharacterController>().GetUUID();
+        }
+        return "";
+    }
+
+    public void SetFollowTargetFromSave(GameObject newFollowTarget)
+    {
+        FollowTarget = newFollowTarget;
+    }
+
+    public string GetTargetedCharacterUUIDForSave()
+    {
+        if (TargetCharacterController != null)
+        {
+            return TargetCharacterController.GetUUID();
+        }
+        return "";
+    }
+
+    public void SetTargetedCharacterFromSave(GameObject newTarget)
+    {
+        // TODO make sure this works
+        SetTarget (newTarget);
+    }
+
+    public List<BuildingController> GetBuildingControllersForSave()
+    {
+        return Buildings;
+    }
+
+    public void SetBuildingControllersFromSave(
+        List<BuildingController> newBuildings
+    )
+    {
+        Buildings = newBuildings;
+    }
+
+    public List<CharacterController> GetSquadListForSave()
+    {
+        return SquadCharacterControllers;
+    }
+
+    public void SetSquadControllersFromSave(List<CharacterController> newSquad)
+    {
+        SquadCharacterControllers = newSquad;
     }
 }
