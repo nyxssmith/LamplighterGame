@@ -698,13 +698,17 @@ public class CharacterController : MonoBehaviour
 
             Make sure is part of a squad, if not become a leader
             */
-            JoinSquadNearbyIfNotYet();
+            bool inSquadNow = JoinSquadNearbyIfNotYet();
 
             string wanderTask = "WANDERPOINT";
-            // if they are in the squad, follow the leader
-            if(GetSquadLeaderUUID()!=GetUUID()){
-                wanderTask = "FOLLOW";
-            }// if they are the leader, wander around
+            if (inSquadNow)
+            {
+                // if they are in the squad, follow the leader
+                if (GetSquadLeaderUUID() != GetUUID())
+                {
+                    wanderTask = "FOLLOW";
+                } // if they are the leader, wander around
+            }
 
             /*
             wander around a point and check for factions to fight
@@ -1828,8 +1832,14 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    private void JoinSquadNearbyIfNotYet()
+    private bool JoinSquadNearbyIfNotYet()
     {
+        if (GetSquadLeaderUUID() != "")
+        {
+            return true;
+        }
+
+        //return true if joined success
         // look for squad of same faction within n meters
         float distToLook = 25.0f;
         Collider[] hitColliders =
@@ -1848,6 +1858,7 @@ public class CharacterController : MonoBehaviour
                     {
                         // if they dont have leader and I do, join me
                         controller.JoinSquadOfCharacter(this);
+                        return true;
                     }
                     else if (
                         otherSquadLeader != "" && GetSquadLeaderUUID() == ""
@@ -1855,6 +1866,7 @@ public class CharacterController : MonoBehaviour
                     {
                         // if they have leader, and i dont, join them
                         JoinSquadOfCharacter (controller);
+                        return true;
                     }
                     else if (
                         otherSquadLeader == "" && GetSquadLeaderUUID() == ""
@@ -1864,10 +1876,12 @@ public class CharacterController : MonoBehaviour
                         // become leader
                         SetSquadLeaderUUID(GetUUID());
                         controller.JoinSquadOfCharacter(this);
+                        return true;
                     }
                 }
             }
         }
+        return false;
     }
 
     private void CheckIfItemInHand() //updates the hand var
@@ -2192,7 +2206,7 @@ public class CharacterController : MonoBehaviour
     private void GetFollowTargetFromSquadLeaderId()
     {
         // if character is a foller and in a squad find follow target
-        if (Character.IsFollower && (Character.squadLeaderId != ""))
+        if (Character.squadLeaderId != "")
         {
             var characterControllersList =
                 FindObjectsOfType<CharacterController>();
