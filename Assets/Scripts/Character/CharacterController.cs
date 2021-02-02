@@ -1874,7 +1874,8 @@ public class CharacterController : MonoBehaviour
                     {
                         // if neither has leader, im leader
                         // become leader
-                        SetSquadLeaderUUID(GetUUID());
+                        JoinSquadOfCharacter(this);// join own squad
+                        //SetSquadLeaderUUID(GetUUID());
                         controller.JoinSquadOfCharacter(this);
                         return true;
                     }
@@ -2230,6 +2231,7 @@ public class CharacterController : MonoBehaviour
     // starts following a leader when given leader uuid
     private void JoinSquadLeadBy(string leader_uuid)
     {
+
         Character.squadLeaderId = leader_uuid;
         if (leader_uuid != "")
         {
@@ -2246,7 +2248,7 @@ public class CharacterController : MonoBehaviour
     public void LeaveSquad()
     {
         JoinSquadLeadBy("");
-        SquadCharacterControllers = null;
+        SquadCharacterControllers = null;// blank the list
     }
 
     // either joins a squad that the inviter is in and climbs that tree, or joins their squad owned by them
@@ -2254,6 +2256,17 @@ public class CharacterController : MonoBehaviour
     {
         string InviterID = InviterController.GetUUID();
         string InviterLeaderID = InviterController.GetSquadLeaderUUID();
+
+        if(InviterController.GetUUID() == GetUUID()){
+            // update the list of character controllers to a new empty list if i joined own squad
+            SquadCharacterControllers = new List<CharacterController>();
+            
+        }
+
+        // add to list of squadmates
+        InviterController.SquadCharacterControllers.Add(this);
+        // update all members
+        InviterController.SetSquadListAndUpdateOthers(InviterController.SquadCharacterControllers);
 
         // if inviter is leader or has none, join them
         if (InviterID == InviterLeaderID || InviterLeaderID == "")
