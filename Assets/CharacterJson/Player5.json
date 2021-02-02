@@ -16,7 +16,7 @@
     "TargetRange": 5.0,
     "CanFight": true,
     "IsPlayer": false,
-    "IsFollower": false,
+    "IsFollower": true,
     "IsFollowing": true,
     "DefaultTask": "BANDIT",
     "idle_animation": "Idle01",

@@ -178,7 +178,8 @@ public class CharacterController : MonoBehaviour
 
     private CharacterData TargetCharacter = null; //save info on target character
 
-    private List<CharacterController> SquadCharacterControllers = new List<CharacterController>();
+    private List<CharacterController>
+        SquadCharacterControllers = new List<CharacterController>();
 
     private CharacterController TargetCharacterController = null; //save info on target character
 
@@ -384,6 +385,7 @@ public class CharacterController : MonoBehaviour
         {
             SetNeedsUIUpdate(true);
             SetCharacterCanMove(false);
+            SelfDestruct();
         }
         else
         {
@@ -644,7 +646,7 @@ public class CharacterController : MonoBehaviour
         }
         else if (CurrentTask == "FOLLOW")
         {
-            bool doneFollowing = FollowPlayer();
+            bool doneFollowing = FollowSquadLeader();
             if (doneFollowing)
             {
                 //MakeSpeechBubble("Done following");
@@ -693,16 +695,28 @@ public class CharacterController : MonoBehaviour
         else if (CurrentTask == "BANDIT")
         {
             /*
+
+            Make sure is part of a squad, if not become a leader
+            */
+            JoinSquadNearbyIfNotYet();
+
+            string wanderTask = "WANDERPOINT";
+            // if they are in the squad, follow the leader
+            if(GetSquadLeaderUUID()!=GetUUID()){
+                wanderTask = "FOLLOW";
+            }// if they are the leader, wander around
+
+            /*
             wander around a point and check for factions to fight
             set ucrrent task to wander, next to bandit
             */
-            if (LastTask == "WANDERPOINT")
+            if (LastTask == wanderTask)
             {
                 NextTask = "FINDENEMY";
             }
             else if (LastTask == "FINDENEMY")
             {
-                CurrentTask = "WANDERPOINT";
+                CurrentTask = wanderTask;
             }
             else
             {
@@ -734,10 +748,12 @@ public class CharacterController : MonoBehaviour
             Wander around a point to a new point, then do next task
             */
             //Debug.Log("wandering point");
-            // bandits will wander farther
+            // bandits will wander farther and wait for shorter time
+            float timeToStandStill = 10.0f;
             if (LastTask == "BANDIT")
             {
                 wanderRange = 10.0f;
+                timeToStandStill = 3.0f;
             }
 
             // TODO based on lasttask get role and set wnader range
@@ -745,7 +761,7 @@ public class CharacterController : MonoBehaviour
             bool arrived = WanderAroundPoint(wanderRange);
             if (arrived && !IsMoving)
             {
-                StandStillForTime(10.0f);
+                StandStillForTime (timeToStandStill);
 
                 IncrementTask();
             }
@@ -1264,7 +1280,7 @@ public class CharacterController : MonoBehaviour
         }
     }
 
-    private bool FollowPlayer()
+    private bool FollowSquadLeader()
     {
         if (FollowTarget == null)
         {
@@ -1812,6 +1828,48 @@ public class CharacterController : MonoBehaviour
         }
     }
 
+    private void JoinSquadNearbyIfNotYet()
+    {
+        // look for squad of same faction within n meters
+        float distToLook = 25.0f;
+        Collider[] hitColliders =
+            Physics.OverlapSphere(CharacterTransform.position, distToLook);
+        foreach (var hitCollider in hitColliders)
+        {
+            CharacterController controller =
+                hitCollider.gameObject.GetComponent<CharacterController>();
+            if (controller != null)
+            {
+                if (GetMyAlignmentWithFaction(controller.GetFaction()) >= 1.0f)
+                {
+                    //MakeSpeechBubble("found character of same faction nearby!");
+                    string otherSquadLeader = controller.GetSquadLeaderUUID();
+                    if (otherSquadLeader == "" && GetSquadLeaderUUID() != "")
+                    {
+                        // if they dont have leader and I do, join me
+                        controller.JoinSquadOfCharacter(this);
+                    }
+                    else if (
+                        otherSquadLeader != "" && GetSquadLeaderUUID() == ""
+                    )
+                    {
+                        // if they have leader, and i dont, join them
+                        JoinSquadOfCharacter (controller);
+                    }
+                    else if (
+                        otherSquadLeader == "" && GetSquadLeaderUUID() == ""
+                    )
+                    {
+                        // if neither has leader, im leader
+                        // become leader
+                        SetSquadLeaderUUID(GetUUID());
+                        controller.JoinSquadOfCharacter(this);
+                    }
+                }
+            }
+        }
+    }
+
     private void CheckIfItemInHand() //updates the hand var
     {
         //TODO enable or disable spell if hand empty
@@ -2117,11 +2175,12 @@ public class CharacterController : MonoBehaviour
     public string GetSquadLeaderUUID()
     {
         // if has no leader, set self to leader as needed
+        /*
         if (Character.squadLeaderId == "")
         {
             SetSquadLeaderUUID(GetUUID());
         }
-
+        */
         return Character.squadLeaderId;
     }
 
