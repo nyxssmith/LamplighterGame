@@ -169,7 +169,8 @@ public class CharacterController : MonoBehaviour
     private string NextNextTask = "";
 
     // TODO current quest stuff
-    private Quest CurrentQuest = null;
+    // TODO make private again
+    public Quest CurrentQuest = null;
 
     // Targeting and interacting with enemy and squad
     private GameObject FollowTarget = null;
@@ -559,8 +560,16 @@ public class CharacterController : MonoBehaviour
                 }
             }
 
-            // do task specified
-            DoTask();
+            // do quest if they have one
+            if (CurrentQuest != null)
+            {
+                DoQuest();
+            }
+            else
+            {
+                // do task specified
+                DoTask();
+            }
         }
     }
 
@@ -577,6 +586,11 @@ public class CharacterController : MonoBehaviour
         {
             NextTask = LastTask;
         }
+    }
+
+    private void DoQuest()
+    {
+        // path npcs do when they have a quest
     }
 
     // schedule etc
@@ -2645,7 +2659,10 @@ public class CharacterController : MonoBehaviour
         return false;
     }
 
-    public void JoinDialog(DialogManager newDialogManager,Transform otherCharacterTransform)
+    public void JoinDialog(
+        DialogManager newDialogManager,
+        Transform otherCharacterTransform
+    )
     {
         CurrentDialogManager = newDialogManager;
         CanJoinDialog = false;
@@ -3120,5 +3137,15 @@ public class CharacterController : MonoBehaviour
     public void SetSquadControllersFromSave(List<CharacterController> newSquad)
     {
         SquadCharacterControllers = newSquad;
+    }
+
+    public void SetCurrentQuest(Quest newQuest)
+    {
+        CurrentQuest = newQuest;
+    }
+
+    public Quest GetCurrentQuest()
+    {
+        return CurrentQuest;
     }
 }

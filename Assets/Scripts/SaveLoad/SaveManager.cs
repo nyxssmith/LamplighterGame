@@ -163,6 +163,28 @@ public class SaveManager : MonoBehaviour
             json = JsonUtility.ToJson(ExtraCharacterData); // char
 
             File.WriteAllText (FullSavePath, json);
+
+
+            Quest charactersQuest = controller.GetCurrentQuest();
+            if(charactersQuest != null)
+            // write quest data to quest.json
+            saveJSON = "quest.json";
+
+            FullSavePath =
+                Path
+                    .Combine(SaveFolder,
+                    "Characters",
+                    controller.GetUUID(),
+                    saveJSON);
+
+            // TODO make this use existing questmanager            
+            QuestManager questManager = new QuestManager();
+            json = questManager.MakeJsonFromQuest(controller.GetCurrentQuest());
+
+
+            File.WriteAllText (FullSavePath, json);
+
+
         }
         // create new CharacterSaveData to save all other parts like buildings and towns etc
     }
