@@ -126,8 +126,8 @@ public class DialogManager : MonoBehaviour
         CharacterB = B;
         AUUID = CharacterA.GetUUID();
         BUUID = CharacterB.GetUUID();
-        CharacterA.JoinDialog(this);
-        CharacterB.JoinDialog(this);
+        CharacterA.JoinDialog(this,CharacterB.transform);
+        CharacterB.JoinDialog(this,CharacterA.transform);
 
         TalkingUUID = AUUID; // A started the dialog
 
@@ -340,10 +340,21 @@ public class DialogManager : MonoBehaviour
         float allignment =
             CharacterB.GetMyAlignmentWithFaction(CharacterA.GetFaction());
 
+        // if B would accept, check that they are already quested the player
         if (allignment >= 0.0f)
         {
-            // return yes
-            return LoadDialogLevelToDialogTree("join_squad_yes.json", 1);
+            // if B does not have WillFollowPlayer set, return the need to be quest
+            if (CharacterB.GetCharacter().WillFollowPlayer)
+            {
+                // return yes
+                return LoadDialogLevelToDialogTree("join_squad_yes.json", 1);
+            }
+            else
+            {
+                // add do followerquest option if not a player follower
+                return LoadDialogLevelToDialogTree("quest_to_make_follower.json",
+                1);
+            }
         }
         else
         {
@@ -429,9 +440,11 @@ public class DialogManager : MonoBehaviour
         }
         else if (result == "join_squad_yes")
         {
-            CharacterB.JoinSquadOfCharacter(CharacterA);
+            CharacterB.JoinSquadOfCharacter (CharacterA);
             EndDialog();
-        }else if (result == "leave_squad"){
+        }
+        else if (result == "leave_squad")
+        {
             CharacterB.LeaveSquad();
             EndDialog();
         }

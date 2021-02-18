@@ -20,6 +20,7 @@ public class CharacterData
     public bool CanFight;
     public bool IsPlayer;
     public bool IsFollower;
+    public bool WillFollowPlayer;
     public bool IsFollowing;
     public string DefaultTask;
 

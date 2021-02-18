@@ -1874,7 +1874,8 @@ public class CharacterController : MonoBehaviour
                     {
                         // if neither has leader, im leader
                         // become leader
-                        JoinSquadOfCharacter(this);// join own squad
+                        JoinSquadOfCharacter(this); // join own squad
+
                         //SetSquadLeaderUUID(GetUUID());
                         controller.JoinSquadOfCharacter(this);
                         return true;
@@ -2231,7 +2232,6 @@ public class CharacterController : MonoBehaviour
     // starts following a leader when given leader uuid
     private void JoinSquadLeadBy(string leader_uuid)
     {
-
         Character.squadLeaderId = leader_uuid;
         if (leader_uuid != "")
         {
@@ -2248,7 +2248,7 @@ public class CharacterController : MonoBehaviour
     public void LeaveSquad()
     {
         JoinSquadLeadBy("");
-        SquadCharacterControllers = null;// blank the list
+        SquadCharacterControllers = null; // blank the list
     }
 
     // either joins a squad that the inviter is in and climbs that tree, or joins their squad owned by them
@@ -2257,16 +2257,19 @@ public class CharacterController : MonoBehaviour
         string InviterID = InviterController.GetUUID();
         string InviterLeaderID = InviterController.GetSquadLeaderUUID();
 
-        if(InviterController.GetUUID() == GetUUID()){
+        if (InviterController.GetUUID() == GetUUID())
+        {
             // update the list of character controllers to a new empty list if i joined own squad
             SquadCharacterControllers = new List<CharacterController>();
-            
         }
 
         // add to list of squadmates
         InviterController.SquadCharacterControllers.Add(this);
+
         // update all members
-        InviterController.SetSquadListAndUpdateOthers(InviterController.SquadCharacterControllers);
+        InviterController
+            .SetSquadListAndUpdateOthers(InviterController
+                .SquadCharacterControllers);
 
         // if inviter is leader or has none, join them
         if (InviterID == InviterLeaderID || InviterLeaderID == "")
@@ -2642,13 +2645,29 @@ public class CharacterController : MonoBehaviour
         return false;
     }
 
-    public void JoinDialog(DialogManager newDialogManager)
+    public void JoinDialog(DialogManager newDialogManager,Transform otherCharacterTransform)
     {
         CurrentDialogManager = newDialogManager;
         CanJoinDialog = false;
         IsInDialog = true;
         SetCharacterCanMove(false);
         NeedsUIUpdate = true;
+
+        // if not player disable nav agent
+        if (!GetIsPlayer())
+        {
+            IsMoving = false;
+            SetNavAgentStateFromIsMoving();
+        }
+
+        // face other character
+        CharacterTransform.rotation =
+            Quaternion
+                .Slerp(CharacterTransform.rotation,
+                Quaternion
+                    .LookRotation(otherCharacterTransform.position -
+                    CharacterTransform.position),
+                90.0f * Time.deltaTime);
     }
 
     public void LeaveDialog()
@@ -2661,6 +2680,12 @@ public class CharacterController : MonoBehaviour
         //MakeSpeechBubble("bye!");
         SetDialogText("");
         NeedsUIUpdate = true;
+
+        if (!GetIsPlayer())
+        {
+            IsMoving = true;
+            SetNavAgentStateFromIsMoving();
+        }
     }
 
     public void DoDialog()

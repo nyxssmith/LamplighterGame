@@ -1,0 +1,6 @@
+{
+    "prompt":"Will you join my gang?",
+    "response":"first you must do X TODO make levels to give this need quest",
+    "result":"give_quest",
+    "levels":[]
+}
