@@ -98,8 +98,8 @@ public class SummonNPCWithItems : MonoBehaviour
 
 
         merchant/shopkeeper/mayor outfits
-        torso option 1-7
-        belt/backpack option 0-1
+        torso option 1-4
+        belt/backpack option 4-6
         head option 1-5
         face option 1-3
         hands/arms option 1-2
@@ -108,12 +108,43 @@ public class SummonNPCWithItems : MonoBehaviour
 
 
         blacksmith options
-
+        torso option 1-2
+        belt/backpack option 1
+        head option 1-5
+        face option 1-3
+        hands/arms option 2,4 
+        shoulder option 0
+        legs option 1-3
+        
+        
         potion/magic options
-
+        torso option 4
+        belt/backpack option 2,3,6
+        head option 7-8
+        face option 1-3
+        hands/arms option 2,4 
+        shoulder option 0
+        legs option 1-2
+        
         brandit outfits
+        torso option 1-2  5 7
+        belt/backpack option 0,1,4
+        head option 1-5 , 9,10
+        face option 1-3
+        hands/arms option 1-6
+        shoulder option 0-6
+        legs option 1-4
 
         guard outfits
+        torso option 5-7
+        belt/backpack option 0
+        head option 9-15
+        face option 1-3
+        hands/arms option 3-6
+        shoulder option 1-6
+        legs option 4-6
+
+
 
         other outfits = farmer + merchant options
 
@@ -125,9 +156,9 @@ public class SummonNPCWithItems : MonoBehaviour
 
 
         // set stats
-
+        // add outfit total squared to the health if bandit so if they look tough then they are
         
-        // all pick between 75-125 health
+        // all pick between 50-125 health 
         // all pick between 10-20 mana with 5% chance of 100-200 mana with all mages having between 100-250 mana
         // all use json defined stamina
 
