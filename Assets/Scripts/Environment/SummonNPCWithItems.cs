@@ -42,6 +42,11 @@ public class SummonNPCWithItems : MonoBehaviour
         //SpawnedNPCController.Load(CharacterSaveFileFolder,SaveFileToLoad);
         SpawnedNPCController.DoInit(CharacterSaveFileFolder,SaveFileToLoad);
 
+
+        // set customization options based on who they are
+
+        DoCharacterCustomize(SpawnedNPCController);
+
         Transform HandTransform = SpawnedNPCController.GetHandTransform();
         Transform BackTransform = SpawnedNPCController.GetBackTransform();
         Transform BeltTransform = SpawnedNPCController.GetBeltTransform();
@@ -65,6 +70,70 @@ public class SummonNPCWithItems : MonoBehaviour
 
     }
 
+    private void DoCharacterCustomize(CharacterController toCustomize){
+
+        // set name from random names
+
+        // get the default action to determine outfits
+
+        /*
+        %name% outfits
+        torso option 1-7
+        belt/backpack option 0-6
+        head option 1-15
+        face option 1-3
+        hands/arms option 1-6
+        shoulder option 0-6
+        legs option 1-6
+
+
+        farmer/lumberjack outfits
+        torso option 1-2
+        belt/backpack option 0-1
+        head option 1-5
+        face option 1-3
+        hands/arms option 1-2
+        shoulder option 0
+        legs option 1-2
+
+
+        merchant/shopkeeper/mayor outfits
+        torso option 1-7
+        belt/backpack option 0-1
+        head option 1-5
+        face option 1-3
+        hands/arms option 1-2
+        shoulder option 0
+        legs option 1-2
+
+
+        blacksmith options
+
+        potion/magic options
+
+        brandit outfits
+
+        guard outfits
+
+        other outfits = farmer + merchant options
+
+
+
+        */
+
+        // set outfits
+
+
+        // set stats
+
+        
+        // all pick between 75-125 health
+        // all pick between 10-20 mana with 5% chance of 100-200 mana with all mages having between 100-250 mana
+        // all use json defined stamina
+
+
+
+    }
 
     //TODO summon random follower with list of options for items to pick from
     // and random names etc

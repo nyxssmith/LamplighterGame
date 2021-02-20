@@ -2887,7 +2887,7 @@ public class CharacterController : MonoBehaviour
         // TODO crown options sometime maybe
         if (
             name.Contains("Hat") ||
-            name.Contains("Hair") ||
+            (name.Contains("Hair") && !name.Contains("Half")) ||
             name.Contains("Helm")
         )
         {
