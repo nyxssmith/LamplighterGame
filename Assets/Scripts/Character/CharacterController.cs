@@ -218,7 +218,8 @@ public class CharacterController : MonoBehaviour
             //parts of the character
             //rb = gameObject.GetComponent<Rigidbody>();
             rb = GetComponent<Rigidbody>();
-            Debug.Log("rb" + rb);
+
+            //Debug.Log("rb" + rb);
             CharacterTransform = gameObject.GetComponent<Transform>();
             NavAgent = this.gameObject.GetComponent<NavMeshAgent>();
 
@@ -606,10 +607,32 @@ public class CharacterController : MonoBehaviour
         WANDER wander aimlessly
         SLEEP find bed and sleep
         STAND stand still
-        BEMERCHANT be a merchant
+        BEMERCHANT man a shop building
         SHOP find a merchant and buy something
         HOME go home
         FINDENEMY look for other factions to fight
+        MAYOR is the "player" 
+        BEBLACKSMITH man a blacksmith shop
+        BELUMBERJACK man a lumbermill
+        BEALCHEMIST man a potion shop
+        GUARD guard their target or their point
+        BETRADER do trade quests
+        BEMINER work in the mines
+
+        default tasks
+        FARM
+        LAMPLIGHT
+        BANDIT
+        MAYOR
+        BEBLACKSMITH
+        BELUMBERJACK
+        BEALCHEMIST
+        GUARD
+        BETRADER
+        BEMINER
+        BEMERCHANT
+
+
 
         */
         //Debug.Log("current task is" + CurrentTask + Character.Name);
@@ -1523,16 +1546,19 @@ public class CharacterController : MonoBehaviour
                     .Distance(CharacterTransform.position,
                     CombatTarget.transform.position);
 
-            // only lock on in range
-            if (distance <= HeldItemController.GetItem().Range)
+            if (HeldItemController != null)
             {
-                CharacterTransform.rotation =
-                    Quaternion
-                        .Slerp(CharacterTransform.rotation,
+                // only lock on in range
+                if (distance <= HeldItemController.GetItem().Range)
+                {
+                    CharacterTransform.rotation =
                         Quaternion
-                            .LookRotation(CombatTarget.transform.position -
-                            CharacterTransform.position),
-                        30.0f * Time.deltaTime);
+                            .Slerp(CharacterTransform.rotation,
+                            Quaternion
+                                .LookRotation(CombatTarget.transform.position -
+                                CharacterTransform.position),
+                            30.0f * Time.deltaTime);
+                }
             }
         }
     }
@@ -2992,7 +3018,7 @@ public class CharacterController : MonoBehaviour
             GetIndexFromOneOfOptionInListThatIsActive(ShoeOptions);
     }
 
-    public void LoadCurrentCustomizedValuesToCharacterData()
+    public void LoadCurrentCustomizedValuesFromCharacterData()
     {
         // takes current values from character save and applies them to the lists
         SetIndexFromOneOfOptionInListThatIsActive(TorsoOptions,

@@ -174,7 +174,7 @@ public class CustomizeMenu : MonoBehaviour
         );
 
         // update current options from save data
-        character.LoadCurrentCustomizedValuesToCharacterData();
+        character.LoadCurrentCustomizedValuesFromCharacterData();
     }
 
     private void UpdateCharacterDataWithNewCustomizationSelection(

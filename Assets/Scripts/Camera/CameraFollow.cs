@@ -565,7 +565,7 @@ public class CameraFollow : MonoBehaviour
         if (hasTarget)
         //check if freindly, if so show only name, else show health bar
         {
-            TargetName.GetComponent<Text>().text = TargetCharacter.Name;
+            string HealthBarText = TargetCharacter.Name;
             if (!TargetCharacter.IsFollower)
             {
                 //TargetUI.GetComponent<FillUI>().SetTo(TargetCharacter.CurrentHealth);
@@ -574,7 +574,13 @@ public class CameraFollow : MonoBehaviour
                     .GetComponent<FillUI>()
                     .SetTo(TargetCharacter.CurrentHealth /
                     TargetCharacter.MaxHealth);
+
+                HealthBarText = HealthBarText + "  ("+TargetCharacter.CurrentHealth.ToString()+"/"+
+                    TargetCharacter.MaxHealth.ToString()+")";
             }
+
+            TargetName.GetComponent<Text>().text = HealthBarText;
+            
         } // if no target, hide UI
         else
         {
