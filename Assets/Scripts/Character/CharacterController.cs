@@ -1191,7 +1191,7 @@ public class CharacterController : MonoBehaviour
 
     private bool CheckIfTargetIsDead()
     {
-        //MakeSpeechBubble("did he die?");
+        MakeSpeechBubble("did he die?");
         if (
             CombatTarget == null ||
             CombatTarget.gameObject == null ||
@@ -1536,6 +1536,17 @@ public class CharacterController : MonoBehaviour
                     .Slerp(transform.rotation,
                     Quaternion.LookRotation(forward),
                     0.2f);
+        }
+
+        // check if target is dead
+        if (IsFighting)
+        {
+            bool wonFight = CheckIfTargetIsDead();
+            if (wonFight)
+            {
+                IsFighting = false;
+                DeTarget();
+            }
         }
 
         // if fighting, must look at enemy

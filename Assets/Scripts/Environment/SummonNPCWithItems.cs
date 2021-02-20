@@ -359,7 +359,7 @@ public class SummonNPCWithItems : MonoBehaviour
         toCustomize.Character.MaxHealth = (float) health + bonusHeath;
         toCustomize.Character.CurrentHealth = toCustomize.Character.MaxHealth;
 
-        if (profession == "MAYOR")
+        if (profession == "")
         {
             toCustomize.Character.MaxHealth = 1000.0f;
             toCustomize.Character.CurrentHealth =

@@ -119,12 +119,24 @@ public class CameraFollow : MonoBehaviour
 
     private bool isPaused = false;
 
+    private bool hasDoneInit = false;
+
     // Use this for initialization
     void Start()
     {
         CameraFollowObj = null;
 
+        DoInit();
+    }
+
+    private void DoInit()
+    {
         CameraFollowObj = FindPlayerToFollow();
+
+        if (CameraFollowObj == null)
+        {
+            return;
+        }
 
         UnityEngine.Debug.Log (CameraFollowObj);
 
@@ -138,183 +150,191 @@ public class CameraFollow : MonoBehaviour
         GetPlayer();
         GetPlayerCharacter();
         SquadListText = GenerateSquadList();
+        hasDoneInit = true;
     }
 
     // Update is called once per frame
     void Update()
     {
-        CheckIfCurrentCharacterDied();
-
-        if (ConstUpdateTimer > 0)
+        if (!hasDoneInit)
         {
-            ConstUpdateTimer -= Time.deltaTime;
-            needsUIUpdate = true;
-        }
-
-        // We setup the rotation of the sticks here
-        //float inputX = Input.GetAxis("RightStickHorizontal");
-        //float inputZ = Input.GetAxis("RightStickVertical");
-        mouseX = Input.GetAxis("Mouse X");
-        mouseY = Input.GetAxis("Mouse Y");
-        finalInputX = mouseX;
-        finalInputZ = mouseY;
-
-        float timeFloat = Time.unscaledDeltaTime;
-        if (isPaused)
-        {
-            // if is paused also pause camera
-            timeFloat = Time.deltaTime;
-        }
-        rotY += finalInputX * inputSensitivity * timeFloat;
-        rotX += finalInputZ * inputSensitivity * timeFloat;
-
-        rotX = Mathf.Clamp(rotX, -clampAngle, clampAngle);
-
-        Quaternion localRotation = Quaternion.Euler(rotX, rotY, 0.0f);
-        transform.rotation = localRotation;
-
-        // get stuff from current player and do ui
-        if (Player == null)
-        {
-            GetPlayer();
-        }
-
-        if (GetIfPlayerRequestedUIUpdate() || needsUIUpdate)
-        {
-            //UnityEngine.Debug.Log("player requested ui update");
-            GetPlayer();
-            GetPlayerCharacter();
-            SquadListText = GenerateSquadList();
-            Player.SetNeedsUIUpdate(false);
-            inDialog = Player.GetIsInDialog();
-
-            // when needs update update info text
-            UpdateInfoUIForItem();
-            needsUIUpdate = false;
-
-            // update town info if realivant
-        }
-
-        GetPlayersTargetCharacter();
-        DoUI();
-
-        if (Input.GetKeyDown("h"))
-        {
-            UnityEngine.Debug.Log("setting player to ask for ui update");
-            Player.SetNeedsUIUpdate(true);
-        }
-
-        // To time warp
-        // toggle half, full, etc time speed
-        if (Input.GetKeyDown("]"))
-        {
-            if (Time.timeScale >= 10.0f)
-            {
-                Time.timeScale = 0.5f;
-            }
-            else
-            {
-                Time.timeScale += 0.5f;
-            }
-            Player
-                .MakeSpeechBubble("Timescale set to " +
-                Time.timeScale.ToString());
-            //RotationDegree += 0.5f;
-        }
-
-        // if not in dialog mode
-        if (inDialog)
-        {
-            // dont get keys for squad, since dialogmanager is handling it
-            //if (Input.GetKeyDown("1"))
-            //{
-            //    Player.MakeSpeechBubble("pushed a key");
-            //}
-        }
-        else if (inCustomizeMode)
-        {
-        }
-        else if (inBuildMode)
-        {
-            // dont swap in build mode
-            // update buildmode text here
-            //InfoText = "build mode";
-            UpdateInfoUIForBuildMode();
-            buildToolIndex = BuildToolController.Index;
+            DoInit();
         }
         else
         {
-            // get numbers 1-9 and swap to squad member
-            if (Input.GetKeyDown("1"))
-            {
-                SafeSwithctoTarget(0);
-            }
-            if (Input.GetKeyDown("2"))
-            {
-                SafeSwithctoTarget(1);
-            }
-            if (Input.GetKeyDown("3"))
-            {
-                SafeSwithctoTarget(2);
-            }
-            if (Input.GetKeyDown("4"))
-            {
-                SafeSwithctoTarget(3);
-            }
-            if (Input.GetKeyDown("5"))
-            {
-                SafeSwithctoTarget(4);
-            }
-            if (Input.GetKeyDown("6"))
-            {
-                SafeSwithctoTarget(5);
-            }
-            if (Input.GetKeyDown("7"))
-            {
-                SafeSwithctoTarget(6);
-            }
-            if (Input.GetKeyDown("8"))
-            {
-                SafeSwithctoTarget(7);
-            }
-            if (Input.GetKeyDown("9"))
-            {
-                SafeSwithctoTarget(8);
-            }
-        }
+            CheckIfCurrentCharacterDied();
 
-        if (Input.GetKeyDown("b"))
-        {
-            UnityEngine.Debug.Log("switching to build mode");
-            Player.SetNeedsUIUpdate(true);
-
-            if (!inBuildMode)
+            if (ConstUpdateTimer > 0)
             {
-                EnterBuildMode();
+                ConstUpdateTimer -= Time.deltaTime;
+                needsUIUpdate = true;
+            }
+
+            // We setup the rotation of the sticks here
+            //float inputX = Input.GetAxis("RightStickHorizontal");
+            //float inputZ = Input.GetAxis("RightStickVertical");
+            mouseX = Input.GetAxis("Mouse X");
+            mouseY = Input.GetAxis("Mouse Y");
+            finalInputX = mouseX;
+            finalInputZ = mouseY;
+
+            float timeFloat = Time.unscaledDeltaTime;
+            if (isPaused)
+            {
+                // if is paused also pause camera
+                timeFloat = Time.deltaTime;
+            }
+            rotY += finalInputX * inputSensitivity * timeFloat;
+            rotX += finalInputZ * inputSensitivity * timeFloat;
+
+            rotX = Mathf.Clamp(rotX, -clampAngle, clampAngle);
+
+            Quaternion localRotation = Quaternion.Euler(rotX, rotY, 0.0f);
+            transform.rotation = localRotation;
+
+            // get stuff from current player and do ui
+            if (Player == null)
+            {
+                GetPlayer();
+            }
+
+            if (GetIfPlayerRequestedUIUpdate() || needsUIUpdate)
+            {
+                //UnityEngine.Debug.Log("player requested ui update");
+                GetPlayer();
+                GetPlayerCharacter();
+                SquadListText = GenerateSquadList();
+                Player.SetNeedsUIUpdate(false);
+                inDialog = Player.GetIsInDialog();
+
+                // when needs update update info text
+                UpdateInfoUIForItem();
+                needsUIUpdate = false;
+
+                // update town info if realivant
+            }
+
+            GetPlayersTargetCharacter();
+            DoUI();
+
+            if (Input.GetKeyDown("h"))
+            {
+                UnityEngine.Debug.Log("setting player to ask for ui update");
+                Player.SetNeedsUIUpdate(true);
+            }
+
+            // To time warp
+            // toggle half, full, etc time speed
+            if (Input.GetKeyDown("]"))
+            {
+                if (Time.timeScale >= 10.0f)
+                {
+                    Time.timeScale = 0.5f;
+                }
+                else
+                {
+                    Time.timeScale += 0.5f;
+                }
+                Player
+                    .MakeSpeechBubble("Timescale set to " +
+                    Time.timeScale.ToString());
+                //RotationDegree += 0.5f;
+            }
+
+            // if not in dialog mode
+            if (inDialog)
+            {
+                // dont get keys for squad, since dialogmanager is handling it
+                //if (Input.GetKeyDown("1"))
+                //{
+                //    Player.MakeSpeechBubble("pushed a key");
+                //}
+            }
+            else if (inCustomizeMode)
+            {
+            }
+            else if (inBuildMode)
+            {
+                // dont swap in build mode
+                // update buildmode text here
+                //InfoText = "build mode";
+                UpdateInfoUIForBuildMode();
+                buildToolIndex = BuildToolController.Index;
             }
             else
             {
-                ExitBuildMode();
+                // get numbers 1-9 and swap to squad member
+                if (Input.GetKeyDown("1"))
+                {
+                    SafeSwithctoTarget(0);
+                }
+                if (Input.GetKeyDown("2"))
+                {
+                    SafeSwithctoTarget(1);
+                }
+                if (Input.GetKeyDown("3"))
+                {
+                    SafeSwithctoTarget(2);
+                }
+                if (Input.GetKeyDown("4"))
+                {
+                    SafeSwithctoTarget(3);
+                }
+                if (Input.GetKeyDown("5"))
+                {
+                    SafeSwithctoTarget(4);
+                }
+                if (Input.GetKeyDown("6"))
+                {
+                    SafeSwithctoTarget(5);
+                }
+                if (Input.GetKeyDown("7"))
+                {
+                    SafeSwithctoTarget(6);
+                }
+                if (Input.GetKeyDown("8"))
+                {
+                    SafeSwithctoTarget(7);
+                }
+                if (Input.GetKeyDown("9"))
+                {
+                    SafeSwithctoTarget(8);
+                }
             }
-        }
 
-        // do customize menu
-        if (Input.GetKeyDown("c"))
-        {
-            UnityEngine.Debug.Log("switching to customizer mode");
-            Player.SetNeedsUIUpdate(true);
-
-            if (!inCustomizeMode)
+            if (Input.GetKeyDown("b"))
             {
-                EnterCustomizerMode();
-            }
-            else
-            {
-                ExitCustomizerMode();
+                UnityEngine.Debug.Log("switching to build mode");
+                Player.SetNeedsUIUpdate(true);
+
+                if (!inBuildMode)
+                {
+                    EnterBuildMode();
+                }
+                else
+                {
+                    ExitBuildMode();
+                }
             }
 
-            UnityEngine.Debug.Log("character customize button set");
-            Player.PopulateListsOfCustomizeOptions();
+            // do customize menu
+            if (Input.GetKeyDown("c"))
+            {
+                UnityEngine.Debug.Log("switching to customizer mode");
+                Player.SetNeedsUIUpdate(true);
+
+                if (!inCustomizeMode)
+                {
+                    EnterCustomizerMode();
+                }
+                else
+                {
+                    ExitCustomizerMode();
+                }
+
+                UnityEngine.Debug.Log("character customize button set");
+                Player.PopulateListsOfCustomizeOptions();
+            }
         }
     }
 
@@ -368,7 +388,7 @@ public class CameraFollow : MonoBehaviour
                 return controller.GetCameraTarget();
             }
         }
-        return FindPlayerToFollow();
+        return null; //FindPlayerToFollow();
     }
 
     void EnterBuildMode()
@@ -436,7 +456,10 @@ public class CameraFollow : MonoBehaviour
 
     void LateUpdate()
     {
-        CameraUpdater();
+        if (hasDoneInit)
+        {
+            CameraUpdater();
+        }
     }
 
     void CameraUpdater()
@@ -575,12 +598,16 @@ public class CameraFollow : MonoBehaviour
                     .SetTo(TargetCharacter.CurrentHealth /
                     TargetCharacter.MaxHealth);
 
-                HealthBarText = HealthBarText + "  ("+TargetCharacter.CurrentHealth.ToString()+"/"+
-                    TargetCharacter.MaxHealth.ToString()+")";
+                HealthBarText =
+                    HealthBarText +
+                    "  (" +
+                    TargetCharacter.CurrentHealth.ToString() +
+                    "/" +
+                    TargetCharacter.MaxHealth.ToString() +
+                    ")";
             }
 
             TargetName.GetComponent<Text>().text = HealthBarText;
-            
         } // if no target, hide UI
         else
         {
@@ -707,7 +734,7 @@ public class CameraFollow : MonoBehaviour
         string mySquadLeader = Player.GetSquadLeaderUUID();
         string theirSquadLeader =
             targetCharacterController.GetSquadLeaderUUID();
-        if (mySquadLeader == theirSquadLeader)
+        if (mySquadLeader == theirSquadLeader && theirSquadLeader != "")
         {
             return true;
         }
@@ -770,6 +797,9 @@ public class CameraFollow : MonoBehaviour
     {
         if (Player.GetCurrentHealth() <= 0.0f)
         {
+
+            // TODO if squadlist is none, ues townlist then if that is empty do end of game
+
             string id;
             int count = 0;
             int squadMemberToRemove = -1;
@@ -825,11 +855,13 @@ public class CameraFollow : MonoBehaviour
         isPaused = newState;
     }
 
-    public bool GetInDialog(){
+    public bool GetInDialog()
+    {
         return inDialog;
     }
 
-    public CharacterController GetCharacterController(){
+    public CharacterController GetCharacterController()
+    {
         return Player;
     }
 }

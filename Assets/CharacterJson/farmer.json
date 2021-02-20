@@ -17,7 +17,7 @@
     "CanFight": true,
     "IsPlayer": false,
     "IsFollower": false,
-    "IsFollowing": true,
+    "IsFollowing": false,
     "DefaultTask": "BEFARMER",
     "idle_animation": "Idle01",
     "walking_forward_animation": "Walking",

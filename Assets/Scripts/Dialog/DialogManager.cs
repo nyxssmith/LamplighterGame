@@ -368,7 +368,7 @@ public class DialogManager : MonoBehaviour
         // if B in same squad as A
         // if B not in same squad as A
         bool InSameSquad =
-            CharacterA.GetSquadLeaderUUID() == CharacterB.GetSquadLeaderUUID();
+            CharacterA.GetSquadLeaderUUID() == CharacterB.GetSquadLeaderUUID() && CharacterA.GetSquadLeaderUUID()!="";
         if (InSameSquad)
         {
             return LoadDialogLevelToDialogTree("leave_squad.json", 1);

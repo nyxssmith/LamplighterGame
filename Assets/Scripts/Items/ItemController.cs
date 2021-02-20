@@ -21,7 +21,6 @@ public class ItemController : MonoBehaviour
     // label stuff
     //public GameObject SpeechBubblePreFab;
     //public Collider PlayerInRangeForBubbleCollider;
-
     public bool isPickedUp = false;
 
     private float CooldownTimer = 0f;
@@ -44,7 +43,7 @@ public class ItemController : MonoBehaviour
 
     private GameObject HoldingCharacter;
 
-    private bool CanBeDropped = true;// check that item can be dropped, for built tool use
+    private bool CanBeDropped = true; // check that item can be dropped, for built tool use
 
     //When character comes online, set vars needed for init
     private void Awake()
@@ -74,7 +73,6 @@ public class ItemController : MonoBehaviour
         //{
         //    Save();
         //}
-
         // for debug
         //if (Input.GetKeyDown("k"))
         //{
@@ -188,8 +186,11 @@ public class ItemController : MonoBehaviour
 
             //CurrentItemAction = HoldingCharacter.GetComponent<CharacterController>().GetItemActionFloat();
             if (
-                ((Status == "Dropping" && Item.heldLocation == "Hand") ||
-                CurrentItemAction == -1.0f) && CanBeDropped
+                (
+                (Status == "Dropping" && Item.heldLocation == "Hand") ||
+                CurrentItemAction == -1.0f
+                ) &&
+                CanBeDropped
             )
             {
                 Debug.Log("parent id dropping me");
@@ -353,7 +354,6 @@ public class ItemController : MonoBehaviour
     }
 
     //have these do the item efect and trigger the holders animation
-
     private void DoPrimaryAction()
     {
         // do item with cooldown
@@ -387,7 +387,8 @@ public class ItemController : MonoBehaviour
             {
                 // do basic attack hit, if it hits then canDoAction is true
                 float animationDuration = 1.0f;
-                AnimateHoldingCharacter("m_slash1", animationDuration);
+
+                //AnimateHoldingCharacter("m_slash1", animationDuration);
                 CooldownTimer += Item.Cooldown;
 
                 // DO attack
@@ -546,27 +547,30 @@ public class ItemController : MonoBehaviour
                         .GetComponent<CharacterController>();
                 if (HitCharacterController != null)
                 {
+                    Debug
+                        .Log("hit controller is" +
+                        HitCharacterController.GetCharacter().Name);
+                    Debug
+                        .Log("squad uuid is" +
+                        HitCharacterController.GetSquadLeaderUUID());
+
+                    //Debug.Log("my squad uuid is" + HoldingCharacterController.GetSquadLeaderUUID());
+                    Debug
+                        .Log("my squad uuid is" +
+                        ActionTargetCharacterController.GetSquadLeaderUUID());
+
                     // if not targeting self or sqwuad
                     //if (HitCharacterController.GetUUID() != HoldingCharacterController.GetUUID() && HitCharacterController.GetSquadLeaderUUID() != HoldingCharacterController.GetSquadLeaderUUID())
                     if (
                         HitCharacterController.GetUUID() !=
                         ActionTargetCharacterController.GetUUID() &&
+                        (
                         HitCharacterController.GetSquadLeaderUUID() !=
-                        ActionTargetCharacterController.GetSquadLeaderUUID()
+                        ActionTargetCharacterController.GetSquadLeaderUUID() ||
+                        HitCharacterController.GetSquadLeaderUUID() == ""
+                        )
                     )
                     {
-                        Debug
-                            .Log("hit controller is" +
-                            HitCharacterController.GetCharacter().Name);
-                        Debug
-                            .Log("squad uuid is" +
-                            HitCharacterController.GetSquadLeaderUUID());
-
-                        //Debug.Log("my squad uuid is" + HoldingCharacterController.GetSquadLeaderUUID());
-                        Debug
-                            .Log("my squad uuid is" +
-                            ActionTargetCharacterController
-                                .GetSquadLeaderUUID());
                         hit = true;
                         break;
                     }
@@ -603,8 +607,6 @@ public class ItemController : MonoBehaviour
                 HoldingCharacter);
             }
         }
-
-
     }
 
     void OnCollisionEnter(Collision collision)
@@ -622,7 +624,8 @@ public class ItemController : MonoBehaviour
                     //{
                     if (!CollidingCharacter.GetHasItemInHand())
                     {
-                        GetPickedUpBy(CollidingCharacter);
+                        GetPickedUpBy (CollidingCharacter);
+
                         /*
                         //Debug.DrawRay(contact.point, contact.normal, Color.white);
                         //Debug.Log("I was hit by " + collision.gameObject.GetComponent<CharacterController>().GetCharacter().Name);
@@ -661,7 +664,6 @@ public class ItemController : MonoBehaviour
                             Item.ownerUUID = Item.holderUUID;
                         }
                         */
-
                         break;
                     }
                     //}
@@ -746,7 +748,9 @@ public class ItemController : MonoBehaviour
         rb.constraints = RigidbodyConstraints.None;
 
         Physics
-            .IgnoreCollision(pickingUpCharacter.gameObject.GetComponent<Collider>(),
+            .IgnoreCollision(pickingUpCharacter
+                .gameObject
+                .GetComponent<Collider>(),
             GetComponent<Collider>());
 
         //ItemTransform.parent = collision.gameObject.GetComponent<CharacterController> ().GetCharacterTransform ();
@@ -770,7 +774,6 @@ public class ItemController : MonoBehaviour
             Item.ownerUUID = Item.holderUUID;
         }
         ActionTargetCharacterController.SetNeedsUIUpdate(true);
-
     }
 
     public void SetHeldLocation(
@@ -951,13 +954,13 @@ public class ItemController : MonoBehaviour
         return Item;
     }
 
-    public void SetCanBeDropped(bool newStatus){
+    public void SetCanBeDropped(bool newStatus)
+    {
         CanBeDropped = newStatus;
     }
 
-
-    public float GetCoolDown(){
+    public float GetCoolDown()
+    {
         return CooldownTimer;
     }
-    
 }
