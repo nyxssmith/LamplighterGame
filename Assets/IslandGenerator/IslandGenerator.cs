@@ -9,26 +9,27 @@
  * Requires IslandGeneratorEditor.cs for custom inspector view.
  * 
  */
-
-using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
-using System;
+using UnityEngine;
 
 //This adds the script to the component menu for easy access.
 [AddComponentMenu("Island Generator/Island Generator")]
-public class IslandGenerator : MonoBehaviour {
-
+public class IslandGenerator : MonoBehaviour
+{
     public Terrain terrain;
 
     //Variables for Cellular Automata
     private int smoothTimes = 5;
+
     private int neighboringWalls = 4;
 
     //Maximum radius for shores.
     public int maxRadius;
+
     //This is actually used in calculation. We need second variable,
     //because the first one is managed by GUI and is min 20 and max 100,
     //but the radius can be bigger/smaller depending on resolution.
@@ -37,11 +38,13 @@ public class IslandGenerator : MonoBehaviour {
     private int maxRadius2;
 
     //Temporary Scaled down dimensions of the map.
-    private int width;
-    private int height;
+    public int width;
+
+    public int height;
 
     //Scaling multiplier for the map
     private int scaleHeightMultip;
+
     private int scaleWidthMultip;
 
     private int terrainreso;
@@ -51,6 +54,7 @@ public class IslandGenerator : MonoBehaviour {
     //created using Cellular Automata. Original dimensions needs to be
     //scaled down a bit to get good results
     private int scaledWidth;
+
     private int scaledHeight;
 
     public Thread th1;
@@ -61,6 +65,7 @@ public class IslandGenerator : MonoBehaviour {
     //Every pixel in the Terrain and how many pixels the Thread has gone through.
     //Used to determine whether or not shore calculation is finished
     private int gridSize;
+
     private int calculatedPixels;
 
     //Progress of the shore calculation
@@ -68,16 +73,19 @@ public class IslandGenerator : MonoBehaviour {
 
     //Original map dimensions
     private int terrainDataMapHeight;
+
     private int terrainDataMapWidth;
 
     //Variables for the Perlin Noise
-    public float perlinHeight = 0.02f;
+    public float perlinHeight = 0.03f;
+
     public float perlinScale = 20.0f;
 
     public int mapSmoothTimes = 10;
 
     //Seed of randomization and Boolean if we randomize the seed or not
     public string seed;
+
     public bool useRandomSeed = true;
 
     public List<string> usedSeeds = new List<string>(0);
@@ -88,13 +96,16 @@ public class IslandGenerator : MonoBehaviour {
 
     //Heightmap variables
     int[,] map;
+
     int[,] mapx2;
+
     float[,] heights;
-	float[,] heights2;
+
+    float[,] heights2;
 
     void Awake()
     {
-        terrain = GetComponent<Terrain>();
+        //terrain = GetComponent<Terrain>();
     }
 
     /// <summary>
@@ -115,10 +126,143 @@ public class IslandGenerator : MonoBehaviour {
         height = mapHeight / scaleHeightMultip;
         width = mapWidth / scaleWidthMultip;
 
-        heights = new float[terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution];
-        heights2 = terrain.terrainData.GetHeights(0, 0, terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution);
+        heights =
+            new float[terrain.terrainData.heightmapResolution,
+            terrain.terrainData.heightmapResolution];
+        heights2 =
+            terrain
+                .terrainData
+                .GetHeights(0,
+                0,
+                terrain.terrainData.heightmapResolution,
+                terrain.terrainData.heightmapResolution);
 
         GenerateMap();
+    }
+
+    public void StartGenerationLive(Terrain terrainToUse)
+    {
+        terrain = terrainToUse;
+
+        int mapHeight = terrain.terrainData.heightmapResolution;
+        int mapWidth = terrain.terrainData.heightmapResolution;
+
+        //Let's figure out how many times we need to shrink/grow our map
+        //for the cellular automata to work. 64*64 seems to be the best resolution.
+        scaleHeightMultip = (int)(mapHeight / 64);
+        scaleWidthMultip = (int)(mapWidth / 64);
+
+        height = mapHeight / scaleHeightMultip;
+        width = mapWidth / scaleWidthMultip;
+
+        heights =
+            new float[terrain.terrainData.heightmapResolution,
+            terrain.terrainData.heightmapResolution];
+        heights2 =
+            terrain
+                .terrainData
+                .GetHeights(0,
+                0,
+                terrain.terrainData.heightmapResolution,
+                terrain.terrainData.heightmapResolution);
+
+        GenerateMap();
+
+        // TODO check that island is in the middle
+        DoIsland();
+    }
+
+    public void DoIsland()
+    {
+        // how steep should shores be
+        maxRadius = 32;
+
+        // calc shores here
+        //terrain = GetComponent<Terrain>();
+        terrainreso = terrain.terrainData.heightmapResolution;
+
+        //Depending on the resolution, we need to change the maximum radius (for shore steepness) accordingly.
+        //Radius is tested while resolution is 513, so then it works on it's own, but if the resolution is higher,
+        //then radius needs to be bigger too and vice versa
+        maxRadius2 = (int)(maxRadius * (((float) terrainreso - 1.0f) / 512.0f));
+
+        gridSize = scaledHeight * scaledWidth;
+        calculatedPixels = 0;
+
+        terrainDataMapHeight = terrain.terrainData.heightmapResolution;
+        terrainDataMapWidth = terrain.terrainData.heightmapResolution;
+
+        // thread1
+        for (int x = 0; x < scaledWidth; x++)
+        {
+            for (int y = 0; y < scaledHeight; y++)
+            {
+                //If we get aborted == true from the Custom Inspector
+                //we need to break the loops to stop this Thread
+                if (aborted) break;
+                calculatedPixels++;
+                prog =
+                    (((float) calculatedPixels / (float) gridSize) * 100.0f)
+                        .ToString("F0") +
+                    "%";
+                if (mapx2[x, y] == 2)
+                {
+                    RandomDrop (x, y);
+                }
+            }
+            if (aborted) break;
+        }
+
+        //Thread has finished it's loop and we can turn this boolean back to false
+        //in the case of it was true
+        aborted = false;
+
+        mapSmoothTimes = 100;
+
+        //CalculateShores();
+        SmoothShores();
+
+        //Smooths the map as many times as the user defines.
+        for (int i = 0; i < mapSmoothTimes; i++)
+        {
+            BlendHeights();
+        }
+
+        SmoothMap();
+
+        // TODO noise for hills working
+
+
+        perlinHeight = 10.0f;
+        perlinScale = 0.02f;
+
+        //PerlinNoise();
+
+        int cHeight = terrain.terrainData.heightmapResolution;
+        int cWidth = terrain.terrainData.heightmapResolution;
+
+        float[,] originalMap =
+            terrain.terrainData.GetHeights(0, 0, cWidth, cHeight);
+
+        float rnd = (float)(DateTime.Now.Millisecond) / 1000;
+
+        for (int x = 0; x < cWidth; x++)
+        {
+            for (int y = 0; y < cHeight; y++)
+            {
+                float px = (float) x / (float) cWidth;
+                float py = (float) y / (float) cHeight;
+
+                originalMap[x, y] +=
+                    perlinHeight *
+                    Mathf
+                        .PerlinNoise((px + rnd) * perlinScale,
+                        (py + rnd) * perlinScale);
+            }
+        }
+
+        //terrain.terrainData.SetHeights(0, 0, originalMap);
+
     }
 
     /// <summary>
@@ -133,17 +277,18 @@ public class IslandGenerator : MonoBehaviour {
             {
                 //If we get aborted == true from the Custom Inspector
                 //we need to break the loops to stop this Thread
-                if (aborted)
-                    break;
+                if (aborted) break;
                 calculatedPixels++;
-                prog = (((float)calculatedPixels / (float)gridSize) * 100.0f).ToString("F0") + "%";
+                prog =
+                    (((float) calculatedPixels / (float) gridSize) * 100.0f)
+                        .ToString("F0") +
+                    "%";
                 if (mapx2[x, y] == 2)
                 {
-                    RandomDrop(x, y);
+                    RandomDrop (x, y);
                 }
             }
-            if (aborted)
-                break;
+            if (aborted) break;
         }
 
         //Thread has finished it's loop and we can turn this boolean back to false
@@ -156,9 +301,14 @@ public class IslandGenerator : MonoBehaviour {
     /// </summary>
     public void ResetSeaFloor()
     {
-        terrain = GetComponent<Terrain>();
-
-        heights2 = terrain.terrainData.GetHeights(0, 0, terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution);
+        //terrain = GetComponent<Terrain>();
+        heights2 =
+            terrain
+                .terrainData
+                .GetHeights(0,
+                0,
+                terrain.terrainData.heightmapResolution,
+                terrain.terrainData.heightmapResolution);
         bool hitFloor = false;
 
         //Even if we hit 0 at some point, the function runs until the end of the map,
@@ -169,11 +319,11 @@ public class IslandGenerator : MonoBehaviour {
         {
             for (int x = 0; x < terrain.terrainData.heightmapResolution; x++)
             {
-                for (int y = 0; y < terrain.terrainData.heightmapResolution; y++)
+                for (int y = 0; y < terrain.terrainData.heightmapResolution; y++
+                )
                 {
                     heights2[x, y] -= 0.001f;
-                    if (heights2[x, y] <= 0)
-                        hitFloor = true;
+                    if (heights2[x, y] <= 0) hitFloor = true;
                 }
             }
         }
@@ -186,41 +336,46 @@ public class IslandGenerator : MonoBehaviour {
     /// of the pixels around it and applies the mean to the original pixel.
     /// </summary>
     public void BlendHeights()
-	{
-        terrain = GetComponent<Terrain>();
-
+    {
+        //terrain = GetComponent<Terrain>();
         int hMapWidth = terrain.terrainData.heightmapResolution;
         int hMapHeight = terrain.terrainData.heightmapResolution;
 
         heights2 = terrain.terrainData.GetHeights(0, 0, hMapWidth, hMapHeight);
 
-		for (int x = 0; x < hMapWidth; x++)
-		{
-			for (int y = 0; y < hMapHeight; y++)
-			{
-				float pointHeight = 0.0f;
-				float blendHeight = pointHeight;
-				float pixelCount = 0.0f;
+        for (int x = 0; x < hMapWidth; x++)
+        {
+            for (int y = 0; y < hMapHeight; y++)
+            {
+                float pointHeight = 0.0f;
+                float blendHeight = pointHeight;
+                float pixelCount = 0.0f;
 
-				for (int x2 = x-1; x2 < x + 2; x2++)
-				{
-					for (int y2 = y-1; y2 < y + 2; y2++)
-					{
-                        if (x2 >= 0 && y2 >= 0 && x2 < hMapWidth && y2 < hMapHeight)
+                for (int x2 = x - 1; x2 < x + 2; x2++)
+                {
+                    for (int y2 = y - 1; y2 < y + 2; y2++)
+                    {
+                        if (
+                            x2 >= 0 &&
+                            y2 >= 0 &&
+                            x2 < hMapWidth &&
+                            y2 < hMapHeight
+                        )
                         {
                             blendHeight = blendHeight + heights2[x2, y2];
                             pixelCount++;
                         }
-					}
-				}
-				blendHeight = blendHeight / pixelCount;
-				//print ("point: "+pointHeight+", blend: "+blendHeight);
-				//if(blendHeight < 0.1f) heights2[x,y] = blendHeight;
+                    }
+                }
+                blendHeight = blendHeight / pixelCount;
+
+                //print ("point: "+pointHeight+", blend: "+blendHeight);
+                //if(blendHeight < 0.1f) heights2[x,y] = blendHeight;
                 heights2[x, y] = blendHeight;
-			}
-		}
-		terrain.terrainData.SetHeights(0, 0, heights2);
-	}
+            }
+        }
+        terrain.terrainData.SetHeights(0, 0, heights2);
+    }
 
     /// <summary>
     /// Function that applies Sine wave to the shores to smooth them out.
@@ -240,41 +395,41 @@ public class IslandGenerator : MonoBehaviour {
         int xDiff = terrainDataMapWidth - xCoord;
         int yDiff = terrainDataMapHeight - yCoord;
 
-        if (xDiff < radius)
-            radius = xDiff;
+        if (xDiff < radius) radius = xDiff;
 
-        if (yDiff < radius)
-            radius = yDiff;
+        if (yDiff < radius) radius = yDiff;
 
-        if (xCoord < radius)
-            radius = xCoord;
+        if (xCoord < radius) radius = xCoord;
 
-        if (yCoord < radius)
-            radius = yCoord;
+        if (yCoord < radius) radius = yCoord;
 
-        if (radius > maxRadius2)
-            radius = maxRadius2;
+        if (radius > maxRadius2) radius = maxRadius2;
 
-        for (int x = 0; x < radius*2; x++)
+        for (int x = 0; x < radius * 2; x++)
         {
-            for (int y = 0; y < radius*2; y++)
+            for (int y = 0; y < radius * 2; y++)
             {
-                
                 //Calculation of the "bump" on a given coordinate
-                float px = (float)x / (float)radius/2;
-                float py = (float)y / (float)radius/2;
+                float px = (float) x / (float) radius / 2;
+                float py = (float) y / (float) radius / 2;
 
                 float cosval = Mathf.Sin(px * Mathf.PI);
                 float cosval2 = Mathf.Sin(py * Mathf.PI);
 
                 //height of bump on that coordinate
-				float tmpHeight = (cosval/10) * cosval2;
+                float tmpHeight = (cosval / 10) * cosval2;
 
                 //if the bump height is less than the height in the original heightmap, it is applied to it.
-				if ((heights[(xCoord - radius) + x, (yCoord - radius) + y]) < 0.1f && (heights[(xCoord - radius) + x, (yCoord - radius) + y]) <= tmpHeight)
-				{
-					heights[(xCoord - radius) + x, (yCoord - radius) + y] = tmpHeight;
-				}               
+                if (
+                    (heights[(xCoord - radius) + x, (yCoord - radius) + y]) <
+                    0.1f &&
+                    (heights[(xCoord - radius) + x, (yCoord - radius) + y]) <=
+                    tmpHeight
+                )
+                {
+                    heights[(xCoord - radius) + x, (yCoord - radius) + y] =
+                        tmpHeight;
+                }
             }
         }
     }
@@ -284,25 +439,27 @@ public class IslandGenerator : MonoBehaviour {
     /// </summary>
     public void PerlinNoise()
     {
-        terrain = GetComponent<Terrain>();
-
+        //terrain = GetComponent<Terrain>();
         int cHeight = terrain.terrainData.heightmapResolution;
         int cWidth = terrain.terrainData.heightmapResolution;
 
-        float[,] originalMap = terrain.terrainData.GetHeights(0, 0, cWidth, cHeight);
+        float[,] originalMap =
+            terrain.terrainData.GetHeights(0, 0, cWidth, cHeight);
 
-        float rnd = (float)(DateTime.Now.Millisecond)/1000;
+        float rnd = (float)(DateTime.Now.Millisecond) / 1000;
 
         for (int x = 0; x < cWidth; x++)
         {
             for (int y = 0; y < cHeight; y++)
             {
+                float px = (float) x / (float) cWidth;
+                float py = (float) y / (float) cHeight;
 
-                float px = (float)x / (float)cWidth;
-                float py = (float)y / (float)cHeight;
-
-                originalMap[x, y] += perlinHeight * Mathf.PerlinNoise((px + rnd) * perlinScale, (py + rnd) * perlinScale);
-                
+                originalMap[x, y] +=
+                    perlinHeight *
+                    Mathf
+                        .PerlinNoise((px + rnd) * perlinScale,
+                        (py + rnd) * perlinScale);
             }
         }
 
@@ -349,7 +506,6 @@ public class IslandGenerator : MonoBehaviour {
                     mapx2[x * 2, y * 2 + 1] = 1;
                     mapx2[x * 2 + 1, y * 2 + 1] = 1;
                 }
-
                 else
                 {
                     mapx2[x * 2, y * 2] = 0;
@@ -359,7 +515,6 @@ public class IslandGenerator : MonoBehaviour {
                 }
             }
         }
-
     }
 
     /// <summary>
@@ -374,7 +529,6 @@ public class IslandGenerator : MonoBehaviour {
                 map[x, y] = (map[x, y] == 0) ? 1 : 0;
             }
         }
-
     }
 
     /// <summary>
@@ -406,11 +560,11 @@ public class IslandGenerator : MonoBehaviour {
         //good looking maps for island generation (64*64 was way better). This is
         //why the map is shrunk initially so we can get better results with CA and
         //then rescaled to fit the original map.
-        ScaleMap(height, width, map);
+        ScaleMap (height, width, map);
 
         while (scaledHeight < height * scaleHeightMultip)
         {
-            ScaleMap(scaledHeight, scaledWidth, mapx2);
+            ScaleMap (scaledHeight, scaledWidth, mapx2);
         }
 
         //Find Edges for the heightmap
@@ -422,16 +576,19 @@ public class IslandGenerator : MonoBehaviour {
         {
             for (int y = 0; y < scaledHeight; y++)
             {
-                if (mapx2[x, y] == 1)
-                    heights[x, y] = 0.1f;
-                if (mapx2[x, y] == 0)
-                    heights[x, y] = 0.0f;
+                if (mapx2[x, y] == 1) heights[x, y] = 0.1f;
+                if (mapx2[x, y] == 0) heights[x, y] = 0.0f;
             }
         }
 
         terrain.terrainData.SetHeights(0, 0, heights);
-        heights2 = terrain.terrainData.GetHeights(0, 0, terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution);
-
+        heights2 =
+            terrain
+                .terrainData
+                .GetHeights(0,
+                0,
+                terrain.terrainData.heightmapResolution,
+                terrain.terrainData.heightmapResolution);
     }
 
     /// <summary>
@@ -439,14 +596,13 @@ public class IslandGenerator : MonoBehaviour {
     /// </summary>
     public void CalculateShores()
     {
-        terrain = GetComponent<Terrain>();
-
+        //terrain = GetComponent<Terrain>();
         terrainreso = terrain.terrainData.heightmapResolution;
 
         //Depending on the resolution, we need to change the maximum radius (for shore steepness) accordingly.
         //Radius is tested while resolution is 513, so then it works on it's own, but if the resolution is higher,
         //then radius needs to be bigger too and vice versa
-        maxRadius2 = (int)(maxRadius * (((float)terrainreso - 1.0f) / 512.0f));
+        maxRadius2 = (int)(maxRadius * (((float) terrainreso - 1.0f) / 512.0f));
 
         gridSize = scaledHeight * scaledWidth;
         calculatedPixels = 0;
@@ -465,9 +621,15 @@ public class IslandGenerator : MonoBehaviour {
     /// </summary>
     public void SmoothShores()
     {
-        terrain = GetComponent<Terrain>();
+        //terrain = GetComponent<Terrain>();
         terrain.terrainData.SetHeights(0, 0, heights);
-        heights2 = terrain.terrainData.GetHeights(0, 0, terrain.terrainData.heightmapResolution, terrain.terrainData.heightmapResolution);
+        heights2 =
+            terrain
+                .terrainData
+                .GetHeights(0,
+                0,
+                terrain.terrainData.heightmapResolution,
+                terrain.terrainData.heightmapResolution);
     }
 
     /// <summary>
@@ -506,8 +668,9 @@ public class IslandGenerator : MonoBehaviour {
             seed = DateTime.Now.GetHashCode().ToString();
         }
 
-        if (seed == null)
-            seed = "0";
+        if (seed == null) seed = "0";
+
+        randomFillPercent = 60;
 
         System.Random pseudoRandom = new System.Random(seed.GetHashCode());
 
@@ -515,13 +678,29 @@ public class IslandGenerator : MonoBehaviour {
         {
             for (int y = 0; y < height; y++)
             {
-                if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
+                //map[x,y] = 0;
+                // 50 - 49 = 1 /50 = low
+                // 50 - 40 = 10 / 50 = low
+                // 50 - 1 = 49 / 50 = hitg
+                // favor island in the center
+                int closeToCenterX =
+                    ((width / 2) - Mathf.Abs(x - (width / 2)) / (width / 2));
+                int closeToCenterY =
+                    ((height / 2) - Mathf.Abs(y - (height / 2)) / (height / 2));
+
+                int closeToCenterScore =
+                    (int)((float)(closeToCenterX + closeToCenterY / 2) * 0.25f);
+
+                int threshold = randomFillPercent - closeToCenterScore;
+
+                if (x <= 6 || x >= width - 7 || y <= 6 || y >= height - 7)
                 {
                     map[x, y] = 1;
                 }
                 else
                 {
-                    map[x, y] = (pseudoRandom.Next(0, 100) < randomFillPercent) ? 1 : 0;
+                    //map[x,y] = 0;
+                    map[x, y] = (pseudoRandom.Next(0, 100) < threshold) ? 1 : 0;
                 }
             }
         }
@@ -541,9 +720,7 @@ public class IslandGenerator : MonoBehaviour {
 
                 if (neighborWallTiles > neighboringWalls)
                     map[x, y] = 1;
-                else if (neighborWallTiles < neighboringWalls)
-                    map[x, y] = 0;
-
+                else if (neighborWallTiles < neighboringWalls) map[x, y] = 0;
             }
         }
     }
@@ -558,27 +735,31 @@ public class IslandGenerator : MonoBehaviour {
     /// <returns>How many neighbouring walls that pixel has</returns>
     int GetSurroundingWallCount(int gridX, int gridY)
     {
-		int wallCount = 0;
+        int wallCount = 0;
 
-		for (int neighborX = gridX - 1; neighborX <= gridX + 1; neighborX ++)
+        for (int neighborX = gridX - 1; neighborX <= gridX + 1; neighborX++)
         {
-			for (int neighborY = gridY - 1; neighborY <= gridY + 1; neighborY ++)
+            for (int neighborY = gridY - 1; neighborY <= gridY + 1; neighborY++)
             {
-				if (neighborX >= 0 && neighborX < width && neighborY >= 0 && neighborY < height)
+                if (
+                    neighborX >= 0 &&
+                    neighborX < width &&
+                    neighborY >= 0 &&
+                    neighborY < height
+                )
                 {
-					if (neighborX != gridX || neighborY != gridY)
+                    if (neighborX != gridX || neighborY != gridY)
                     {
-						wallCount += map[neighborX,neighborY];
-					}
-				}
-
-				else
+                        wallCount += map[neighborX, neighborY];
+                    }
+                }
+                else
                 {
-					wallCount ++;
-				}
-			}
-		}
+                    wallCount++;
+                }
+            }
+        }
 
-		return wallCount;
-	}
+        return wallCount;
+    }
 }
