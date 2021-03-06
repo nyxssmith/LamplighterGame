@@ -15,6 +15,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading;
 using UnityEngine;
+using UnityEngine.AI;
+
 
 //This adds the script to the component menu for easy access.
 [AddComponentMenu("Island Generator/Island Generator")]
@@ -106,6 +108,10 @@ public class IslandGenerator : MonoBehaviour
     void Awake()
     {
         //terrain = GetComponent<Terrain>();
+
+        // bake navmesh
+        NavMeshSurface nm = GameObject.FindObjectOfType<NavMeshSurface>();
+        nm.BuildNavMesh();
     }
 
     /// <summary>
@@ -170,6 +176,11 @@ public class IslandGenerator : MonoBehaviour
 
         // TODO check that island is in the middle
         DoIsland();
+
+
+        // bake navmesh
+        NavMeshSurface nm = GameObject.FindObjectOfType<NavMeshSurface>();
+        nm.BuildNavMesh();
     }
 
     public void DoIsland()
