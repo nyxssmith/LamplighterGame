@@ -54,7 +54,17 @@ public class TownController : MonoBehaviour
 
     private bool playerInTown = false;
 
+    private bool doneInit = false;
+
     public void Start()
+    {
+        if (!doneInit)
+        {
+            DoInit();
+        }
+    }
+
+    public void DoInit()
     {
         TownTransform = gameObject.GetComponent<Transform>();
 
@@ -67,6 +77,8 @@ public class TownController : MonoBehaviour
 
         // init set range
         SetTownRange (range);
+
+        doneInit = true;
     }
 
     public void Update()
@@ -185,7 +197,6 @@ public class TownController : MonoBehaviour
                 building.SetHasDoneWork(false);
             }
         }
-
 
         UpdatePlayerUIIfPlayerIsPresentInTown();
     }

@@ -13,9 +13,10 @@ public class BuildingController : MonoBehaviour
     private string ownerUUID = "";
 
     private string UUID = "";
+
     private int buildToolIndex = -1;
 
-    public string Type = ""; // HOME SHOP FARM OBJECT
+    public string Type = ""; // HOME SHOP FARM OBJECT LAMP
 
     private bool HasDoneWork = false;
 
@@ -28,10 +29,19 @@ public class BuildingController : MonoBehaviour
         CharactersWhoInteract = new List<CharacterController>();
 
     //private float OverlapSize;
-
     private TownController Town;
 
+    private bool doneInit = false;
+
     public void Start()
+    {
+        if (!doneInit)
+        {
+            DoInit();
+        }
+    }
+
+    public void DoInit()
     {
         BuildingTransform = gameObject.GetComponent<Transform>();
 
@@ -44,6 +54,7 @@ public class BuildingController : MonoBehaviour
         //    MerchantSpot = BuildingTransform.transform.Find("MerchantSpot");
         //    Debug.Log("found merchant spot"+MerchantSpot);
         //}
+        doneInit = true;
     }
 
     public void Update()
@@ -150,7 +161,6 @@ public class BuildingController : MonoBehaviour
     {
         Type = newType;
     }
-    
 
     public string GetOwner()
     {
@@ -168,7 +178,8 @@ public class BuildingController : MonoBehaviour
         return UUID;
     }
 
-    public void SetUUID(string newUUID){
+    public void SetUUID(string newUUID)
+    {
         UUID = newUUID;
     }
 
@@ -244,7 +255,7 @@ public class BuildingController : MonoBehaviour
         if (Town != null)
         {
             Town.DoTownUpdate();
-            Town.UpdatePlayerUIIfPlayerIsPresentInTown();   
+            Town.UpdatePlayerUIIfPlayerIsPresentInTown();
         }
 
         CharactersWhoInteract.Add (CharatcerToAssociate);
@@ -255,20 +266,24 @@ public class BuildingController : MonoBehaviour
     {
         Town = newTown;
     }
-    public TownController GetTown(){
+
+    public TownController GetTown()
+    {
         return Town;
     }
 
-
-    public List<CharacterController> GetCharactersWhoInteract(){
+    public List<CharacterController> GetCharactersWhoInteract()
+    {
         return CharactersWhoInteract;
     }
 
-    public void SetBuildToolIndex(int index){
+    public void SetBuildToolIndex(int index)
+    {
         buildToolIndex = index;
     }
 
-    public int GetBuildToolIndex(){
+    public int GetBuildToolIndex()
+    {
         return buildToolIndex;
     }
 }

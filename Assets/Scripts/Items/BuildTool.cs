@@ -504,7 +504,7 @@ public class BuildTool : MonoBehaviour
         {
             overlapDistance = 10.0f;
         }
-        else if (Type == "OBJECT")
+        else if (Type == "OBJECT" || Type == "LAMP")
         {
             // objects are allowed to overlap
             overlapDistance = 0.0f;
