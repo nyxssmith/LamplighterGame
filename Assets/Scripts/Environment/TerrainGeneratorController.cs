@@ -93,9 +93,39 @@ public class TerrainGeneratorController : MonoBehaviour
             Debug.Log("made town " + succeeded.ToString());
         }
 
-        // todo do roads between towns
-        // first make a terrain painter thing
+        // generates road network of just lampposts
         GenerateRoadsBetweenTowns();
+
+        // next generate all buildings for each town
+        // TODO update build tool with all buildings and use that to spawn buildings in the towns
+
+        // once all buildings are made, use build tool to summon people by building the people summoners
+        // TODO update buildtool with summoners
+        // each building in a town gets a person
+        // each town gets a mayor (set one as the player)
+
+
+        // random populate island with trees and folliage / must be on navmesh
+
+        // for each buildingcontroller and town, rm all folliage in range
+
+
+        // TODO base this on a cube that paints the terrain near it with sand/grass/road
+
+        // paint the terrain
+        // paint all sand, then paint all grass on island as long as not to close to the edge of navmesh
+        // all area with grass also do foliage
+        // this can be done in a grid pattern, maybe multithread it
+        
+        // let world run for 1 second to init all characters
+
+        // add painters to each character in the world
+        // add foliage rm to all characters so they remove all stuff on the roads and in the way
+        // each painter paints road
+        
+        // simulate the world for 2 days to make the road network and towns stuff and clear area
+
+
     }
 
     private bool GenerateTown(int attempt)
