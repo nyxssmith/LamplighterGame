@@ -28,9 +28,9 @@ public class TerrainGeneratorController : MonoBehaviour
     public int num_towns = 5;
 
     //TODO split town and road apart so roads can be bigger
-    private int max_attempts_to_make_town_or_road = 500;
+    private int max_attempts_to_make_town_or_road = 1000;
 
-    private float DistanceBetweenLampPosts = 10.0f;
+    private float DistanceBetweenLampPosts = 25.0f;
 
     private IslandGenerator generator = new IslandGenerator();
 
@@ -357,7 +357,6 @@ public class TerrainGeneratorController : MonoBehaviour
             return false;
         }
 
-        // TODO reenable the pick road vs town as destination after fixing pathfinding
         // look within 50m for any building controller that is a lamppost, if its closer than positionB then set positionB to it
         BuildingController otherRoad =
             GetLamppostFromOtherRoadIfCloser(positionA,
@@ -380,6 +379,20 @@ public class TerrainGeneratorController : MonoBehaviour
             // set the road network just generated
             roadNetworkJustGenerated = lampsInRoadSegment;
 
+            // make last generated lamppost face destination
+            if (isolatedRoadNetworkJustGenerated.Count > 1)
+            {
+                Transform lastPost =
+                    isolatedRoadNetworkJustGenerated[isolatedRoadNetworkJustGenerated
+                        .Count -
+                    1].transform;
+                lastPost.rotation =
+                    Quaternion
+                        .Slerp(lastPost.rotation,
+                        Quaternion.LookRotation(positionB - lastPost.position),
+                        1.0f);
+            }
+
             // wipe the isolated run
             isolatedRoadNetworkJustGenerated = new List<BuildingController>();
 
@@ -389,11 +402,17 @@ public class TerrainGeneratorController : MonoBehaviour
         // make new pos for lamppost to go with a varience for random
         Vector3 newPos = MakeNewLampPostPositionTwo(positionA, positionB);
 
-
-        if(newPos == positionA){
+        // TODO debug this and make sure it triggres sooner
+        if (newPos == positionA)
+        {
+            Debug.Log("giving up on making road, cant make any new positions");
             // if the position didnt change, say we are out of attempts
-            return GenerateRoadBetweenTwoPoints(positionA,positionB,max_attempts_to_make_town_or_road+attempt,lampsInRoadSegment);
+            return GenerateRoadBetweenTwoPoints(positionA,
+            positionB,
+            max_attempts_to_make_town_or_road + attempt,
+            lampsInRoadSegment);
         }
+
         /*
         // check if pos is good with range of 10
         bool canContinueRoadThere = PosChecks.CheckPosIsSafe(10.0f, newPos);
@@ -410,28 +429,59 @@ public class TerrainGeneratorController : MonoBehaviour
             // if not, return false
         }
         */
+        // TODO
+        // check that we are not too close to another road, if so, skip generating this lamppost but consider road merged
+        // get any lamppost/road within distance that is not from this generation
+        otherRoad =
+            GetLamppostFromOtherRoadIfCloser(positionA,
+            (DistanceBetweenLampPosts/4.0f )*3.0f,
+            isolatedRoadNetworkJustGenerated);
 
-        // summon lamppost at new position
-        GameObject LampPostObject =
-            Instantiate(LamppostPrefab, newPos, Quaternion.identity);
-        BuildingController lampPostController =
-            LampPostObject.GetComponent<BuildingController>();
+        // if there isnt any lamppost from another road within range, generate one
+        if (otherRoad == null)
+        {
+            // summon lamppost at new position
+            GameObject LampPostObject =
+                Instantiate(LamppostPrefab, newPos, Quaternion.identity);
+            BuildingController lampPostController =
+                LampPostObject.GetComponent<BuildingController>();
 
-        lampPostController.DoInit(); // assign uuid
-        lampsInRoadSegment.Add (lampPostController);
+            // make prev lamppost face the new one
+            if (isolatedRoadNetworkJustGenerated.Count > 1)
+            {
+                Transform lastPost =
+                    isolatedRoadNetworkJustGenerated[isolatedRoadNetworkJustGenerated
+                        .Count -
+                    1].transform;
+                lastPost.rotation =
+                    Quaternion
+                        .Slerp(lastPost.rotation,
+                        Quaternion
+                            .LookRotation(lampPostController
+                                .transform
+                                .position -
+                            lastPost.position),
+                        1.0f);
+            }
 
-        // add to the isolated road network
-        isolatedRoadNetworkJustGenerated.Add (lampPostController);
+            lampPostController.DoInit(); // assign uuid
+            lampsInRoadSegment.Add (lampPostController);
 
-        // TODO rm variance
-        // reset variance to default in case it was not
-        variance = defaultVariance;
+            // add to the isolated road network
+            isolatedRoadNetworkJustGenerated.Add (lampPostController);
+
+            // TODO rm variance
+            // reset variance to default in case it was not
+            variance = defaultVariance;
+        }
 
         return GenerateRoadBetweenTwoPoints(newPos,
         positionB,
-        attempt+1,
+        attempt + 1,
         lampsInRoadSegment);
     }
+
+    // TODO rm this
 
     private Vector3
     MakeNewLampPostPosition(Vector3 startPosition, Vector3 TargetPosition)
@@ -528,12 +578,130 @@ public class TerrainGeneratorController : MonoBehaviour
         // make the list of indexes that order is prefered
         List<int> preferedIndexOrder = new List<int>();
 
-        // TODO make a way to prefer diagonal
+        float diff = Math.Abs(Math.Abs(heading.z) - Math.Abs(heading.x));
 
-        if (Math.Abs(heading.z) < Math.Abs(heading.x))
+        /*
+        Debug
+            .Log("heading z, x" +
+            Math.Abs(heading.z).ToString() +
+            "  " +
+            Math.Abs(heading.x).ToString() +
+            " diff " +
+            diff.ToString());
+        */
+        // if diff < 20 then prefer diagonal
+        if (
+            diff <= 20.0f // if diff greater than 20 then pick up or down
+        )
+        {
+            // add the prefered diagonal
+            // if going up/down via y axis on 2d plane
+            if (heading.x < 0.0f)
+            {
+                // diagonal is down
+                if (heading.z < 0.0f)
+                {
+                    // diagonal is left
+                    preferedIndexOrder.Add(7);
+                }
+                else
+                {
+                    // diagonal right
+                    preferedIndexOrder.Add(5);
+                }
+            }
+            else
+            {
+                // diagonal is up
+                if (heading.z < 0.0f)
+                {
+                    // diagonal is left
+                    preferedIndexOrder.Add(6);
+                }
+                else
+                {
+                    // diagonal right
+                    preferedIndexOrder.Add(4);
+                }
+            }
+
+            // add the up and downs in prefered order
+            if (Math.Abs(heading.z) < Math.Abs(heading.x))
+            {
+                // if up/down is prefered
+                // if going up/down via y axis on 2d plane
+                if (heading.x < 0.0f)
+                {
+                    // prefer is down
+                    preferedIndexOrder.Add(1);
+                    if (heading.z < 0.0f)
+                    {
+                        // prefer is left
+                        preferedIndexOrder.Add(3);
+                    }
+                    else
+                    {
+                        // prefer right
+                        preferedIndexOrder.Add(2);
+                    }
+                }
+                else
+                {
+                    //prefer is up
+                    preferedIndexOrder.Add(0);
+
+                    if (heading.z < 0.0f)
+                    {
+                        // prefer is left
+                        preferedIndexOrder.Add(3);
+                    }
+                    else
+                    {
+                        // prefer right
+                        preferedIndexOrder.Add(2);
+                    }
+                }
+            }
+            else
+            {
+                // if left/right is prefered
+                if (heading.z < 0.0f)
+                {
+                    // prefer is left
+                    preferedIndexOrder.Add(3);
+                    if (heading.x < 0.0f)
+                    {
+                        // prefer is down
+                        preferedIndexOrder.Add(1);
+                    }
+                    else
+                    {
+                        // prefer up
+                        preferedIndexOrder.Add(0);
+                    }
+                }
+                else
+                {
+                    //prefer is right
+                    preferedIndexOrder.Add(2);
+                    if (heading.x < 0.0f)
+                    {
+                        // prefer is down
+                        preferedIndexOrder.Add(1);
+                    }
+                    else
+                    {
+                        // prefer up
+                        preferedIndexOrder.Add(0);
+                    }
+                }
+            }
+        }
+        else if (
+            Math.Abs(heading.z) < Math.Abs(heading.x) // if diff greater than 20 then pick up or down
+        )
         {
             // if going up/down via y axis on 2d plane
-
             if (heading.x < 0.0f)
             {
                 // if want to go down
@@ -636,40 +804,43 @@ public class TerrainGeneratorController : MonoBehaviour
         // if direction to go is up, it has up, then up/right/left x2 for prefered r/l 1st
         // in a while loop where the range to edge of map starts at 10 then goes down to 1 as options dwindle
         // for each index in the pref indexes, check point is safe, if so return it, if not, then try next
-
-        float preferedDistanceFromEdge = 10.0f;
+        float preferedDistanceFromEdge = 25.0f;
         int selectedIndex = -1;
-        while(preferedDistanceFromEdge >= 1.0f){
-            
+        while (preferedDistanceFromEdge >= 1.0f)
+        {
             bool foundPos = false;
 
-            foreach(int index in preferedIndexOrder){
+            foreach (int index in preferedIndexOrder)
+            {
                 // check all the indexes in prefered order that they are safe
-                foundPos = PosChecks.CheckPosIsSafe(preferedDistanceFromEdge,newPosOptions[index]);
-                if(foundPos){
+                foundPos =
+                    PosChecks
+                        .CheckPosIsSafe(preferedDistanceFromEdge,
+                        newPosOptions[index]);
+                if (foundPos)
+                {
                     selectedIndex = index;
                     break;
                 }
             }
-            if(foundPos){
+            if (foundPos)
+            {
                 break;
             }
-            
 
             // subtract 1 from the distance to edge preference
             preferedDistanceFromEdge = preferedDistanceFromEdge - 1.0f;
-
         }
 
         // if found a position, use that
-        if(selectedIndex != -1){
+        if (selectedIndex != -1)
+        {
             return newPosOptions[selectedIndex];
         }
 
         // if cant decide/ all are bad, stay same place and run out of attempts
         return startPosition;
     }
-
 
     private List<TownController>
     GetListOfOtherTownsOrderedByCloseness(
@@ -735,6 +906,9 @@ public class TerrainGeneratorController : MonoBehaviour
         List<BuildingController> myNetwork
     )
     {
+        BuildingController controllerToReturn = null; // = new BuildingController();
+        float bestDistance = 999.0f; // set best to be really high
+
         Collider[] hitColliders =
             Physics.OverlapSphere(currentPosition, rangeToLook);
         foreach (var hitCollider in hitColliders)
@@ -747,13 +921,31 @@ public class TerrainGeneratorController : MonoBehaviour
                 {
                     if (!myNetwork.Contains(controller))
                     {
-                        return controller;
+                        // found a road we can attach to, next see set best distance and
+
+                        float distanceToPost =
+                            Vector3
+                                .Distance(currentPosition,
+                                controller.transform.position);
+                        if (distanceToPost < bestDistance)
+                        {
+                            bestDistance = distanceToPost;
+                            controllerToReturn = controller;
+                        }
                     }
                 }
             }
         }
 
-        return null;
+        // if found a road, use that, else return null
+        if (bestDistance >= 1000.0f)
+        {
+            return null;
+        }
+        else
+        {
+            return controllerToReturn;
+        }
     }
 }
 
