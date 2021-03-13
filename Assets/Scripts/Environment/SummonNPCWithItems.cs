@@ -30,6 +30,7 @@ public class SummonNPCWithItems : MonoBehaviour
 
     public void Update()
     {
+        
     }
 
     public void Summon()

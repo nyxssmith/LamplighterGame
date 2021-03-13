@@ -52,6 +52,78 @@ public class BuildTool : MonoBehaviour
 
     public GameObject Prefab10;
 
+    // building prefabs
+    public GameObject HousePrefab1;
+
+    public GameObject HousePrefab2;
+
+    public GameObject HousePrefab3;
+
+    public GameObject HousePrefab4;
+
+    public GameObject HousePrefab5;
+
+    public GameObject HousePrefab6;
+
+    public GameObject FarmPrefab;
+
+    public GameObject ShopPrefab1;
+
+    public GameObject ShopPrefab2;
+
+    public GameObject ShopPrefab3;
+
+    public GameObject BlacksmithPrefab;
+
+    public GameObject LumbermillPrefab;
+
+    public GameObject AlchemistPrefab;
+
+    public GameObject MinePrefab;
+
+    public GameObject LamplighterHousePrefab;
+
+    public GameObject GuardpostPrefab;
+
+    public GameObject ChurchPrefab;
+
+    public GameObject DocksPrefab;
+
+    public GameObject LamppostPrefab;
+
+    // objects prefabs
+    public GameObject WallPrefab;
+
+    public GameObject FencePrefab;
+
+    public GameObject TowerPrefab;
+
+    public GameObject WellPrefab;
+
+    // summoners
+    public GameObject SummonMayorPrefab;
+
+    public GameObject SummonFarmerPrefab;
+
+    public GameObject SummonWoodcutterPrefab;
+
+    public GameObject SummonBlacksmithPrefab;
+
+    public GameObject SummonMinerPrefab;
+
+    public GameObject SummonGuardPrefab;
+
+    public GameObject SummonShopkeeperPrefab;
+
+    public GameObject SummonTraderPrefab;
+
+    public GameObject SummonBanditPrefab;
+
+    public GameObject SummonLamplighterPrefab;
+
+    public GameObject SummonAlchemistPrefab;
+
+    // TODO foliage prefabs
     private List<GameObject> BuildObjects = new List<GameObject>();
 
     public int Index = 0;
@@ -101,6 +173,8 @@ public class BuildTool : MonoBehaviour
 
     private TownController Town;
 
+    public bool NeedsResourceReduction = true;
+
     // TODO resource costs per material
     void Start()
     {
@@ -118,6 +192,8 @@ public class BuildTool : MonoBehaviour
         // buildojects 0 is null
         // add each prefab to list
         BuildObjects.Add(null);
+
+        /*
         BuildObjects.Add (Prefab1);
         BuildObjects.Add (Prefab2);
         BuildObjects.Add (Prefab3);
@@ -128,6 +204,92 @@ public class BuildTool : MonoBehaviour
         BuildObjects.Add (Prefab8);
         BuildObjects.Add (Prefab9);
         BuildObjects.Add (Prefab10);
+        */
+        BuildObjects.Add (HousePrefab1);
+        BuildObjects.Add (HousePrefab2);
+        BuildObjects.Add (HousePrefab3);
+        BuildObjects.Add (HousePrefab4);
+        BuildObjects.Add (HousePrefab5);
+        BuildObjects.Add (HousePrefab6);
+        BuildObjects.Add (FarmPrefab);
+        BuildObjects.Add (ShopPrefab1);
+        BuildObjects.Add (ShopPrefab2);
+        BuildObjects.Add (ShopPrefab3);
+        BuildObjects.Add (BlacksmithPrefab);
+        BuildObjects.Add (LumbermillPrefab);
+        BuildObjects.Add (AlchemistPrefab);
+        BuildObjects.Add (MinePrefab);
+        BuildObjects.Add (LamplighterHousePrefab);
+        BuildObjects.Add (GuardpostPrefab);
+        BuildObjects.Add (ChurchPrefab);
+        BuildObjects.Add (DocksPrefab);
+        BuildObjects.Add (LamppostPrefab);
+        BuildObjects.Add (WallPrefab);
+        BuildObjects.Add (FencePrefab);
+        BuildObjects.Add (TowerPrefab);
+        BuildObjects.Add (WellPrefab);
+        BuildObjects.Add (SummonMayorPrefab);
+        BuildObjects.Add (SummonFarmerPrefab);
+        BuildObjects.Add (SummonWoodcutterPrefab);
+        BuildObjects.Add (SummonBlacksmithPrefab);
+        BuildObjects.Add (SummonMinerPrefab);
+        BuildObjects.Add (SummonGuardPrefab);
+        BuildObjects.Add (SummonShopkeeperPrefab);
+        BuildObjects.Add (SummonTraderPrefab);
+        BuildObjects.Add (SummonBanditPrefab);
+        BuildObjects.Add (SummonLamplighterPrefab);
+        BuildObjects.Add (SummonAlchemistPrefab);
+
+        /*
+
+        buildings
+
+        house
+            variants
+            1-6
+        farm
+        shop
+            variants
+            1-3
+        blacksmith
+        lumbermill
+        alchomist
+        mine
+        lamplighter-house
+            varient 7
+            (just a house with a lamppost attached)
+        guardpost
+        church
+        docks? (temp)
+        lamppost
+
+        objects and such
+
+        walls
+        fence
+        tower
+        fountain/well
+
+        summoners
+
+            Mayor
+            Farmer
+            Woodcutter
+            Blacksmith
+            Miner
+            Gaurd
+            Shopkeeper
+            Trader
+            Bandit
+            Lampligher
+            Alchemist
+
+
+        foliage
+        TODO
+        trees?
+
+        */
     }
 
     public void SetCharacter(CharacterController CurrentCharacter)
@@ -462,18 +624,23 @@ public class BuildTool : MonoBehaviour
             BuildingController houseController =
                 house.GetComponent<BuildingController>();
 
-            //subtract resource costs
-            houseController.SetTown (Town);
+            // if its acutally a building gettins summoned
+            // and that it needs to do resource rediction
+            if (houseController != null || !NeedsResourceReduction)
+            {
+                //subtract resource costs
+                houseController.SetTown (Town);
 
-            houseController.SetBuildToolIndex (Index);
+                houseController.SetBuildToolIndex (Index);
 
-            Town.SubtractResourceCostsBuilding (houseController);
-            Town.DoTownUpdate();
+                Town.SubtractResourceCostsBuilding (houseController);
+                Town.DoTownUpdate();
 
-            // update the character
-            Town
-                .UpdateCameraTownUI(Character.gameObject,
-                Town.GenerateTownUIString());
+                // update the character
+                Town
+                    .UpdateCameraTownUI(Character.gameObject,
+                    Town.GenerateTownUIString());
+            }
             Character.SetNeedsUIUpdate(true);
         }
     }
@@ -489,7 +656,26 @@ public class BuildTool : MonoBehaviour
         //set prefab stuff to ghost mode
         //GhostImage.GetComponent<MeshRenderer>().material =
         //    GhostMaterialNotAllowedToPlace;
-        string Type = GhostImage.GetComponent<BuildingController>().GetType();
+        BuildingController GhostImageBuildingController =
+            GhostImage.GetComponent<BuildingController>();
+        string Type;
+
+        // if the prefab isnt a building, assume its a summoner
+        if (GhostImageBuildingController == null)
+        {
+            // skip color changing and space checking, just allow placement
+            lastCanPlace = false;
+            isShowingGhost = true;
+            overlapDistance = 0.0f;
+
+            // disable summoning
+            SummonNPCWithItems summoner =
+                GhostImage.GetComponent<SummonNPCWithItems>();
+            summoner.enabled = false;
+
+            return;
+        }
+        Type = GhostImageBuildingController.GetType();
 
         //Debug.Log (Type);
         if (Type == "HOME")
@@ -504,7 +690,7 @@ public class BuildTool : MonoBehaviour
         {
             overlapDistance = 10.0f;
         }
-        else if (Type == "OBJECT" || Type == "LAMP")
+        else if (Type == "OBJECT" || Type == "LAMP" || Type == "SUMMONER")
         {
             // objects are allowed to overlap
             overlapDistance = 0.0f;
@@ -515,7 +701,7 @@ public class BuildTool : MonoBehaviour
             overlapDistance = 1.0f;
         }
 
-        GhostImage.GetComponent<BuildingController>().enabled = false;
+        GhostImageBuildingController.enabled = false;
 
         // disable all collision
         foreach (Collider c in GhostImage.GetComponents<Collider>())
@@ -610,27 +796,47 @@ public class BuildTool : MonoBehaviour
         canPlace = false;
         reasonCantPlace = "\n";
 
+        // if its a summoner, canplace = true, adn return
+        SummonNPCWithItems summoner =
+            GhostImage.GetComponent<SummonNPCWithItems>();
+        if (summoner != null)
+        {
+            canPlace = true;
+            return;
+        }
+
         //get town controller, if null then not allowed
         // if in town do a "get can place" from town
         //check within 5m of center to be in a towm
+        // TODO make this also false when doing island generattion
+        bool needsToCheckTown = true;
+        if (GhostImage.GetComponent<BuildingController>() == null)
+        {
+            needsToCheckTown = false;
+        }
+
         Collider[] hitColliders =
             Physics.OverlapSphere(GhostImage.transform.position, 1.0f);
-        foreach (var hitCollider in hitColliders)
+        if (needsToCheckTown)
         {
-            TownController controller =
-                hitCollider.gameObject.GetComponent<TownController>();
+            foreach (var hitCollider in hitColliders)
+            {
+                TownController controller =
+                    hitCollider.gameObject.GetComponent<TownController>();
 
-            if (controller != null)
-            {
-                canPlace =
-                    controller
-                        .GetAllowedToPlaceBuilding(GhostImage
-                            .GetComponent<BuildingController>());
-                Town = controller; // update the current town controller
-            }
-            else
-            {
-                reasonCantPlace = "Buildings can only be placed in a town\n";
+                if (controller != null)
+                {
+                    canPlace =
+                        controller
+                            .GetAllowedToPlaceBuilding(GhostImage
+                                .GetComponent<BuildingController>());
+                    Town = controller; // update the current town controller
+                }
+                else
+                {
+                    reasonCantPlace =
+                        "Buildings can only be placed in a town\n";
+                }
             }
         }
 

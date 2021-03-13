@@ -98,6 +98,45 @@ public class TerrainGeneratorController : MonoBehaviour
 
         // next generate all buildings for each town
         // TODO update build tool with all buildings and use that to spawn buildings in the towns
+        /*
+        Town generation
+
+        nodes = a point that generates buildings around it all face that point
+
+        things that can generate off a node
+        any building
+        other nodes if enabled
+            other nodes = road to other node generates
+        
+        each item in node is pick a random point, use that point to get heading, find point on heading direction that is n distance from center (n = input width)
+        if that point is OK to summon building, then do it, if not, try 5 times total before double n for another row around
+
+        TODO change road between points into generate_object between points
+        that way spacing can be done and any object can be used, this can be used to generate roads that npcs walk on and paint terrain without simulation
+
+
+        2 town types
+        node
+            single large node with many layers
+
+        burrows
+            node can have n houses but must have 2 other nodes
+
+
+        town quantities decided at start
+        each town market is always start node
+
+        generates nodes until either trys runs out or town is generated
+
+        will always generate resources like mines, farms and lumber
+
+        if houses missing, then sucks for them
+
+
+
+        */
+
+
 
         // once all buildings are made, use build tool to summon people by building the people summoners
         // TODO update buildtool with summoners

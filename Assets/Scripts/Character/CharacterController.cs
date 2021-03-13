@@ -1191,7 +1191,7 @@ public class CharacterController : MonoBehaviour
 
     private bool CheckIfTargetIsDead()
     {
-        MakeSpeechBubble("did he die?");
+        //MakeSpeechBubble("did he die?");
         if (
             CombatTarget == null ||
             CombatTarget.gameObject == null ||
