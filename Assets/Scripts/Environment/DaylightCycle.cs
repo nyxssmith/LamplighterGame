@@ -16,9 +16,9 @@ public class DaylightCycle : MonoBehaviour
 
     private float DegreesPerTimeIncrement = 0.1f;
 
-    private float SecondsBetweenTimeIncrementsDay = 0.166666f;
+    private float SecondsBetweenTimeIncrementsDay = 0.016666f;
 
-    private float SecondsBetweenTimeIncrementsNight = 0.16666f;
+    private float SecondsBetweenTimeIncrementsNight = 0.09666f;
 
     private float SecondsSinceLastTimeIncrement = 0.0f;
 

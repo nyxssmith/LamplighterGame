@@ -704,6 +704,13 @@ public class CharacterController : MonoBehaviour
             else if (LastTask == "FARM")
             {
                 CurrentTask = "WANDERPOINT";
+
+                // set wanderpoint center to farm center
+                BuildingController myFarm = GetBuildingControllerOfType("FARM");
+                if (myFarm != null)
+                {
+                    WanderPointCenter = myFarm.transform.position;
+                }
             }
             else
             {
