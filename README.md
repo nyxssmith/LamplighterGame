@@ -25,207 +25,145 @@
 
 # Game Layout
 
-Status's
-- `*` means implimented and working
-- resource cost `n` is TBD
+single player, no swap
 
-## Victory Conditions
+each mission/level = start and end point on map, generate road between them
+has squad, 1 member must be lighter with stick, others can do anything
+each has primary, secondard, and artifact items
 
-n can be user set, defaults to 5
+difficulty done by length of map and complexity of missions
 
-must get n points to win
-points can come and go based on world status
+only can save at end of mission, just saves squad character data nothing else
 
-points are calculated at the end of each day or when a vote is called
+each mission rewards gold depending on how they did as well as a fixed ammount for upkeep depending on difficulty (less = harder)
 
+## squad
 
-town having 3+ greater population than all other towns = 1 pt
- - towns can start with different populations, some migth have an advantage to get to this
+squad can be n people
 
-town mayor having ownership of a town (1 point each)
- - game starts with all mayors/players having 1 point
- - can get more points by taking over another town in any way
-     - can be bought out
-     - can be fighted out
-     - can be churched out (negotiate and put church in town)
-     - can be a trade partner and vote on which mayor is main one
+can equip each member at the start of each mission
+can buy new members at end of each mission
+each member has an upkeep fee to remain as part of squad
 
-town is voted as current capitol of the island = 1pt
- - determined by town "score" which is made up of wealth and population and size
- - every x days a town can pay to call a vote, this then picks the capitol (they can loose the vote)
+if any member is attacked they will fight back no matter what the mode is
 
-town has 1 of all possible buildings built and worked in it = 1pt
- - if town is on water, must have a dock
- - if town is by mines, all mines must be worked
- - must have alchemist
- - must have blacksmith
- - must have shop
- - must have houses
- - must have shops
-
-town has trade route with 2 other towns = 1pt each
- - if town a has route with b,c to get next point, must have routes with d,e
- - some towns can start with a trade route as an advantage
-
-town has monument built 1 point each
- - monument is super expensive building that buffs all townsfolk in an area
-
-town has most of a stat of all towns (1 point per two stats met) (.5 point per stat met, but 2.5 is rounded down to 2 points given)
- - most mana in the world and magic buildings (floating lights built etc)
- - most wealth in world (town has most gold)
- - most ore
- - most metal
- - most wood
- - most farms
+can toggle between 3 squad modes with tab
+ - follow lead: just follow the leader
+ - attack: will attack any enemy on sight
+ - focus attack: will follow and all members will gang up on the players target, ignoring if they are attacked or not, until player target is dead
 
 
+## missions
 
-## Towns
+each starts and ends at lamplighter outpost
 
-Each has its own resource generation and economy
+can be made up of 1 or more objectives
 
-Can set the faction of all its residents when they move in/ generate
+objectives
+ - light road (must light all lamps between points)
+ - defend town (defend either the starting or ending town)
+ - kill target (must kill a certain target in the world, usually along the road)
+ - escort (must do mission with also a random person in party who doesnt fight)
+ 
+ if light road isnt an objective (90% chance it is) then the road starts pre-lit
+ 
+ 
 
-### Professions
+## map gen
 
-- Mayor
-  - is the player or npc owns a town, if dies title passes to another townsperson
-  - wanders the town center and is the leader to talk to
-- Farmer
-  - Mans farms
-- Woodcutter
-  - chops trees
-  - works lumbermill
-- Blacksmith
-  - Works blacksmith
-- Miner
-  - Works mines
-- Gaurd
-  - Gaurds Posts
-  - Gaurds Traders
-- Shopkeeper
-  - Works shops
-- Trader
-  - Goes on trade routes
-- Bandit
-  - Bandits shit
-- Lampligher
-  - Lights roads
-- Alchemist
-  - Works alchemist
+map is premade terrain with rocks and trees and lakes etc
 
-### Building List
+each level picks 1 point on the map to start
+(depending on difficulty distnance to end is changed)
+then a random point for end is picked, it must be n distance from start (if fails after 5 times, pick new start pint)
 
-- House
-  - Ideal state: 1 house per resident
-  - Cannot recruit new people to town unless houses > residents in the town
-  - If house is destroyed, residents will share
-  - Building costs:
-    - wood n
-    - stone n
-    - metal 1
-- Farm
-  - Location for farmers to work
-  - Max 3 farmers per farm
-  - Makes `1.5` food resource per person working the farm, up to max of `3x1.5=4.5`
-  - Food resource is required for a residents work to be done
-    - Residents will still work and act normally, but each needs 1 food per day do do work / work to be turned into resources at end of day
-    - Farms get priority for food resource > resources made conversion, then calculated for other buildings
-    - Farms cost 1 food to run, but if food = 0 they will still run
-  - Building costs:
-    - wood n
-- Shop
-  - Location for Shopkeepers to work
-  - Makes money resource for the town per shop that is open
-  - Can buy town resources at shop for trade route
-  - Max 1 trade route per shop 
-  - Generates up to 3 items depending on other buildings in town (if they are worked)
-    - Sells potions if potion maker in town 
-    - Sells weapons if blacksmith in town
-    - Sells magic items if both alchmist and blacksmith in town
-  - Building costs:
-    - wood n
-    - metal 1
-- Blacksmith
-  - Refines Ore resource into metal resouce
-  - If worked, allows shops to sell weapons and tools
-  - Building costs:
-    - stone n
-    - metal n
-- Lumbermill
-  - Is worked by lumberjack
-    - Lumberjack will go cut tree, then return to mill to preduce 1 wood unit per day per lumberjack
-  - 2 Lumberjacks can work 1 lumbermill
-  - Building costs:
-    - stone n
-    - wood n
-    - metal n
-- Alchomist
-  - Worked by alchomists
-  - If worked allows shops to sell potions
-  - Building costs:
-    - wood n
-    - stone n
-    - metal 1
-- Mine
-  - Generates Stone and Ore resources
-    - 1:.25 ratio of stone to ore
-    - only 1 is produced per work unit, with 75% being stone, 25% being ore
-  - N miners can work the mine
-    - Each miner working generates 1 unit of work
-  - Has chance to injure miners per day
-  - Building costs:
-    - N/A cannot be built, all mines will be premade
-- Warehouse (might skip it)
-  - Controlls the amount of each resource that at town can store
-  - Wood and food excess decay over time
-  - More can be built to increase town storage
-    - resource decay always the same
-    - only needs to be built more when generation is high enough
-  - Building costs:
-    - Wood n
-    - Stone n
-- Lamplighter House
-  - Same building as house, but is home of existing lamplighters, spawns a new one if their owner is killed
-  - Ambient building
-  - Building costs:
-    - N/A All will be preplaced and cannot be deleted, as they are owned by lamplighters
-- Guard Post
-  - Location that Guards can be assigned to
-  - When assigned they will wait there and be on lookout for enemies
-  - Building costs:
-    - wood n
-- Fences and Walls
-  - Are barriers that cost wood to build
-  - Can be burnt down by bandit raids (walls harder to do so)
-- Docks
-  - New characters arrive at docks and either go on thier own quests or join villages
-  - source of new residents
-  - Building costs TBD if allowed to be built
-- Church
-  - can be visited to replenish mana
-  - Building costs:
-    - Wood n
+then a road is generated between the 2 points (if failed, pick new points)
 
+the road then clears the terrain around it
 
-# TODO LIST
+start and end each generate a premade town
+ - town gate only open if its a defend town
 
-`*` = started
+## Items
 
-- better dialog and HUD (add background to text)
-- right click to use belt item
-- quests for npcs to do complex tasks
-- split charactercontroller tasks/professions into their own classes
-- Shop dialog generation
-- town resources*
-- create all buildings in list
-- split all building types into own classes from main building controller
-- add more items
-- make buildings "unlockable" in build tool instead of all available at start
-- make the controls / key inputs configurable
-- fix bugs with the entering town/switching characters
-- do all TODO in the code
-- raids on towns
-- bandits on roads
-- lampligher jobs based on quests
+no items are ever dropped, can only swap items at start or end, or market
+
+each character has 3 slots, primary and secondary are on body and can be swapped with a key
+if character is lighter their secondary item still exists on them, but cannot be swapped to as ligth stick ont their back
+
+items have a dynamic characteristic system
+ - name: effect on weapon ; effect of artifact
+ - vampiric: life steal on hit ; if hit distributes to others around them 
+ - shielding: invulnerability when lands a hit ;others around them get hit, redirects to them
+ - energizing: increase movement speed on hit; all in zone get movement speed buff
+ - flaming: lights hit on fire ; chance to ignite attacker if hit
+ - chilling; chance to freeze hit; chance to freeze attacker if hit
+ - reaching; longer attack range; all other artifact effects in its zone are increased
+ - strong; more damage of hit; stronger atrifact effect
+ - weak; less damage ; weaker artifact effect
+ - sluggish; slower attack speed; slower movement speed for all in its effect
+ 
+ any weapon or artifact can have an optional effect
+ 
+ ### weapons
+ 
+ sword
+ 
+ axe
+ 
+ bow
+ 
+ magic wand (fireball, ice wave, healing, speed boost, flame blast (lights lamps and sets all on fire))
+ 
+ shield?
+ 
+ ### artifacts
+ 
+ 
+ trinket
+  - just any item but can have effect
+  - doesnt do anything on its own
+  - guarneteed to have an effect
+ 
+ charm of shielding
+   - absorbs damage for holder
+
+charm of healing
+ - slow health regen over time
+ 
+ charm of harming
+  - slow health decay over time
+  - can synergize with other effects to drain enemy health, or just be junk
+ 
+ charm of speed
+   - faster movement speed
+  
+  charm of ranged attacks
+   - increase damage of all range attacks
+
+charm of melee
+ - increase damage of melee attacks
+
+charm of slow time
+ - rare
+ - slows time before taking damage, if moved enough then dont take damage at all
+
+charm of fire
+ - more potent fire effects for user
+
+# TODO list
+
+redo whole game using the charatcer controller animated one from customizable characters
+rm everything and start from scratch
+
+make a good menu/ GUI system
+
+objects:
+ - lamplighter outputs (tagged as end or start) (controller of some sort)
+ - town building (any building in a town, can just be a unity tag)
+ - ambient (all trees/rocks, can be a unity tag)
+ - lamp post (controller)
+
+all AI handed by a seperate object that puts each in its own thread
+
 
