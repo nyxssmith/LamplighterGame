@@ -88,12 +88,14 @@ start and end each generate a premade town
 
 no items are ever dropped, can only swap items at start or end, or market
 
+all items, like sword, trinket etc are subclasses of the item class
+
 each character has 3 slots, primary and secondary are on body and can be swapped with a key
 if character is lighter their secondary item still exists on them, but cannot be swapped to as ligth stick ont their back
 
 items have a dynamic characteristic system
  - name: effect on weapon ; effect of artifact
- - vampiric: life steal on hit ; if hit distributes to others around them 
+ - vampiric: life steal on hit ; any costs or downsides go to others 
  - shielding: invulnerability when lands a hit ;others around them get hit, redirects to them
  - energizing: increase movement speed on hit; all in zone get movement speed buff
  - flaming: lights hit on fire ; chance to ignite attacker if hit
@@ -102,6 +104,10 @@ items have a dynamic characteristic system
  - strong; more damage of hit; stronger atrifact effect
  - weak; less damage ; weaker artifact effect
  - sluggish; slower attack speed; slower movement speed for all in its effect
+ - sharing; hits do a portion of their damage to any enemy in range even if not hit direct; shares artifact effect in radius
+ - giving; damage to enemy is inverted to heal them; effects given to others but not self
+ - costly; lowers potency of item on hit ; makes effect triggering cost mana
+
  
  any weapon or artifact can have an optional effect
  
@@ -111,11 +117,11 @@ items have a dynamic characteristic system
  
  axe
  
- bow
+ bow?
  
  magic wand (fireball, ice wave, healing, speed boost, flame blast (lights lamps and sets all on fire))
  
- shield?
+ shield
  
  ### artifacts
  
@@ -126,7 +132,8 @@ items have a dynamic characteristic system
   - guarneteed to have an effect
  
  charm of shielding
-   - absorbs damage for holder
+   - absorbs % of damage for holder
+   - costs mana to do so
 
 charm of healing
  - slow health regen over time
@@ -137,6 +144,13 @@ charm of healing
  
  charm of speed
    - faster movement speed
+   - this is seperate from energizing characteristic, so energizing charm of speed is 2 stacked speed increases
+  
+  charm of mana regen
+   - mana regen over time
+  
+  charm of mana storage
+   - mana pool larger
   
   charm of ranged attacks
    - increase damage of all range attacks
@@ -147,9 +161,15 @@ charm of melee
 charm of slow time
  - rare
  - slows time before taking damage, if moved enough then dont take damage at all
+ 
 
-charm of fire
- - more potent fire effects for user
+charm of %element%
+ - more potent %element% effects for user
+ - just enhances any element effect of that type like fire
+
+
+charm of %element% infusion
+ - adds %element% damage to weapons
 
 # TODO list
 
