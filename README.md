@@ -37,9 +37,12 @@ only can save at end of mission, just saves squad character data nothing else
 
 each mission rewards gold depending on how they did as well as a fixed ammount for upkeep depending on difficulty (less = harder)
 
+push escape to see squad overview of who has what stats and items
+
 ## squad
 
 squad can be n people
+
 
 can equip each member at the start of each mission
 can buy new members at end of each mission
@@ -51,6 +54,20 @@ can toggle between 3 squad modes with tab
  - follow lead: just follow the leader
  - attack: will attack any enemy on sight
  - focus attack: will follow and all members will gang up on the players target, ignoring if they are attacked or not, until player target is dead
+
+equiping is only primary slot
+ALL npcs only use primary item
+you have option to give npc a primary item this will
+ - swap their primary to their secondary and use what is given
+ - if given lamplighter stick, then will put that as secondary
+if you have a primary and so do they, option = swap them
+if you have no primary and they have yours, option = take
+
+you have option to give them an artifact
+ - if they have one you gave, it will be swapped out
+ - if you have none, you will take it from them
+ - if they have none, it will give them yours
+
 
 
 ## missions
@@ -66,6 +83,15 @@ objectives
  - escort (must do mission with also a random person in party who doesnt fight)
  
  if light road isnt an objective (90% chance it is) then the road starts pre-lit
+ 
+ end of mission = in tavern
+ each tavern sells 3 random items and has 2 random recruits who can join
+ go up to item of member to recruit or buy
+ 
+ go up to sqaudmember to push key:
+ 1. swap/give/take primary
+ 2. swap/give/take artifact
+ 3. part ways
  
  
 
