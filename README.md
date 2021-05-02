@@ -28,6 +28,8 @@
 single player, no swap
 
 each mission/level = start and end point on map, generate road between them
+ - each level = 1 chapter
+
 has squad, 1 member must be lighter with stick, others can do anything
 each has primary, secondard, and artifact items
 
@@ -38,6 +40,10 @@ only can save at end of mission, just saves squad character data nothing else
 each mission rewards gold depending on how they did as well as a fixed ammount for upkeep depending on difficulty (less = harder)
 
 push escape to see squad overview of who has what stats and items
+
+multiple save slots, once a save has pased x level, its optional to join another save for a mission
+- disables the item shop
+- allows saves to trade items or people between them
 
 ## squad
 
@@ -104,6 +110,9 @@ each level picks 1 point on the map to start
 then a random point for end is picked, it must be n distance from start (if fails after 5 times, pick new start pint)
 
 then a road is generated between the 2 points (if failed, pick new points)
+
+then 2 more roads are made from each point to somewhere else farther past them away from other point
+- these roads are prelit and just atmosphere
 
 the road then clears the terrain around it
 
