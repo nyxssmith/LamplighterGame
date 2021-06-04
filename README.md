@@ -127,24 +127,41 @@ all items, like sword, trinket etc are subclasses of the item class
 
 each character has 3 slots, primary and secondary are on body and can be swapped with a key
 if character is lighter their secondary item still exists on them, but cannot be swapped to as ligth stick ont their back
-
-items have a dynamic characteristic system
- - name: effect on weapon ; effect of artifact
- - vampiric: life steal on hit ; any costs or downsides go to others 
- - shielding: invulnerability when lands a hit ;others around them get hit, redirects to them
- - energizing: increase movement speed on hit; all in zone get movement speed buff
- - flaming: lights hit on fire ; chance to ignite attacker if hit
- - chilling; chance to freeze hit; chance to freeze attacker if hit
- - reaching; longer attack range; all other artifact effects in its zone are increased
- - strong; more damage of hit; stronger atrifact effect
- - weak; less damage ; weaker artifact effect
- - sluggish; slower attack speed; slower movement speed for all in its effect
- - sharing; hits do a portion of their damage to any enemy in range even if not hit direct; shares artifact effect in radius
- - giving; damage to enemy is inverted to heal them; effects given to others but not self
- - costly; lowers potency of item on hit ; makes effect triggering cost mana
-
  
  any weapon or artifact can have an optional effect
+ 
+ based on characteristic list of item, it makes the effects bubbles
+ 
+ ## characteristics
+ 
+ with `*` next to the name, means it is a fancy item effect
+ 
+items have a dynamic characteristic system
+ - name: effect on weapon ; effect of artifact
+ - vampiric*: life steal on hit ; any costs or downsides go to others 
+ - shielding*: invulnerability when lands a hit ;others around them get hit, redirects to them
+ - energizing*: increase movement speed on hit; all in zone get movement speed buff
+ - flaming*: lights hit on fire ; chance to ignite attacker if hit
+ - chilling*; chance to freeze hit; chance to freeze attacker if hit
+ - reaching*; longer attack range; all other artifact effects in its zone are increased
+ - strong*; more damage of hit; stronger atrifact effect
+ - weak*; less damage ; weaker artifact effect
+ - sluggish*; slower movement speed; slower movement speed for all in its effect
+ - sharing*; hits do a portion of their damage to any enemy in range even if not hit direct; shares artifact effect in radius
+ - giving*; damage to enemy is inverted to heal them; effects given to others but not self
+ 
+## effects
+
+these are the collider bubbles
+
+ - speed
+ - health regen
+ - health decay
+ - shielding
+ 
+ all of the artifacts as well
+ 
+ 
  
  ### weapons
  
