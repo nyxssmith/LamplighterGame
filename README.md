@@ -161,41 +161,71 @@ if character is lighter their secondary item still exists on them, but cannot be
  
  vampiric
   - life steal on hit
+ 
+ 
  speedy
   - increase movement speed
   - doesnt cost mana
+ 
+ 
  regeneritive
   - slow life regen over time
+ 
+ 
  decaying
   - slow life loss over time
+ 
+ 
  fading
   - slow potency decrease over time for other effects
+ 
+ 
  shielding
   - damage reduction on hit
+ 
+ 
  freezing
   - freeze target on hit
+ 
+ 
  flaming
   - ignite target on hit
+ 
+ 
  sluggish
   - slower movement speed
+ 
+ 
  clumsy
   - percent damage dealt is also given to holder
+ 
+ 
  redirecting
   - percent damage dealt to holder is redirected to others around
   - can redirect to a squadmate as well
+ 
+ 
  expanding
   - all other item effects ranges are multiplied by n, n being effected by this items potency
   - doesnt take any mana
+ 
+ 
  life-leaching
   - drains health from those around and gives to holder
   - percent lost based on potency (ex drains 10 health from A and gives 8 to B)
+ 
+ 
  mana-leaching
   - drains mana from those around and gives to holder
   - percent lost based on potency (ex drains 10 mana from A and gives 8 to B)
   - doesnt cost mana, super OP
+ 
+ 
  health-converting
   - on taking damage converts it to damage to mana instead
   - doesnt take mana to do this
+ 
+ 
  mana-converting
   - on mana drain, converts it to damage to health instead
   - doesnt take mana to do this
