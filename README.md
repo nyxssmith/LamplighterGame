@@ -128,39 +128,77 @@ all items, like sword, trinket etc are subclasses of the item class
 each character has 3 slots, primary and secondary are on body and can be swapped with a key
 if character is lighter their secondary item still exists on them, but cannot be swapped to as ligth stick ont their back
  
- any weapon or artifact can have an optional effect
+ any weapon or artifact can have an optional characteristic
  
- based on characteristic list of item, it makes the effects bubbles
+ ## Characteristics
  
- ## characteristics
+ All effects are also characteristics
  
- with `*` next to the name, means it is a fancy item effect
  
-items have a dynamic characteristic system
- - name: effect on weapon ; effect of artifact
- - vampiric*: life steal on hit ; any costs or downsides go to others 
- - shielding*: invulnerability when lands a hit ;others around them get hit, redirects to them
- - energizing*: increase movement speed on hit; all in zone get movement speed buff
- - flaming*: lights hit on fire ; chance to ignite attacker if hit
- - chilling*; chance to freeze hit; chance to freeze attacker if hit
- - reaching*; longer attack range; all other artifact effects in its zone are increased
- - strong*; more damage of hit; stronger atrifact effect
- - weak*; less damage ; weaker artifact effect
- - sluggish*; slower movement speed; slower movement speed for all in its effect
- - sharing*; hits do a portion of their damage to any enemy in range even if not hit direct; shares artifact effect in radius
- - giving*; damage to enemy is inverted to heal them; effects given to others but not self
+ weak
+  - weaker damage / value
+ strong
+  - stronger damage / value
  
-## effects
+ 
+ special ones
+ # TODO how to impliment
+ giving
+  - effect is given to all except owner
+ sharing
+  - effect is given to all around including owner
+ 
+ 
+ ## Effects
+ 
+ each one of these is a collider bubble on the item / is a prefab effect bubble that is summoned onto the item then has its potency etc set
 
-these are the collider bubbles
+ all percentages or amounts of x are based on potency
+ all effects take mana based on potency to function unless specified
+ all ambient mana drain is <1 mana per use, so very cheap, but also not very powerful
+ 
 
- - speed
- - health regen
- - health decay
- - shielding
  
- all of the artifacts as well
- 
+ vampiric
+  - life steal on hit
+ speedy
+  - increase movement speed
+  - doesnt cost mana
+ regeneritive
+  - slow life regen over time
+ decaying
+  - slow life loss over time
+ fading
+  - slow potency decrease over time for other effects
+ shielding
+  - damage reduction on hit
+ freezing
+  - freeze target on hit
+ flaming
+  - ignite target on hit
+ sluggish
+  - slower movement speed
+ clumsy
+  - percent damage dealt is also given to holder
+ redirecting
+  - percent damage dealt to holder is redirected to others around
+  - can redirect to a squadmate as well
+ expanding
+  - all other item effects ranges are multiplied by n, n being effected by this items potency
+  - doesnt take any mana
+ life-leaching
+  - drains health from those around and gives to holder
+  - percent lost based on potency (ex drains 10 health from A and gives 8 to B)
+ mana-leaching
+  - drains mana from those around and gives to holder
+  - percent lost based on potency (ex drains 10 mana from A and gives 8 to B)
+  - doesnt cost mana, super OP
+ health-converting
+  - on taking damage converts it to damage to mana instead
+  - doesnt take mana to do this
+ mana-converting
+  - on mana drain, converts it to damage to health instead
+  - doesnt take mana to do this
  
  
  ### weapons
@@ -179,19 +217,22 @@ these are the collider bubbles
  
  
  trinket
-  - just any item but can have effect
+  - just any item but can have characteristic (that must be an effect)
   - doesnt do anything on its own
   - guarneteed to have an effect
  
+
  charm of shielding
    - absorbs % of damage for holder
-   - costs mana to do so
+   - doesnt cost mana to do so
 
 charm of healing
  - slow health regen over time
+ - doesnt cost mana
  
  charm of harming
   - slow health decay over time
+  - doesnt cost mana to do so
   - can synergize with other effects to drain enemy health, or just be junk
  
  charm of speed
