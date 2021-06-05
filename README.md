@@ -130,6 +130,13 @@ if character is lighter their secondary item still exists on them, but cannot be
  
  any weapon or artifact can have an optional characteristic
  
+ All item effects are always active
+ ex: if your primary weapon lights enemies on fire, and your secondary steals life, then both of them will have both effects
+ 
+ This allows for choosing an item purely for its effect, to have more freedom in builds along the way.
+ It also allows you to equip 2 artifacts and 1 primary to just use the effects, or use a secondary for just its effect.
+ 
+ 
  ## Characteristics
  
  All effects are also characteristics
