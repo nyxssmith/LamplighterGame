@@ -237,6 +237,8 @@ if character is lighter their secondary item still exists on them, but cannot be
   - on mana drain, converts it to damage to health instead
   - doesnt take mana to do this
  
+ tired
+  - on hit spawns another effect bubble on hit target, that means when night happens, mana isnt regened next day
  
  ### weapons
  
