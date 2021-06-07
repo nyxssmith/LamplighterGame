@@ -146,7 +146,11 @@ if character is lighter their secondary item still exists on them, but cannot be
   - weaker damage / value
  strong
   - stronger damage / value
- 
+ unwieldy
+  - means is primary only, and cannot swap to other weapon
+  - decided at itemClass time
+  - 1/3 chance of being unwieldy
+  - additive
  
  special ones
  # TODO how to impliment
