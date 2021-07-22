@@ -45,6 +45,12 @@ multiple save slots, once a save has pased x level, its optional to join another
 - disables the item shop
 - allows saves to trade items or people between them
 
+Each save stores history of all maps and squadmates who died/left/were dismissed
+ - editor can bring back old ones, or reset their item cost
+ - history lets you replay older maps/missions but with current squad
+ - each map stores to time to beat/score
+
+
 ## squad
 
 squad can be n people
