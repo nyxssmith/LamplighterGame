@@ -51,6 +51,54 @@ Each save stores history of all maps and squadmates who died/left/were dismissed
  - each map stores to time to beat/score
 
 
+## planned tier system idea
+
+ - tier 1 save
+is the normal save, make character and squad
+
+once tier 1 save has an npc tag along for N (5) perfect runs, they can be dismissed and added as a tier 2 save slot
+
+a perfect run is a run where done in under half time, all objectives etc / very good score
+
+- teir 2
+same as tier 1 but cannot change any items or stats of the player character, since they were defined in tier 1.
+
+if you made a character that was only support and they got to go to tier 2, then that is gonna be a harder tier 2 run
+
+once tier 2 save can do N perfect runs, the whole squad is added to tier 3 and tier 2 save is removed
+
+- tier 3
+all unplayable, but can show up in tier 1 save missions as NPCs (max 1/3 of the options)
+
+when they show up, they mention they are "1/N" where N is total number of tier 3 characters, so you know if you can even try the boss run or not.
+
+their options are
+ - aid for the next mission and basically 1 hit everything and make it a gaurneteed perfect, even if time is ignored
+ - be added to the boss run team
+
+boss run team is per tier 1 save, and if you add character to it, they are removed from total pool, but tier 3 pool is shared across all tier 1 saves.
+
+if the character is used to easy-mode a mission, they are still left in the pool.
+ <br>
+ 
+ - boss run
+ a special mission that is made up of a tier 1 player character (but not their existing team) and N (3) tier 3 characters as the team.
+ 
+ boss run can be triggered instead of "next mission". Will be a special hard mission( or sequence of missions) that is the final boss of the game.
+ The scores for this are the main scoreboards to beat etc.
+
+once tier 3 are used in a boss run, no matter the outcome, they are removed from the list.
+
+
+ - overview
+idea is that playing the game in tier 1 will unlock a "hardmode" that is tier 2 once the teir 1 team is clearly easy-ing the levels
+
+tier 2 is the "new game plus" since you cannot change your own weapons.
+
+once you do tier 2 enough, youll encounter tier 3 characters alot and have the option for the boss run, while building for tier 2 again.
+
+
+
 ## squad
 
 squad can be n people
@@ -101,8 +149,8 @@ objectives
  go up to item of member to recruit or buy
  
  go up to sqaudmember to push key:
- 1. swap/give/take primary
- 2. swap/give/take artifact
+ 1. give them primary or secondary to replace theirs
+ 2. merge/give artifact (always merge, cannot un merge or reset)
  3. part ways
  
  
